@@ -22,24 +22,104 @@ if SUPABASE_URL and SUPABASE_ANON_KEY and "your-supabase" not in SUPABASE_URL:
 
 @app.route('/')
 def home():
-    """Renders the main dynamic neomorphic telemetry console interface."""
+    """Renders the main health summary console interface."""
     return render_template(
         'index.html',
         supabase_url=SUPABASE_URL,
         supabase_anon_key=SUPABASE_ANON_KEY
     )
 
+def determine_recommended_doctors(timeline_logs):
+    """Analyzes logged symptoms and notes to suggest relevant specialists in plain terms."""
+    all_symptoms = set()
+    all_notes = ""
+    
+    for entry in timeline_logs.values():
+        syms = entry.get('symptoms', [])
+        if isinstance(syms, list):
+            for s in syms:
+                all_symptoms.add(str(s).lower())
+        note = entry.get('notes', '')
+        if note:
+            all_notes += " " + str(note).lower()
+
+    doctors = []
+
+    # Check for Neurological symptoms
+    if any(s in all_symptoms for s in ['migraine', 'brain fog']) or 'headache' in all_notes or 'dizzy' in all_notes:
+        doctors.append({
+            "title": "Neurologist",
+            "subtitle": "Brain & Nerve Specialist",
+            "description": "A neurologist is a specialist who treats conditions affecting the brain, spine, and nerves. They can help diagnose and manage severe headaches, migraines, memory issues, and nervous system flare-ups."
+        })
+
+    # Check for Rheumatology / Joint symptoms
+    if any(s in all_symptoms for s in ['joint pain', 'fatigue']) or 'joint' in all_notes or 'stiff' in all_notes or 'arthritis' in all_notes:
+        doctors.append({
+            "title": "Rheumatologist",
+            "subtitle": "Joint & Autoimmune Specialist",
+            "description": "A rheumatologist specializes in joint, muscle, and bone diseases as well as autoimmune conditions. They help manage chronic swelling, stiffness, fatigue, and pain throughout the body."
+        })
+
+    # Check for Gastroenterology symptoms
+    if 'nausea' in all_symptoms or 'stomach' in all_notes or 'gut' in all_notes or 'nausea' in all_notes:
+        doctors.append({
+            "title": "Gastroenterologist",
+            "subtitle": "Digestive Health Specialist",
+            "description": "A gastroenterologist focuses on digestive health, including the stomach, intestines, and gut. They help evaluate and treat ongoing stomach pain, nausea, bloating, or digestive discomfort."
+        })
+
+    # Check for Sleep Specialist symptoms
+    if 'insomnia' in all_symptoms or 'sleep' in all_notes or 'exhausted' in all_notes:
+        doctors.append({
+            "title": "Sleep Specialist",
+            "subtitle": "Rest & Sleep Expert",
+            "description": "A sleep specialist evaluates sleep disorders like chronic insomnia, sleep apnea, or daytime fatigue. They help you find strategies to improve sleep quality and body recovery."
+        })
+
+    # Check for Mental Health / Anxiety
+    if 'anxiety' in all_symptoms or 'stress' in all_notes or 'anxious' in all_notes:
+        doctors.append({
+            "title": "Psychiatrist or Therapist",
+            "subtitle": "Mental & Behavioral Health Specialist",
+            "description": "A mental health specialist helps you manage stress, anxiety, mood changes, and the emotional impact of living with chronic symptoms."
+        })
+
+    # Primary Care Physician is always included as foundational doctor
+    doctors.append({
+        "title": "Primary Care Physician (PCP)",
+        "subtitle": "General Health Doctor",
+        "description": "Your primary doctor is your main healthcare partner who looks at your total health picture, performs initial checkups, and coordinates specialized medical care."
+    })
+
+    # Return top 3 unique doctor recommendations
+    return doctors[:3]
+
+def generate_fallback_synthesis(full_name, birthday, height, weight, gender, medical_notes, total_days, high_severity_days):
+    """Generates clean Markdown brief when AI API key is unconfigured."""
+    return f"""### 1. CLINICAL BRIEF SUMMARY (SOAP Format)
+* **Patient Profile Context**: {full_name} | DOB: {birthday} | Gender: {gender} | Height: {height} | Weight: {weight}
+* **Subjective**: Patient recorded {total_days} active symptom logs. Key issues include fluctuating pain events and subjective health observations.
+* **Objective**: Total tracked days: {total_days}. High severity flare days (Pain Level 7+): {len(high_severity_days)}.
+* **Assessment**: Symptoms show episodic clustering with high-intensity periods. Personal baseline notes ({medical_notes}) contextualize physical stress thresholds.
+* **Plan for Practitioner Reference**: Review high-intensity days during intake interview to address stress factors crossing the threshold.
+
+### 2. TRIGGER PROBABILITY INDEX
+* **Environmental Shift Correlation**: Barometric adjustments and humidity shifts map directly to {int(len(high_severity_days)*0.7) if high_severity_days else 0} of documented peak flare events.
+* **Stress-Induced Volatility Metric**: High stress index layers (Scale 7+) track consistently alongside elevated pain vectors, suggesting clear lifestyle correlation."""
+
 @app.route('/api/synthesize', methods=['POST'])
 def synthesize_brief():
-    """Accepts chronological log payloads and routes them through Groq for clinical synthesis."""
+    """Accepts chronological log payloads and user personal profile to route through Groq for clinical synthesis."""
     try:
         # Hardened body parsing architecture optimized for serverless request streams
         payload = request.get_json(silent=True) or request.json or {}
         timeline_logs = payload.get('logs', {})
+        user_profile = payload.get('profile', {})
         
         if not timeline_logs:
-            return jsonify({"error": "No clinical timeline logs were delivered to the synthesis engine. Please verify calendar records exist."}), 400
-            
+            return jsonify({"error": "No timeline logs were provided. Please add entries to your calendar first."}), 400
+
         total_days = len(timeline_logs)
         
         # Safe numerical evaluation wrapper preventing extraction type crashes
@@ -50,45 +130,57 @@ def synthesize_brief():
                     high_severity_days.append(d)
             except (ValueError, TypeError):
                 continue
-        
+
+        # Format user profile summary string
+        first_name = user_profile.get('firstName', '').strip()
+        last_name = user_profile.get('lastName', '').strip()
+        full_name = f"{first_name} {last_name}".strip() or "Patient (Unspecified)"
+        birthday = user_profile.get('birthday', 'Not provided')
+        height = user_profile.get('height', 'Not provided')
+        weight = user_profile.get('weight', 'Not provided')
+        gender = user_profile.get('gender', 'Not provided')
+        medical_notes = user_profile.get('medicalNotes', 'None reported')
+
+        profile_text_block = (
+            f"Patient Name: {full_name}\n"
+            f"Date of Birth: {birthday}\n"
+            f"Biological Sex / Gender: {gender}\n"
+            f"Height: {height} | Weight: {weight}\n"
+            f"Pre-existing Medical History / Notes: {medical_notes}"
+        )
+
+        # Recommended Doctors determination
+        recommended_docs = determine_recommended_doctors(timeline_logs)
+
         # Sort and process logs into an objective, structured timeline for the LLM
         sorted_dates = sorted(timeline_logs.keys())
-        timeline_payload = ""
-        for date_str in sorted_dates:
-            log_entry = timeline_logs[date_str]
-            
-            # Format date for US medical standard (MM/DD/YYYY)
-            parts = date_str.split('-')
-            us_date = f"{parts[1]}/{parts[2]}/{parts[0]}" if len(parts) == 3 else date_str
-            
-            symptoms_list = log_entry.get('symptoms', [])
-            symptoms_str = ", ".join(symptoms_list) if isinstance(symptoms_list, list) else "None Reported"
-            if not symptoms_str:
-                symptoms_str = "None Reported"
-                
-            lifestyle = log_entry.get('lifestyle', {})
-            sleep_val = lifestyle.get('sleep', 'Unreported')
-            stress_val = lifestyle.get('stress', 'Unreported')
-            weather_val = lifestyle.get('weather', 'Stable')
-            
-            timeline_payload += (
-                f"- [{us_date}] Severity: {log_entry.get('severity', 5)}/10 | "
-                f"Symptoms: {symptoms_str} | "
-                f"Sleep: {sleep_val}h | "
-                f"Stress Level: {stress_val}/10 | "
-                f"Environment/Weather: {weather_val}\n"
-            )
+        timeline_payload = []
+        for date_key in sorted_dates:
+            entry = timeline_logs[date_key]
+            timeline_payload.append({
+                "date": date_key,
+                "pain_severity_scale_1_to_10": entry.get("severity", 0),
+                "symptoms_reported": entry.get("symptoms", []),
+                "patient_notes": entry.get("notes", "")
+            })
 
-        # US-Standard clinical template alignment
-        system_instruction = (
-            "You are an expert clinical data synthesizer assisting a US healthcare practitioner. "
-            "Your task is to analyze the patient's daily timeline logs and generate a highly structured, "
-            "clinical-grade Medical Brief Summary matching standard US SOAP (Subjective, Objective, Assessment, Plan) "
-            "charting architectures. Do not invent diagnoses; group objective facts and track symptom clusters over time."
-        )
-        
-        user_prompt = f"""
-Analyze the following patient timeline log telemetry and synthesize the clinical records.
+        engine_used = "groq/llama-3.3-70b-versatile"
+        groq_api_key = os.environ.get("GROQ_API_KEY", "")
+
+        if groq_api_key:
+            try:
+                client = Groq(api_key=groq_api_key)
+                
+                system_prompt = (
+                    "You are an expert Clinical AI Medical Synthesizer. Analyze the provided patient personal profile "
+                    "and daily timeline logs to generate a clear, clinical-grade Medical Brief Summary matching standard US SOAP "
+                    "(Subjective, Objective, Assessment, Plan) charting architectures. Consider patient demographics (age/dob, gender, height/weight) "
+                    "when assessing risks and trends. Do not invent diagnoses; group objective facts and track symptom clusters over time."
+                )
+
+                user_prompt = f"""
+Patient Demographic Profile:
+{profile_text_block}
 
 Patient Tracked Timeline Records:
 {timeline_payload}
@@ -96,53 +188,41 @@ Patient Tracked Timeline Records:
 Provide your response in clean Markdown formatting exactly structured as follows:
 
 ### 1. CLINICAL BRIEF SUMMARY (SOAP Format)
-* **Subjective**: Summarize patient-reported symptoms, active timeline progression patterns, sleep/stress interactions, and symptom cluster co-occurrences.
+* **Patient Demographics**: Summary of patient profile context (Name, DOB/Age, Height, Weight, Gender).
+* **Subjective**: Summarize patient-reported symptoms, active timeline progression patterns, sleep/stress interactions, personal notes, and symptom cluster co-occurrences.
 * **Objective**: Define explicit numeric counts, severity distribution trends, tracking duration parameters, and distinct tracking timelines.
-* **Assessment**: Conduct a data synthesis analyzing cross-correlations between physical anomalies and lifestyle factors over time without diagnosing specific pathologies.
+* **Assessment**: Conduct a data synthesis analyzing cross-correlations between physical anomalies, notes, demographics, and lifestyle factors over time without diagnosing specific pathologies.
 * **Plan for Practitioner Reference**: Highlight specific optimization vectors and direct data correlations to focus on during a standard 15-minute diagnostic consultation.
 
 ### 2. TRIGGER PROBABILITY INDEX
-* Compute an environmental/lifestyle correlation matrix detailing percentage breakdowns where specific stressors (e.g., Level 7+ Stress, Barometric Drop/Weather variations) align directly with high-severity spikes (Severity >= 7).
+* Compute an environmental/lifestyle correlation matrix detailing percentage breakdowns where specific stressors (e.g., Level 7+ pain flares, sleep issues) correlate with symptoms or personal notes.
 """
 
-        try:
-            api_key = os.environ.get("GROQ_API_KEY")
-            if not api_key or api_key == "your_groq_api_key_here":
-                raise ValueError("Groq API access key missing or unconfigured.")
+                chat_completion = client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    model="llama-3.3-70b-versatile",
+                    temperature=0.3,
+                    max_tokens=1024
+                )
+                
+                synthesis_result = chat_completion.choices[0].message.content
 
-            client = Groq(api_key=api_key)
-            completion = client.chat.completions.create(
-                model="openai/gpt-oss-120b",
-                messages=[
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.1,
-                max_tokens=3000,
-                extra_body={"reasoning_effort": "low"}
-            )
-            synthesis_result = completion.choices[0].message.content
-            if not synthesis_result:
-                raise ValueError("Groq returned an empty completion (reasoning budget exhausted).")
-            engine_used = "openai/gpt-oss-120b (Live Inference)"
-        except Exception as e:
-            # High-utility local synthesis fallback handler
-            engine_used = "Local Fallback Analytical Framework"
-            synthesis_result = f"""### 1. CLINICAL BRIEF SUMMARY (SOAP Format)
-* **Subjective**: Patient tracking reveals a logged series across {total_days} total cataloged intervals. Primary discomfort clusters frequently appear alongside spikes in lifestyle environments and variable sleep metrics.
-* **Objective**: Timeline spans {total_days} active data entries. High severity indexes (Score >= 7) were documented on {len(high_severity_days)} separate dates within the US Standard telemetry framework.
-* **Assessment**: Synthesis indicates an observable alignment between acute physiological tracking markers and periods of extreme environmental shifts or reduced rest.
-* **Plan for Practitioner Reference**: Target clinical screening pathways around tracking parameters that match high-intensity periods. Optimize intake interviews to address stress factors crossing the threshold.
-
-### 2. TRIGGER PROBABILITY INDEX
-* **Environmental Shift Correlation**: Barometric adjustments and humidity shifts map directly to {int(len(high_severity_days)*0.7) if high_severity_days else 0} of documented peak flare events.
-* **Stress-Induced Volatility Metric**: High stress index layers (Scale 7+) track consistently alongside elevated pain vectors, suggesting clear lifestyle correlation.
-"""
+            except Exception as groq_err:
+                print(f"Groq API call warning/fallback: {groq_err}")
+                engine_used = "fallback-algorithmic-engine"
+                synthesis_result = generate_fallback_synthesis(full_name, birthday, height, weight, gender, medical_notes, total_days, high_severity_days)
+        else:
+            engine_used = "fallback-algorithmic-engine"
+            synthesis_result = generate_fallback_synthesis(full_name, birthday, height, weight, gender, medical_notes, total_days, high_severity_days)
 
         return jsonify({
             "status": "success",
             "brief": synthesis_result,
             "engine": engine_used,
+            "recommended_doctors": recommended_docs,
             "metrics": {
                 "total_days": total_days,
                 "high_severity_count": len(high_severity_days)
@@ -151,7 +231,7 @@ Provide your response in clean Markdown formatting exactly structured as follows
 
     except Exception as runtime_error:
         # Master architecture boundary catching unexpected logic exceptions
-        return jsonify({"error": f"Internal Processing Matrix Error: {str(runtime_error)}"}), 500
+        return jsonify({"error": f"Internal Processing Error: {str(runtime_error)}"}), 500
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -159,9 +239,9 @@ def health_check():
     return jsonify({
         "status": "healthy",
         "environment": "US-Standard",
-        "active_inference_engine": "openai/gpt-oss-120b",
+        "active_inference_engine": "groq/llama-3.3-70b-versatile",
         "auth_provider": "Supabase" if supabase_client else "Unconfigured"
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

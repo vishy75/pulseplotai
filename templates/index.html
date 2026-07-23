@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PulsePlot AI - Dynamic Clinical Matrix</title>
+    <title>PulsePlot AI - Daily Health & Symptom Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
             font-family: 'JetBrains Mono', monospace;
         }
         
-        /* Glassmorphism & Cyber Dark Styles */
+        /* Glassmorphism Styles */
         .glass-panel-dark {
             background: rgba(15, 23, 42, 0.65);
             backdrop-filter: blur(20px);
@@ -113,6 +113,115 @@
              :class="doctorMode ? 'bg-indigo-300' : 'bg-indigo-600'"></div>
     </div>
 
+    <div x-show="activeDoctorModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        <div class="w-full max-w-md glass-panel-dark glow-border rounded-2xl p-6 space-y-4 relative shadow-2xl animate-fadeIn">
+            <button @click="activeDoctorModal = null" class="absolute top-4 right-4 text-slate-400 hover:text-white transition cursor-pointer text-lg font-bold">✕</button>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold text-white" x-text="activeDoctorModal?.title"></h3>
+                    <p class="text-xs text-sky-400 font-medium" x-text="activeDoctorModal?.subtitle"></p>
+                </div>
+            </div>
+            <div class="p-3.5 bg-slate-900/80 rounded-xl border border-white/10 text-xs text-slate-300 leading-relaxed" x-text="activeDoctorModal?.description"></div>
+            <button @click="activeDoctorModal = null" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">Got It</button>
+        </div>
+    </div>
+
+    <div x-show="user && showProfileModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-lg overflow-y-auto">
+        <div class="w-full max-w-2xl glass-panel-dark glow-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative my-auto border border-white/15">
+            
+            <div class="flex items-start justify-between border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-sky-500/20 shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white tracking-tight">Personal Health Profile</h2>
+                        <p class="text-xs text-sky-300 font-medium mt-0.5">Help AI customize your daily health reports with accurate personal context.</p>
+                    </div>
+                </div>
+                
+                <template x-if="profile.completedOnboarding">
+                    <button @click="showProfileModal = false" class="text-slate-400 hover:text-white transition cursor-pointer text-xl font-bold p-1">✕</button>
+                </template>
+            </div>
+
+            <form @submit.prevent="saveProfile()" class="space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5 text-left">
+                        <label class="text-xs font-semibold text-slate-200 flex items-center gap-1">
+                            First Name <span class="text-rose-400">*</span>
+                        </label>
+                        <input type="text" required x-model="profile.firstName" placeholder="e.g. Alex"
+                               class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+
+                    <div class="space-y-1.5 text-left">
+                        <label class="text-xs font-semibold text-slate-200">Last Name</label>
+                        <input type="text" x-model="profile.lastName" placeholder="e.g. Smith"
+                               class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+
+                    <div class="space-y-1.5 text-left">
+                        <label class="text-xs font-semibold text-slate-200">Date of Birth</label>
+                        <input type="date" x-model="profile.birthday"
+                               class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+
+                    <div class="space-y-1.5 text-left">
+                        <label class="text-xs font-semibold text-slate-200">Biological Sex / Gender</label>
+                        <select x-model="profile.gender"
+                                class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="" class="bg-slate-900 text-slate-400">Select Gender...</option>
+                            <option value="Female" class="bg-slate-900 text-white">Female</option>
+                            <option value="Male" class="bg-slate-900 text-white">Male</option>
+                            <option value="Non-binary" class="bg-slate-900 text-white">Non-binary</option>
+                            <option value="Other" class="bg-slate-900 text-white">Other / Prefer not to say</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1.5 text-left">
+                        <label class="text-xs font-semibold text-slate-200">Height</label>
+                        <input type="text" x-model="profile.height" placeholder="e.g. 5' 9&quot; or 175 cm"
+                               class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+
+                    <div class="space-y-1.5 text-left">
+                        <label class="text-xs font-semibold text-slate-200">Weight</label>
+                        <input type="text" x-model="profile.weight" placeholder="e.g. 160 lbs or 72 kg"
+                               class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+
+                <div class="space-y-1.5 text-left">
+                    <label class="text-xs font-semibold text-slate-200">Pre-existing Health Conditions or Baseline Notes</label>
+                    <textarea x-model="profile.medicalNotes" rows="3" placeholder="e.g. Chronic Migraines, Seasonal Allergies, High Blood Pressure, Asthma..."
+                              class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 leading-relaxed"></textarea>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row items-center justify-end gap-3">
+                    <template x-if="profile.completedOnboarding">
+                        <button type="button" @click="showProfileModal = false" 
+                                class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition cursor-pointer">
+                            Cancel
+                        </button>
+                    </template>
+                    <button type="submit" 
+                            class="w-full sm:w-auto bg-gradient-to-r from-sky-500 via-indigo-600 to-rose-600 hover:from-sky-400 hover:to-rose-500 text-white font-bold px-6 py-3 rounded-xl text-xs transition duration-200 cursor-pointer uppercase tracking-wider shadow-lg shadow-sky-500/20">
+                        Save Profile & Continue
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div x-show="!user" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
         <div class="w-full max-w-md glass-panel-dark glow-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
             <div class="text-center space-y-2">
@@ -122,7 +231,7 @@
                     </svg>
                 </div>
                 <h2 class="text-2xl font-extrabold tracking-tight text-white">Welcome to PulsePlot AI</h2>
-                <p class="text-xs text-slate-400">Authenticate to access your clinical health telemetry workspace.</p>
+                <p class="text-xs text-slate-400">Sign in to track your health and symptoms.</p>
             </div>
 
             <button @click="signInWithGoogle()" 
@@ -170,7 +279,7 @@
                 <button type="submit" :disabled="authLoading"
                         class="w-full bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl text-xs transition duration-200 cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">
                     <span x-show="authLoading" class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    <span x-text="authTab === 'login' ? 'Sign In to Workspace' : 'Create Supabase Account'"></span>
+                    <span x-text="authTab === 'login' ? 'Sign In to Workspace' : 'Create Account'"></span>
                 </button>
             </form>
         </div>
@@ -202,7 +311,7 @@
                     <svg class="w-3.5 h-3.5 text-amber-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    <span>Inject 30-Day Mock Trend</span>
+                    <span>Load 30-Day Sample Data</span>
                 </button>
 
                 <span :class="doctorMode ? 'bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-900/80 text-slate-400 border-white/10'" 
@@ -211,12 +320,47 @@
                 </span>
 
                 <template x-if="user">
-                    <div class="flex items-center gap-2 pl-2 border-l border-white/10">
-                        <span class="text-xs font-mono text-sky-400 max-w-[120px] truncate" x-text="user.email"></span>
-                        <button @click="handleSignOut()" 
-                                class="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 transition cursor-pointer">
-                            Sign Out
+                    <div class="relative pl-2 border-l border-white/10" @click.outside="profileMenuOpen = false">
+                        <button @click="profileMenuOpen = !profileMenuOpen" 
+                                class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 transition cursor-pointer text-sky-400">
+                            <div class="w-6 h-6 rounded-full bg-sky-500/20 text-sky-300 flex items-center justify-center font-bold text-[11px] border border-sky-400/30 shrink-0">
+                                <span x-text="profile.firstName ? profile.firstName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()"></span>
+                            </div>
+                            <span class="max-w-[130px] truncate" x-text="profile.firstName || user.email"></span>
+                            <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" :class="profileMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
                         </button>
+
+                        <div x-show="profileMenuOpen" 
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-56 rounded-xl glass-panel-dark border border-white/10 shadow-2xl py-1.5 z-50 text-xs">
+                            <div class="px-3.5 py-2 border-b border-white/10">
+                                <p class="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Signed in as</p>
+                                <p class="text-xs text-white font-medium truncate" x-text="user.email"></p>
+                            </div>
+                            <button @click="showProfileModal = true; profileMenuOpen = false" 
+                                    class="w-full text-left px-3.5 py-2.5 hover:bg-sky-500/10 text-slate-200 hover:text-sky-300 flex items-center gap-2.5 transition cursor-pointer">
+                                <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <span>Personal Information</span>
+                            </button>
+                            <div class="border-t border-white/10 my-1"></div>
+                            <button @click="handleSignOut(); profileMenuOpen = false" 
+                                    class="w-full text-left px-3.5 py-2 text-rose-400 hover:bg-rose-500/10 flex items-center gap-2.5 transition cursor-pointer font-semibold">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                <span>Sign Out</span>
+                            </button>
+                        </div>
                     </div>
                 </template>
             </div>
@@ -232,13 +376,14 @@
                     <div class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider"
                          :class="doctorMode ? 'bg-sky-100 text-sky-800' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'">
                         <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
-                        Clinical Telemetry Workspace
+                        Personal Health Workspace
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                        Precision Health Tracking & AI SOAP Synthesis
+                        Welcome<span x-text="profile.firstName ? ', ' + profile.firstName : ''"></span>!
+                        <span class="block text-base sm:text-lg font-semibold text-sky-400 mt-1">Easy Symptom Tracking & AI Health Summaries</span>
                     </h2>
                     <p class="text-xs sm:text-sm leading-relaxed" :class="doctorMode ? 'text-slate-600' : 'text-slate-400'">
-                        Click any calendar cell to zoom in on daily symptom vectors, severity indexes, and weather triggers. Synthesize longitudinal data into structured clinical brief charts for practitioner review.
+                        Click any day on the calendar to log how you feel, record pain levels, and add voice or text notes. Generate a clear summary to share with your doctor.
                     </p>
                 </div>
 
@@ -250,27 +395,23 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
-                        <span x-text="doctorMode ? '↩️ Switch to Patient Standard Mode' : '🔬 Switch to 30-Sec Doctor Mode'"></span>
+                        <span x-text="doctorMode ? '↩️ Switch to Simple Patient Mode' : '🔬 Switch to Quick Doctor Mode'"></span>
                     </button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
                 <div class="space-y-1">
                     <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Total Logged Days</span>
                     <p class="text-xl font-mono font-bold" x-text="Object.keys(logs).length + ' Days'"></p>
                 </div>
                 <div class="space-y-1">
-                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Active Flare Alert</span>
-                    <p class="text-xl font-mono font-bold text-rose-500" x-text="Object.values(logs).filter(l => l.severity >= 7).length + ' Spikes'"></p>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">High Pain Days</span>
+                    <p class="text-xl font-mono font-bold text-rose-500" x-text="Object.values(logs).filter(l => l.severity >= 7).length + ' Days'"></p>
                 </div>
                 <div class="space-y-1">
-                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Focus Target Date</span>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Selected Date</span>
                     <p class="text-xl font-mono font-bold text-sky-400" x-text="selectedDay ? selectedDay.formattedDate : 'None'"></p>
-                </div>
-                <div class="space-y-1">
-                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Inference Engine</span>
-                    <p class="text-xs font-mono font-bold text-emerald-400 truncate pt-1" x-text="activeEngine"></p>
                 </div>
             </div>
         </section>
@@ -284,10 +425,10 @@
                     <div class="flex justify-between items-center border-b pb-4" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
                         <div>
                             <h2 class="text-base font-bold tracking-tight" :class="doctorMode ? 'text-slate-900' : 'text-white'">
-                                Dynamic Chrono-Logger Matrix
+                                Daily Symptom Calendar
                             </h2>
                             <p class="text-xs" :class="doctorMode ? 'text-slate-500' : 'text-slate-400'">
-                                Click on any day to inspect or log pain metrics and lifestyle factors.
+                                Click on any day to record how you feel and add notes.
                             </p>
                         </div>
                         <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold" 
@@ -302,7 +443,7 @@
                                 <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
-                                High-Density Practitioner Timeline View
+                                High-Density Doctor View
                             </h4>
                             <span class="text-[10px] font-mono text-slate-500">Fast Scan Mode</span>
                         </div>
@@ -314,9 +455,8 @@
                                         <div class="flex space-x-4 items-center">
                                             <span class="px-2 py-0.5 rounded text-[10px] font-extrabold"
                                                   :class="logs[d.dateStr].severity >= 7 ? 'text-rose-700 bg-rose-100' : 'text-slate-700 bg-slate-200'"
-                                                  x-text="'Severity: ' + logs[d.dateStr].severity"></span>
-                                            <span class="text-slate-900 font-medium max-w-xs truncate" x-text="logs[d.dateStr].symptoms.join(', ') || 'No symptoms'"></span>
-                                            <span class="text-slate-500 text-[11px]" x-text="'Sleep: ' + logs[d.dateStr].lifestyle.sleep + 'h | ' + logs[d.dateStr].lifestyle.weather"></span>
+                                                  x-text="'Pain: ' + logs[d.dateStr].severity"></span>
+                                            <span class="text-slate-900 font-medium max-w-xs truncate" x-text="logs[d.dateStr].symptoms.join(', ') || 'No specific symptoms logged'"></span>
                                         </div>
                                     </div>
                                 </template>
@@ -324,36 +464,33 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 gap-3">
+                    <div class="grid grid-cols-7 gap-2">
                         <template x-for="d in days" :key="d.dateStr">
-                            <button @click="selectDay(d)"
-                                    :class="getThermalBorder(d.dateStr) + (selectedDay?.dateStr === d.dateStr ? ' ring-2 ring-sky-400 border-sky-400 scale-110 shadow-xl shadow-sky-500/20 z-30' : '')"
-                                    class="zoom-day-block h-16 rounded-xl flex flex-col justify-between p-2 text-left relative cursor-pointer font-sans border backdrop-blur-md">
-                                <div class="flex justify-between items-center w-full">
-                                    <span class="text-xs font-extrabold" x-text="d.dayNum"></span>
-                                    <div x-show="logs[d.dateStr]?.symptoms.length > 0" class="w-2 h-2 bg-rose-500 rounded-full shadow-sm shadow-rose-500"></div>
-                                </div>
-                                <div class="flex justify-between items-end w-full">
-                                    <span class="text-[10px] font-mono tracking-tighter font-extrabold" x-text="logs[d.dateStr] ? 'S:' + logs[d.dateStr].severity : ''"></span>
-                                    <span class="text-[9px] opacity-60 font-mono" x-text="logs[d.dateStr] ? logs[d.dateStr].lifestyle.sleep + 'h' : ''"></span>
-                                </div>
+                            <button @click="selectDay(d)" 
+                                    :class="[
+                                        getThermalBorder(d.dateStr),
+                                        selectedDay?.dateStr === d.dateStr ? 'ring-2 ring-sky-400 scale-105 shadow-md z-10' : ''
+                                    ]"
+                                    class="zoom-day-block aspect-square rounded-xl p-2 border flex flex-col justify-between items-center relative transition-all duration-200 cursor-pointer">
+                                <span class="text-[10px] font-mono font-bold opacity-70" x-text="d.dayName"></span>
+                                <span class="text-base font-extrabold font-mono" x-text="d.dayNum"></span>
+                                <template x-if="logs[d.dateStr]">
+                                    <span class="w-2 h-2 rounded-full"
+                                          :class="logs[d.dateStr].severity >= 7 ? 'bg-rose-500 animate-pulse' : 'bg-sky-400'"></span>
+                                </template>
+                                <template x-if="!logs[d.dateStr]">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600/30"></span>
+                                </template>
                             </button>
                         </template>
                     </div>
 
-                    <div x-show="selectedDay" 
-                         :class="doctorMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/60 border-white/10 glow-border'"
-                         class="border rounded-2xl p-5 space-y-5 transition-all duration-300">
-                        
-                        <div class="flex justify-between items-center border-b pb-3" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-sky-400"></div>
-                                <span class="text-xs font-bold uppercase tracking-wider">
-                                    <span :class="doctorMode ? 'text-slate-900':'text-white'">Focus Date Log Entry:</span> 
-                                    <span class="font-mono text-sky-400 font-bold ml-1" x-text="selectedDay?.formattedDate"></span>
-                                </span>
-                            </div>
-                            <span class="text-[11px] text-slate-400 font-mono">Auto-Saved</span>
+                    <div x-show="selectedDay" class="border-t pt-5 space-y-4" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-sky-400 flex items-center gap-2">
+                                📅 Logging for <span x-text="selectedDay?.formattedDate" class="text-white underline decoration-sky-500"></span>
+                            </h3>
+                            <span class="text-[10px] font-mono text-slate-400">Auto-saves as you update</span>
                         </div>
 
                         <div class="space-y-2">
@@ -362,14 +499,14 @@
                                     <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                     </svg>
-                                    Symptom Intensity Vector (1-10):
+                                    How Painful Do You Feel? (1 to 10):
                                 </span>
                                 <span class="font-bold font-mono px-2.5 py-0.5 rounded-lg text-xs" 
                                       :class="doctorMode ? 'bg-slate-200 text-slate-800' : 'bg-slate-800 text-amber-400 border border-amber-400/20'" 
                                       x-text="severity + ' / 10'"></span>
                             </div>
                             <div class="flex items-center space-x-4">
-                                <input type="range" min="1" max="10" x-model="severity" @input="saveCurrentLog()"
+                                <input type="range" min="1" max="10" x-model="severity" @input="saveCurrentLog()" 
                                        class="w-full h-2.5 rounded-lg appearance-none cursor-pointer accent-sky-500 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-600 shadow-inner">
                                 <span class="text-xs font-bold shrink-0 min-w-[120px] text-right" 
                                       :class="doctorMode ? 'text-slate-700' : 'text-slate-300'" 
@@ -382,46 +519,41 @@
                                 <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M11 7h.01M11 11h.01M11 15h.01M15 7h.01M15 11h.01M15 15h.01"/>
                                 </svg>
-                                Co-occurring Symptom Clusters:
+                                Symptoms You Are Experiencing:
                             </label>
                             <div class="flex flex-wrap gap-2">
                                 <template x-for="sym in presetSymptoms" :key="sym">
-                                    <button @click="toggleSymptom(sym)"
-                                            :class="symptoms.includes(sym) ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white border-sky-400 shadow-md shadow-sky-500/20 scale-105' : (doctorMode ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100' : 'bg-slate-800/80 border-white/10 text-slate-400 hover:text-white hover:bg-slate-800')"
-                                            class="px-3 py-1.5 rounded-xl text-xs border transition-all duration-200 font-medium cursor-pointer flex items-center gap-1"
-                                            x-text="sym"></button>
+                                    <button @click="toggleSymptom(sym)" 
+                                            :class="symptoms.includes(sym) ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white border-sky-400 shadow-md shadow-sky-500/20 scale-105' : (doctorMode ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100' : 'bg-slate-900/80 border-white/10 text-slate-300 hover:bg-slate-800')" 
+                                            class="px-3 py-1.5 rounded-xl text-xs border font-medium transition cursor-pointer">
+                                        <span x-text="sym"></span>
+                                    </button>
                                 </template>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-extrabold uppercase tracking-wider opacity-70">Sleep Duration</label>
-                                <select x-model="lifestyle.sleep" @change="saveCurrentLog()" 
-                                        :class="doctorMode ? 'bg-white border-slate-300 text-slate-800' : 'bg-slate-800 border-white/10 text-slate-200'"
-                                        class="w-full border rounded-xl p-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
-                                    <template x-for="h in [4,5,6,7,8,9,10]"><option :value="h" x-text="h + ' Hours'"></option></template>
-                                </select>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-semibold flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                    How Are You Feeling? (Additional Notes):
+                                </label>
+                                <button @click="toggleSpeechRecognition()" type="button" 
+                                        :class="isRecording ? 'bg-rose-600 text-white animate-pulse' : 'bg-sky-600/20 text-sky-400 hover:bg-sky-600/30 border border-sky-500/30'" 
+                                        class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                                    </svg>
+                                    <span x-text="isRecording ? 'Listening... (Click to Stop)' : 'Use Microphone'"></span>
+                                </button>
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-extrabold uppercase tracking-wider opacity-70">Stress Index</label>
-                                <select x-model="lifestyle.stress" @change="saveCurrentLog()" 
-                                        :class="doctorMode ? 'bg-white border-slate-300 text-slate-800' : 'bg-slate-800 border-white/10 text-slate-200'"
-                                        class="w-full border rounded-xl p-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
-                                    <template x-for="s in [1,2,3,4,5,6,7,8,9,10]"><option :value="s" x-text="'Level ' + s"></option></template>
-                                </select>
-                            </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-extrabold uppercase tracking-wider opacity-70">Weather Context</label>
-                                <select x-model="lifestyle.weather" @change="saveCurrentLog()" 
-                                        :class="doctorMode ? 'bg-white border-slate-300 text-slate-800' : 'bg-slate-800 border-white/10 text-slate-200'"
-                                        class="w-full border rounded-xl p-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
-                                    <option value="Clear">☀️ Stable</option>
-                                    <option value="Rainy">🌧️ Storm</option>
-                                    <option value="Humid">🌫️ Humid</option>
-                                    <option value="Barometric Drop">📉 Pressure Drop</option>
-                                </select>
-                            </div>
+                            <textarea x-model="notes" @input="saveCurrentLog()" 
+                                      placeholder="Type or speak how you are feeling today (e.g. Sharp pain in shoulder after lunch, feeling extra tired...)" 
+                                      rows="3" 
+                                      :class="doctorMode ? 'bg-white border-slate-300 text-slate-800 placeholder-slate-400' : 'bg-slate-800 border-white/10 text-slate-200 placeholder-slate-500'" 
+                                      class="w-full border rounded-xl p-3 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 leading-relaxed"></textarea>
                         </div>
                     </div>
                 </div>
@@ -432,156 +564,344 @@
                      class="rounded-2xl p-6 flex flex-col justify-between h-full transition-all duration-300 space-y-4">
                     
                     <div class="space-y-4 flex flex-col grow overflow-hidden">
-                        <div class="flex justify-between items-center border-b pb-3" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
-                            <h3 class="text-xs font-extrabold tracking-widest uppercase flex items-center gap-2" :class="doctorMode ? 'text-sky-800' : 'text-sky-400'">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
-                                </svg>
-                                Clinical Brief Generator
-                            </h3>
-                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">SOAP Matrix</span>
+                        <div class="flex justify-between items-center border-b pb-4" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                            <div>
+                                <h3 class="text-base font-bold tracking-tight">AI Clinical Health Summary</h3>
+                                <p class="text-xs" :class="doctorMode ? 'text-slate-500' : 'text-slate-400'">Generates SOAP report based on your logs and personal profile.</p>
+                            </div>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         </div>
-                        
-                        <div :class="doctorMode ? 'bg-slate-50 border-slate-200 text-slate-900' : 'bg-slate-900/60 border-white/10 text-slate-300'" 
-                             class="border rounded-2xl p-5 text-xs grow overflow-y-auto custom-scrollbar flex flex-col justify-between transition-all duration-300 min-h-[360px]">
-                            
-                            <div x-show="Object.keys(logs).length === 0 && !loading && !briefResult" class="text-center my-auto space-y-3 p-4">
-                                <div class="w-12 h-12 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto border border-indigo-500/20">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                    </svg>
-                                </div>
-                                <p class="font-bold text-slate-300 text-sm">Awaiting Timeline Matrix Data</p>
-                                <p class="text-[11px] text-slate-400 max-w-xs mx-auto">
-                                    Log calendar values or click 'Inject 30-Day Mock Trend Data' to generate structured medical briefs.
-                                </p>
-                            </div>
 
-                            <div x-show="loading" class="space-y-4 animate-pulse my-auto w-full p-2">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-3 h-3 bg-sky-400 rounded-full animate-ping"></div>
-                                    <div class="h-3 bg-slate-400/20 rounded w-1/3"></div>
-                                </div>
-                                <div class="space-y-2 pt-2">
-                                    <div class="h-2.5 bg-slate-400/10 rounded w-full"></div>
-                                    <div class="h-2.5 bg-slate-400/10 rounded w-5/6"></div>
-                                    <div class="h-2.5 bg-slate-400/10 rounded w-4/5"></div>
-                                    <div class="h-2.5 bg-slate-400/10 rounded w-2/3"></div>
-                                </div>
-                                <p class="text-[11px] text-sky-400 font-mono text-center pt-4">Structuring clinical datasets for your practitioner...</p>
+                        <div x-show="!briefResult && !loading && Object.keys(logs).length === 0" class="my-auto text-center space-y-3 p-6">
+                            <div class="w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center mx-auto border border-sky-500/20">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
                             </div>
+                            <p class="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
+                                No logs recorded yet. Click dates on the calendar or click <strong class="text-sky-400">"Load 30-Day Sample Data"</strong> to generate an instant health report.
+                            </p>
+                        </div>
 
-                            <div x-show="briefResult && !loading" class="space-y-3 overflow-y-auto pr-1 text-left w-full custom-scrollbar">
-                                <div class="flex justify-between items-center border-b pb-2 text-[9px] uppercase font-mono tracking-wider text-slate-400"
-                                     :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
-                                    <span>Engine Optimization:</span>
-                                    <span class="text-emerald-400 font-bold" x-text="activeEngine"></span>
-                                </div>
-                                <div class="text-[11.5px] leading-relaxed font-sans space-y-2 transition-colors duration-200"
-                                     :class="doctorMode ? 'text-slate-800' : 'text-slate-300'"
-                                     x-html="renderMarkdown(briefResult)"></div>
+                        <div x-show="loading" class="space-y-4 animate-pulse my-auto w-full p-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3 h-3 bg-sky-400 rounded-full animate-ping"></div>
+                                <div class="h-3 bg-slate-400/20 rounded w-1/3"></div>
                             </div>
+                            <div class="space-y-2 pt-2">
+                                <div class="h-2.5 bg-slate-400/10 rounded w-full"></div>
+                                <div class="h-2.5 bg-slate-400/10 rounded w-5/6"></div>
+                                <div class="h-2.5 bg-slate-400/10 rounded w-4/5"></div>
+                                <div class="h-2.5 bg-slate-400/10 rounded w-2/3"></div>
+                            </div>
+                            <p class="text-[11px] text-sky-400 font-mono text-center pt-4">Preparing your health summary for your doctor...</p>
+                        </div>
 
-                            <div x-show="Object.keys(logs).length > 0 && !loading && !briefResult" class="my-auto text-center space-y-2 p-4">
-                                <div class="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                </div>
-                                <p class="text-emerald-400 font-bold text-xs">Telemetry Matrix Ready (<span x-text="Object.keys(logs).length"></span> Days Logged)</p>
-                                <p class="text-slate-400 text-[11px] max-w-xs mx-auto">
-                                    Data is safely tracked in local storage structure. Click below to synthesize SOAP output.
-                                </p>
+                        <div x-show="briefResult && !loading" class="space-y-3 overflow-y-auto pr-1 text-left w-full custom-scrollbar">
+                            <div class="text-[11.5px] leading-relaxed font-sans space-y-2 transition-colors duration-200" 
+                                 :class="doctorMode ? 'text-slate-800' : 'text-slate-300'" 
+                                 x-html="renderMarkdown(briefResult)"></div>
+                        </div>
+
+                        <div x-show="Object.keys(logs).length > 0 && !loading && !briefResult" class="my-auto text-center space-y-2 p-4">
+                            <div class="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
                             </div>
+                            <p class="text-emerald-400 font-bold text-xs">Calendar Logged (<span x-text="Object.keys(logs).length"></span> Days)</p>
+                            <p class="text-slate-400 text-[11px] max-w-xs mx-auto">
+                                Your data is saved. Click below to generate your report and see recommended doctors.
+                            </p>
                         </div>
                     </div>
 
                     <div class="pt-4 border-t space-y-2 shrink-0" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
-                        <template x-if="!briefResult || loading">
-                            <button @click="requestClinicalSynthesis()"
-                                    :disabled="Object.keys(logs).length === 0 || loading"
-                                    :class="Object.keys(logs).length > 0 && !loading ? (doctorMode ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-lg shadow-sky-600/30 hover:scale-[1.01]' : 'bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.01]') : (doctorMode ? 'bg-slate-200 text-slate-400 border-slate-300 border cursor-not-allowed' : 'bg-slate-900 text-slate-600 border-white/5 cursor-not-allowed border')"
-                                    class="w-full font-bold py-3.5 rounded-xl text-xs transition-all duration-200 cursor-pointer text-center uppercase tracking-wider flex items-center justify-center gap-2">
+                        <template x-if="!briefResult">
+                            <button @click="generateSynthesis()" 
+                                    :disabled="loading || Object.keys(logs).length === 0" 
+                                    class="w-full bg-gradient-to-r from-sky-500 via-indigo-600 to-rose-600 hover:from-sky-400 hover:to-rose-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-xs transition duration-200 cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                 </svg>
-                                Synthesize Clinical Data Brief
+                                <span>Generate AI Report</span>
                             </button>
                         </template>
-                        
-                        <template x-if="briefResult && !loading">
-                            <div class="grid grid-cols-2 gap-3">
-                                <button @click="requestClinicalSynthesis()" 
-                                        :class="doctorMode ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700' : 'bg-slate-800 hover:bg-slate-700 border-white/10 text-slate-200'"
-                                        class="border font-bold py-3 rounded-xl text-xs transition duration-200 cursor-pointer text-center uppercase tracking-wide flex items-center justify-center gap-1.5">
-                                    <span>🔄</span> Re-Synthesize
+
+                        <template x-if="briefResult">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button @click="generateSynthesis()" 
+                                        :disabled="loading" 
+                                        class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-2">
+                                    🔄 Refresh Brief
                                 </button>
-                                <button @click="exportMarkdownBrief()" 
-                                        :class="doctorMode ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-sm' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20'"
-                                        class="font-bold py-3 rounded-xl text-xs transition duration-200 cursor-pointer text-center uppercase tracking-wide flex items-center justify-center gap-1.5">
-                                    <span>📋</span> Copy Brief
+                                <button @click="exportMarkdown()" 
+                                        class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 rounded-xl text-xs border border-white/10 transition cursor-pointer flex items-center justify-center gap-2">
+                                    📥 Download Brief
                                 </button>
                             </div>
                         </template>
-                        <p class="text-[9.5px] text-slate-500 text-center leading-tight">
-                            Objective processing pipeline explicitly designed for rapid consultation review loops.
-                        </p>
+                    </div>
+                </div>
+
+                <div x-show="recommendedDoctors.length > 0" 
+                     :class="doctorMode ? 'glass-panel-light text-slate-900' : 'glass-panel-dark text-slate-100'" 
+                     class="rounded-2xl p-5 space-y-3 animate-fadeIn">
+                    <div class="flex justify-between items-center border-b pb-2.5" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                        <h4 class="text-xs font-extrabold uppercase tracking-widest text-sky-400 flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            Recommended Doctors For You:
+                        </h4>
+                        <span class="text-[10px] text-slate-400">Click doctor to learn more</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <template x-for="doc in recommendedDoctors" :key="doc.title">
+                            <button @click="activeDoctorModal = doc" 
+                                    :class="doctorMode ? 'bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800' : 'bg-slate-900/80 hover:bg-slate-800 border-white/10 text-slate-200'" 
+                                    class="w-full text-left p-3 rounded-xl border transition duration-200 cursor-pointer flex items-center justify-between group shadow-sm">
+                                <div>
+                                    <p class="text-xs font-bold group-hover:text-sky-400 transition" x-text="doc.title"></p>
+                                    <p class="text-[10px] text-slate-400" x-text="doc.subtitle"></p>
+                                </div>
+                                <span class="text-sky-400 text-xs font-bold group-hover:translate-x-1 transition-transform">View Info →</span>
+                            </button>
+                        </template>
                     </div>
                 </div>
             </section>
-
         </div>
     </main>
 
     <footer class="py-4 border-t text-center text-[11px] text-slate-500 transition-colors duration-300"
             :class="doctorMode ? 'border-slate-200 bg-white/50' : 'border-white/5 bg-slate-950/50'">
-        PulsePlot AI Telemetry Console &bull; Optimized for Standard US Consultation Workflows
+        PulsePlot AI Health Tracker &bull; Designed for simple symptom tracking & doctor consultations
     </footer>
 
     <script>
         document.addEventListener('alpine:init', () => {
-            // Supabase Config - Insert your project parameters or pull dynamically
             const SUPABASE_URL = window.SUPABASE_URL || "https://your-supabase-project.supabase.co";
-            const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "your-supabase-anon-key";
-            const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+            const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "your-anon-key";
+            
+            let supabaseClient = null;
+            if (SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes("your-supabase")) {
+                try {
+                    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                } catch(e) {
+                    console.error("Supabase client init error:", e);
+                }
+            }
 
             Alpine.data('pulseApp', () => ({
-                // Auth States
                 user: null,
                 session: null,
-                authTab: 'login', // 'login' or 'signup'
+                authTab: 'login',
                 authEmail: '',
                 authPassword: '',
-                authLoading: false,
                 authError: '',
                 authSuccess: '',
+                authLoading: false,
 
-                // Console Data
+                doctorMode: false,
+                activeDoctorModal: null,
+
+                // Profile State
+                showProfileModal: false,
+                profileMenuOpen: false,
+                profile: {
+                    firstName: '',
+                    lastName: '',
+                    birthday: '',
+                    height: '',
+                    weight: '',
+                    gender: '',
+                    medicalNotes: '',
+                    completedOnboarding: false
+                },
+
                 days: [],
+                logs: {},
                 selectedDay: null,
                 severity: 5,
                 symptoms: [],
-                lifestyle: { sleep: 7, stress: 4, weather: 'Clear' },
-                logs: {},
-                doctorMode: false,
+                notes: '',
+                isRecording: false,
+                recognition: null,
                 loading: false,
                 briefResult: '',
-                activeEngine: 'openai/gpt-oss-120b',
-                presetSymptoms: ['Migraine', 'Nausea', 'Fatigue', 'Joint Pain', 'Brain Fog', 'Insomnia', 'Anxiety'],
-                
-                async init() {
-                    this.generateMonthGrid();
+                recommendedDoctors: [],
+                presetSymptoms: ['Headache', 'Migraine', 'Fatigue', 'Joint Pain', 'Nausea', 'Brain Fog', 'Insomnia', 'Anxiety', 'Stomach Pain'],
 
-                    // Check and monitor Supabase Authentication state
+                async init() {
+                    this.generateCalendarDays();
                     if (supabaseClient) {
-                        const { data } = await supabaseClient.auth.getSession();
-                        this.session = data.session;
-                        this.user = data.session?.user || null;
+                        const { data: { session } } = await supabaseClient.auth.getSession();
+                        this.session = session;
+                        this.user = session?.user || null;
+                        if (this.user) {
+                            this.loadUserProfile();
+                        }
 
                         supabaseClient.auth.onAuthStateChange((_event, session) => {
                             this.session = session;
                             this.user = session?.user || null;
+                            if (this.user) {
+                                this.loadUserProfile();
+                            } else {
+                                this.profile = {
+                                    firstName: '',
+                                    lastName: '',
+                                    birthday: '',
+                                    height: '',
+                                    weight: '',
+                                    gender: '',
+                                    medicalNotes: '',
+                                    completedOnboarding: false
+                                };
+                            }
                         });
+                    }
+                    this.initSpeech();
+                },
+
+                loadUserProfile() {
+                    if (!this.user) return;
+                    try {
+                        const stored = localStorage.getItem('pulseplot_profile_' + this.user.id);
+                        if (stored) {
+                            this.profile = { ...this.profile, ...JSON.parse(stored) };
+                        }
+                        if (!this.profile.completedOnboarding || !this.profile.firstName) {
+                            this.showProfileModal = true;
+                        }
+                    } catch (e) {
+                        console.error("Failed to load user profile", e);
+                        this.showProfileModal = true;
+                    }
+                },
+
+                saveProfile() {
+                    if (!this.profile.firstName || !this.profile.firstName.trim()) {
+                        alert("Please enter at least your first name.");
+                        return;
+                    }
+                    this.profile.completedOnboarding = true;
+                    if (this.user) {
+                        localStorage.setItem('pulseplot_profile_' + this.user.id, JSON.stringify(this.profile));
+                    }
+                    this.showProfileModal = false;
+                },
+
+                generateCalendarDays() {
+                    const daysArr = [];
+                    const year = 2026;
+                    const month = 6; // July (0-indexed)
+                    const daysInJuly = 31;
+                    for (let i = 1; i <= daysInJuly; i++) {
+                        const d = new Date(year, month, i);
+                        const dateStr = `2026-07-${String(i).padStart(2, '0')}`;
+                        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+                        daysArr.push({
+                            dayNum: i,
+                            dateStr: dateStr,
+                            dayName: dayName,
+                            formattedDate: `July ${i}, 2026`
+                        });
+                    }
+                    this.days = daysArr;
+                    this.selectedDay = daysArr[0];
+                    this.loadDayFromLog(daysArr[0].dateStr);
+                },
+
+                loadDayFromLog(dateStr) {
+                    if (this.logs[dateStr]) {
+                        this.severity = this.logs[dateStr].severity || 5;
+                        this.symptoms = [...(this.logs[dateStr].symptoms || [])];
+                        this.notes = this.logs[dateStr].notes || '';
+                    } else {
+                        this.severity = 5;
+                        this.symptoms = [];
+                        this.notes = '';
+                    }
+                },
+
+                saveCurrentLog() {
+                    if (!this.selectedDay) return;
+                    const dateStr = this.selectedDay.dateStr;
+                    this.logs[dateStr] = {
+                        severity: parseInt(this.severity),
+                        symptoms: [...this.symptoms],
+                        notes: this.notes
+                    };
+                },
+
+                injectMockTimeline() {
+                    const mockLogs = {};
+                    const symList = ['Migraine', 'Fatigue', 'Joint Pain', 'Brain Fog', 'Insomnia', 'Anxiety', 'Nausea', 'Stomach Pain'];
+                    this.days.forEach((d, idx) => {
+                        if (idx % 2 === 0 || idx % 3 === 0) {
+                            const sev = Math.floor(Math.random() * 8) + 2;
+                            const chosenSyms = [symList[idx % symList.length]];
+                            if (sev > 6) chosenSyms.push(symList[(idx + 2) % symList.length]);
+                            let noteStr = "";
+                            if (sev >= 7) noteStr = "Experienced sharp flare-up after stressful afternoon and humidity shift.";
+                            else if (sev >= 4) noteStr = "Mild discomfort during morning, improved after rest.";
+                            else noteStr = "Feeling relatively baseline, mild fatigue.";
+                            mockLogs[d.dateStr] = {
+                                severity: sev,
+                                symptoms: chosenSyms,
+                                notes: noteStr
+                            };
+                        }
+                    });
+                    this.logs = mockLogs;
+                    if (this.selectedDay) {
+                        this.loadDayFromLog(this.selectedDay.dateStr);
+                    }
+                },
+
+                initSpeech() {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (SpeechRecognition) {
+                        this.recognition = new SpeechRecognition();
+                        this.recognition.continuous = false;
+                        this.recognition.interimResults = false;
+                        this.recognition.lang = 'en-US';
+
+                        this.recognition.onresult = (event) => {
+                            const transcript = event.results[0][0].transcript;
+                            this.notes = this.notes ? `${this.notes} ${transcript}` : transcript;
+                            this.saveCurrentLog();
+                            this.isRecording = false;
+                        };
+
+                        this.recognition.onerror = () => {
+                            this.isRecording = false;
+                        };
+
+                        this.recognition.onend = () => {
+                            this.isRecording = false;
+                        };
+                    }
+                },
+
+                toggleSpeechRecognition() {
+                    if (!this.recognition) {
+                        alert("Speech recognition is not supported in this browser. Please type your notes.");
+                        return;
+                    }
+                    if (this.isRecording) {
+                        this.recognition.stop();
+                        this.isRecording = false;
+                    } else {
+                        try {
+                            this.recognition.start();
+                            this.isRecording = true;
+                        } catch(e) {
+                            console.error(e);
+                        }
                     }
                 },
 
@@ -602,6 +922,7 @@
                         if (error) throw error;
                         this.user = data.user;
                         this.session = data.session;
+                        this.loadUserProfile();
                     } catch (err) {
                         this.authError = err.message || 'Failed signing in.';
                     } finally {
@@ -628,6 +949,7 @@
                         } else {
                             this.user = data.user;
                             this.session = data.session;
+                            this.loadUserProfile();
                         }
                     } catch (err) {
                         this.authError = err.message || 'Failed creating account.';
@@ -646,9 +968,7 @@
                     try {
                         const { error } = await supabaseClient.auth.signInWithOAuth({
                             provider: 'google',
-                            options: {
-                                redirectTo: window.location.origin
-                            }
+                            options: { redirectTo: window.location.origin }
                         });
                         if (error) throw error;
                     } catch (err) {
@@ -663,38 +983,23 @@
                     }
                     this.user = null;
                     this.session = null;
+                    this.profile = {
+                        firstName: '',
+                        lastName: '',
+                        birthday: '',
+                        height: '',
+                        weight: '',
+                        gender: '',
+                        medicalNotes: '',
+                        completedOnboarding: false
+                    };
                 },
 
-                // CHRONO LOGGING CORE LOGIC
-                generateMonthGrid() {
-                    let daysArr = [];
-                    for(let i = 1; i <= 31; i++) {
-                        let padded = i.toString().padStart(2, '0');
-                        daysArr.push({
-                            dayNum: i,
-                            dateStr: `2026-07-${padded}`,
-                            formattedDate: `07/${padded}/2026`
-                        });
-                    }
-                    this.days = daysArr;
-                    this.selectedDay = daysArr[24] || daysArr[0];
-                    this.loadDayFromLog(this.selectedDay.dateStr);
-                },
-                loadDayFromLog(dateStr) {
-                    if (this.logs[dateStr]) {
-                        this.severity = this.logs[dateStr].severity;
-                        this.symptoms = [...this.logs[dateStr].symptoms];
-                        this.lifestyle = { ...this.logs[dateStr].lifestyle };
-                    } else {
-                        this.severity = 5;
-                        this.symptoms = [];
-                        this.lifestyle = { sleep: 7, stress: 4, weather: 'Clear' };
-                    }
-                },
                 selectDay(dayObj) {
                     this.selectedDay = dayObj;
                     this.loadDayFromLog(dayObj.dateStr);
                 },
+
                 toggleSymptom(sym) {
                     if(this.symptoms.includes(sym)) {
                         this.symptoms = this.symptoms.filter(s => s !== sym);
@@ -703,12 +1008,14 @@
                     }
                     this.saveCurrentLog();
                 },
+
                 getEmojiExpression(sev) {
-                    if (sev <= 2) return '😊 Normal';
-                    if (sev <= 5) return '😐 Mild Discomfort';
-                    if (sev <= 8) return '😟 Moderate Pain';
+                    if (sev <= 2) return '😊 Normal / Mild';
+                    if (sev <= 5) return '😐 Moderate Pain';
+                    if (sev <= 8) return '😟 High Pain';
                     return '😫 Severe Flare';
                 },
+
                 getThermalBorder(dateStr) {
                     if (!this.logs[dateStr]) {
                         return this.doctorMode ? 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-400' : 'border-white/5 bg-slate-900/40 hover:bg-white/10 text-slate-500';
@@ -716,106 +1023,69 @@
                     let sev = this.logs[dateStr].severity;
                     if (sev <= 3) return 'border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20';
                     if (sev <= 7) return 'border-amber-500/60 bg-amber-500/15 text-amber-600 dark:text-amber-300 ring-1 ring-amber-500/20';
-                    return 'border-rose-500/90 bg-rose-500/20 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/40';
+                    return 'border-rose-500/90 bg-rose-500/20 text-rose-600 dark:text-rose-400 ring-1 ring-rose-500/30';
                 },
-                saveCurrentLog() {
-                    if(!this.selectedDay) return;
-                    this.logs[this.selectedDay.dateStr] = {
-                        severity: parseInt(this.severity),
-                        symptoms: [...this.symptoms],
-                        lifestyle: { ...this.lifestyle }
-                    };
-                },
-                injectMockTimeline() {
-                    let generatedLogs = {};
-                    this.days.forEach((d, index) => {
-                        if (index % 5 === 0) {
-                            generatedLogs[d.dateStr] = {
-                                severity: Math.floor(Math.random() * 3) + 8, 
-                                symptoms: ['Migraine', 'Nausea'],
-                                lifestyle: { sleep: 4, stress: 8, weather: 'Barometric Drop' }
-                            };
-                        } else if (index % 3 === 0) {
-                            generatedLogs[d.dateStr] = {
-                                severity: Math.floor(Math.random() * 3) + 4, 
-                                symptoms: ['Fatigue', 'Brain Fog'],
-                                lifestyle: { sleep: 6, stress: 6, weather: 'Humid' }
-                            };
-                        } else {
-                            if (Math.random() > 0.3) {
-                                generatedLogs[d.dateStr] = {
-                                    severity: Math.floor(Math.random() * 2) + 1,
-                                    symptoms: [],
-                                    lifestyle: { sleep: 8, stress: 2, weather: 'Clear' }
-                                };
-                            }
-                        }
-                    });
-                    this.logs = generatedLogs;
-                    if(this.selectedDay) {
-                        this.loadDayFromLog(this.selectedDay.dateStr);
+
+                async generateSynthesis() {
+                    if (Object.keys(this.logs).length === 0) {
+                        alert("Please click on calendar days and add symptoms or severity before generating a synthesis.");
+                        return;
                     }
-                },
-                async requestClinicalSynthesis() {
                     this.loading = true;
                     this.briefResult = '';
                     try {
-                        let res = await fetch('/api/synthesize', { 
+                        const res = await fetch('/api/synthesize', {
                             method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
+                            headers: {
+                                'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ logs: this.logs })
+                            body: JSON.stringify({
+                                logs: this.logs,
+                                profile: this.profile
+                            })
                         });
-                        
-                        let data = await res.json();
-                        if(res.ok && data.brief) {
+                        const data = await res.json();
+                        if (data.status === 'success') {
                             this.briefResult = data.brief;
-                            this.activeEngine = data.engine || 'openai/gpt-oss-120b';
+                            this.recommendedDoctors = data.recommended_doctors || [];
                         } else {
-                            this.briefResult = `### Data Mapping Error\n* **Detail**: ${data.error || 'The micro-framework returned an unformatted data response stack.'}`;
+                            this.briefResult = `**Error Generating Brief**: ${data.error || 'Unknown server error'}`;
                         }
-                    } catch(e) {
-                        this.briefResult = '### Connection Refused\n* **Detail**: Failed connecting to serverless clinical reasoning engine. Verify execution instances are operational.';
+                    } catch (err) {
+                        this.briefResult = '**Network Error**: Unable to connect to synthesis engine. Check network connection.';
                     } finally {
                         this.loading = false;
                     }
                 },
+
                 renderMarkdown(text) {
                     if(!text) return '';
                     let html = text
                         .replace(/&/g, '&amp;')
                         .replace(/</g, '&lt;')
                         .replace(/>/g, '&gt;');
-                    
-                    // Format structural layout configurations
                     html = html.replace(/^### (.*$)/gim, '<h4 class="text-xs font-bold text-sky-400 dark:text-sky-400 mt-4 mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1">$1</h4>');
                     html = html.replace(/^## (.*$)/gim, '<h3 class="text-sm font-bold text-slate-200 mt-4 mb-2">$1</h3>');
-                    
-                    // Bold tags
                     html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-amber-400 font-semibold">$1</strong>');
-                    
-                    // Clean structural markdown table headers/lines safely
                     html = html.replace(/^\|[-|]*\|$/gim, '');
                     html = html.replace(/^\| text-.*$/gim, '');
                     html = html.replace(/^\| (Element|Component) \| Summary \|/gim, '');
-                    
-                    // Format custom data table rows
                     html = html.replace(/^\| (.*?) \| (.*?) \|/gim, '<div class="flex justify-between bg-white/5 border border-white/5 px-2.5 py-1 rounded my-0.5"><span class="text-slate-400">$1</span><span class="text-white font-mono font-bold">$2</span></div>');
-                    
-                    // Bullet layouts
                     html = html.replace(/^\* (.*$)/gim, '<div class="pl-3 py-0.5 text-[11px] flex items-start"><span class="text-sky-400 mr-2">•</span><span>$1</span></div>');
-                    
-                    // Remove remaining stray table column bars
                     html = html.replace(/\|/g, '');
                     
                     return html.replace(/\n/g, '<div class="h-1"></div>');
                 },
-                exportMarkdownBrief() {
-                    if(!this.briefResult) return;
-                    navigator.clipboard.writeText(this.briefResult);
-                    alert('Clinical brief copied to clipboard in clean Markdown format.');
+
+                exportMarkdown() {
+                    if (!this.briefResult) return;
+                    const blob = new Blob([this.briefResult], { type: 'text/markdown;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `PulsePlot_Health_Summary_${new Date().toISOString().split('T')[0]}.md`;
+                    a.click();
+                    URL.revokeObjectURL(url);
                 }
             }));
         });
