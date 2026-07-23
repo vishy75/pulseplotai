@@ -1,0 +1,13 @@
+# Security tokens and local environment configurations
+.env
+.env.local
+
+# Python runtime artifact exclusions
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Deployment provider metadata directories
+.vercel/

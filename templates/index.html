@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulsePlot AI - Dynamic Clinical Matrix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <script>
+        window.SUPABASE_URL = "{{ supabase_url }}";
+        window.SUPABASE_ANON_KEY = "{{ supabase_anon_key }}";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        :root {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Glassmorphism & Cyber Dark Styles */
+        .glass-panel-dark {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+        
+        .glass-panel-light {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .glow-border {
+            position: relative;
+        }
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(244, 63, 94, 0.4), rgba(129, 140, 248, 0.4));
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+        .glow-border:hover::before {
+            opacity: 1;
+        }
+
+        /* Feature Focus Zoom Animations */
+        .zoom-feature-card {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+        }
+        .zoom-feature-card:hover {
+            transform: scale(1.025) translateY(-2px);
+        }
+
+        .zoom-day-block {
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, background-color 0.2s ease;
+        }
+        .zoom-day-block:hover {
+            transform: scale(1.12);
+            z-index: 20;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.4);
+        }
+
+        /* Background Grid Pattern */
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .bg-grid-pattern-light {
+            background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
+      x-data="pulseApp"
+      :class="doctorMode ? 'bg-slate-100 text-slate-900 bg-grid-pattern-light' : 'bg-[#090d16] text-slate-100 bg-grid-pattern'">
+
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl opacity-20 transition-colors duration-500"
+             :class="doctorMode ? 'bg-sky-400' : 'bg-rose-600'"></div>
+        <div class="absolute top-1/3 -right-40 w-96 h-96 rounded-full blur-3xl opacity-20 transition-colors duration-500"
+             :class="doctorMode ? 'bg-indigo-300' : 'bg-indigo-600'"></div>
+    </div>
+
+    <div x-show="!user" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        <div class="w-full max-w-md glass-panel-dark glow-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <div class="text-center space-y-2">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-indigo-600 text-white shadow-lg shadow-rose-500/30 mb-2">
+                    <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-extrabold tracking-tight text-white">Welcome to PulsePlot AI</h2>
+                <p class="text-xs text-slate-400">Authenticate to access your clinical health telemetry workspace.</p>
+            </div>
+
+            <button @click="signInWithGoogle()" 
+                    :disabled="authLoading"
+                    class="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3 px-4 rounded-xl text-xs transition duration-200 cursor-pointer flex items-center justify-center gap-3 shadow-md hover:scale-[1.01] active:scale-[0.99]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Continue with Google</span>
+            </button>
+
+            <div class="flex items-center my-4">
+                <div class="grow border-t border-white/10"></div>
+                <span class="px-3 text-[10px] text-slate-500 uppercase tracking-widest font-mono">Or Email & Password</span>
+                <div class="grow border-t border-white/10"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-1 p-1 bg-slate-900/80 rounded-xl border border-white/10 text-xs font-semibold">
+                <button @click="authTab = 'login'; authError = ''; authSuccess = ''" 
+                        :class="authTab === 'login' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
+                        class="py-2 rounded-lg transition duration-200 cursor-pointer">Sign In</button>
+                <button @click="authTab = 'signup'; authError = ''; authSuccess = ''" 
+                        :class="authTab === 'signup' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
+                        class="py-2 rounded-lg transition duration-200 cursor-pointer">Sign Up</button>
+            </div>
+
+            <form @submit.prevent="authTab === 'login' ? handleSignIn() : handleSignUp()" class="space-y-4">
+                <div class="space-y-1 text-left">
+                    <label class="text-[11px] font-semibold text-slate-300">Email Address</label>
+                    <input type="email" required x-model="authEmail" placeholder="patient@example.com"
+                           class="w-full bg-slate-900/90 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="space-y-1 text-left">
+                    <label class="text-[11px] font-semibold text-slate-300">Password</label>
+                    <input type="password" required x-model="authPassword" placeholder="••••••••"
+                           class="w-full bg-slate-900/90 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <div x-show="authError" class="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs" x-text="authError"></div>
+                <div x-show="authSuccess" class="p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs" x-text="authSuccess"></div>
+
+                <button type="submit" :disabled="authLoading"
+                        class="w-full bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl text-xs transition duration-200 cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2">
+                    <span x-show="authLoading" class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    <span x-text="authTab === 'login' ? 'Sign In to Workspace' : 'Create Supabase Account'"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-300 px-6 py-3.5"
+            :class="doctorMode ? 'bg-white/80 border-slate-200 text-slate-900 shadow-sm' : 'bg-[#090d16]/80 border-white/10 text-white'">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            
+            <div class="flex items-center space-x-3">
+                <div class="relative flex items-center justify-center w-8 h-8 rounded-xl"
+                     :class="doctorMode ? 'bg-sky-600 text-white' : 'bg-gradient-to-tr from-rose-500 to-indigo-600 text-white shadow-lg shadow-rose-500/20'">
+                    <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold tracking-tight flex items-center gap-2">
+                        PulsePlot <span class="text-transparent bg-clip-text" :class="doctorMode ? 'bg-gradient-to-r from-sky-600 to-indigo-600' : 'bg-gradient-to-r from-rose-400 via-indigo-400 to-sky-400'">AI</span>
+                        <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 tracking-normal">v2.4 Live</span>
+                    </h1>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                <button @click="injectMockTimeline()" 
+                        :class="doctorMode ? 'bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-300 hover:border-sky-400' : 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border-indigo-500/30 hover:border-indigo-400/50 hover:shadow-indigo-500/10'"
+                        class="text-xs border px-3.5 py-2 rounded-xl transition-all duration-200 cursor-pointer font-semibold flex items-center gap-2 shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+                    <svg class="w-3.5 h-3.5 text-amber-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span>Inject 30-Day Mock Trend</span>
+                </button>
+
+                <span :class="doctorMode ? 'bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-900/80 text-slate-400 border-white/10'" 
+                      class="text-[11px] px-3 py-2 rounded-xl uppercase tracking-wider font-mono font-medium border hidden md:inline-block">
+                    US Standard Format
+                </span>
+
+                <template x-if="user">
+                    <div class="flex items-center gap-2 pl-2 border-l border-white/10">
+                        <span class="text-xs font-mono text-sky-400 max-w-[120px] truncate" x-text="user.email"></span>
+                        <button @click="handleSignOut()" 
+                                class="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 transition cursor-pointer">
+                            Sign Out
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </header>
+
+    <main x-show="user" class="p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto flex flex-col gap-6 grow z-10">
+        
+        <section class="zoom-feature-card rounded-2xl p-6 relative overflow-hidden transition-all duration-300"
+                 :class="doctorMode ? 'glass-panel-light border-slate-300' : 'glass-panel-dark glow-border'">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+                <div class="space-y-2 max-w-2xl">
+                    <div class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider"
+                         :class="doctorMode ? 'bg-sky-100 text-sky-800' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                        Clinical Telemetry Workspace
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                        Precision Health Tracking & AI SOAP Synthesis
+                    </h2>
+                    <p class="text-xs sm:text-sm leading-relaxed" :class="doctorMode ? 'text-slate-600' : 'text-slate-400'">
+                        Click any calendar cell to zoom in on daily symptom vectors, severity indexes, and weather triggers. Synthesize longitudinal data into structured clinical brief charts for practitioner review.
+                    </p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+                    <button @click="doctorMode = !doctorMode" 
+                            :class="doctorMode ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-lg shadow-sky-600/30' : 'bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white shadow-lg shadow-indigo-500/20'"
+                            class="px-5 py-3 rounded-xl text-xs font-bold tracking-wide border border-white/20 transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 hover:scale-[1.03] active:scale-[0.97]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <span x-text="doctorMode ? '↩️ Switch to Patient Standard Mode' : '🔬 Switch to 30-Sec Doctor Mode'"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                <div class="space-y-1">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Total Logged Days</span>
+                    <p class="text-xl font-mono font-bold" x-text="Object.keys(logs).length + ' Days'"></p>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Active Flare Alert</span>
+                    <p class="text-xl font-mono font-bold text-rose-500" x-text="Object.values(logs).filter(l => l.severity >= 7).length + ' Spikes'"></p>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Focus Target Date</span>
+                    <p class="text-xl font-mono font-bold text-sky-400" x-text="selectedDay ? selectedDay.formattedDate : 'None'"></p>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-400">Inference Engine</span>
+                    <p class="text-xs font-mono font-bold text-emerald-400 truncate pt-1" x-text="activeEngine"></p>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-6 grow items-start">
+            
+            <section :class="doctorMode ? 'glass-panel-light' : 'glass-panel-dark'" 
+                     class="rounded-2xl p-6 flex flex-col justify-between overflow-hidden transition-all duration-300 space-y-6">
+                
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                        <div>
+                            <h2 class="text-base font-bold tracking-tight" :class="doctorMode ? 'text-slate-900' : 'text-white'">
+                                Dynamic Chrono-Logger Matrix
+                            </h2>
+                            <p class="text-xs" :class="doctorMode ? 'text-slate-500' : 'text-slate-400'">
+                                Click on any day to inspect or log pain metrics and lifestyle factors.
+                            </p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold" 
+                              :class="doctorMode ? 'bg-slate-200 text-slate-700' : 'bg-slate-800 text-slate-300'">
+                            July 2026
+                        </span>
+                    </div>
+
+                    <div x-show="doctorMode" class="bg-slate-50 border border-slate-300 rounded-xl p-5 space-y-3 animate-fadeIn">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-sky-700 uppercase tracking-widest flex items-center gap-2">
+                                <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                High-Density Practitioner Timeline View
+                            </h4>
+                            <span class="text-[10px] font-mono text-slate-500">Fast Scan Mode</span>
+                        </div>
+                        <div class="text-xs space-y-1.5 max-h-60 overflow-y-auto custom-scrollbar pr-2 text-slate-800">
+                            <template x-for="d in days" :key="d.dateStr">
+                                <template x-if="logs[d.dateStr]">
+                                    <div class="flex justify-between items-center border-b border-slate-200 py-1.5 px-2 rounded hover:bg-slate-100 transition">
+                                        <span class="font-mono font-bold text-slate-700" x-text="d.formattedDate"></span>
+                                        <div class="flex space-x-4 items-center">
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold"
+                                                  :class="logs[d.dateStr].severity >= 7 ? 'text-rose-700 bg-rose-100' : 'text-slate-700 bg-slate-200'"
+                                                  x-text="'Severity: ' + logs[d.dateStr].severity"></span>
+                                            <span class="text-slate-900 font-medium max-w-xs truncate" x-text="logs[d.dateStr].symptoms.join(', ') || 'No symptoms'"></span>
+                                            <span class="text-slate-500 text-[11px]" x-text="'Sleep: ' + logs[d.dateStr].lifestyle.sleep + 'h | ' + logs[d.dateStr].lifestyle.weather"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 gap-3">
+                        <template x-for="d in days" :key="d.dateStr">
+                            <button @click="selectDay(d)"
+                                    :class="getThermalBorder(d.dateStr) + (selectedDay?.dateStr === d.dateStr ? ' ring-2 ring-sky-400 border-sky-400 scale-110 shadow-xl shadow-sky-500/20 z-30' : '')"
+                                    class="zoom-day-block h-16 rounded-xl flex flex-col justify-between p-2 text-left relative cursor-pointer font-sans border backdrop-blur-md">
+                                <div class="flex justify-between items-center w-full">
+                                    <span class="text-xs font-extrabold" x-text="d.dayNum"></span>
+                                    <div x-show="logs[d.dateStr]?.symptoms.length > 0" class="w-2 h-2 bg-rose-500 rounded-full shadow-sm shadow-rose-500"></div>
+                                </div>
+                                <div class="flex justify-between items-end w-full">
+                                    <span class="text-[10px] font-mono tracking-tighter font-extrabold" x-text="logs[d.dateStr] ? 'S:' + logs[d.dateStr].severity : ''"></span>
+                                    <span class="text-[9px] opacity-60 font-mono" x-text="logs[d.dateStr] ? logs[d.dateStr].lifestyle.sleep + 'h' : ''"></span>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div x-show="selectedDay" 
+                         :class="doctorMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/60 border-white/10 glow-border'"
+                         class="border rounded-2xl p-5 space-y-5 transition-all duration-300">
+                        
+                        <div class="flex justify-between items-center border-b pb-3" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-sky-400"></div>
+                                <span class="text-xs font-bold uppercase tracking-wider">
+                                    <span :class="doctorMode ? 'text-slate-900':'text-white'">Focus Date Log Entry:</span> 
+                                    <span class="font-mono text-sky-400 font-bold ml-1" x-text="selectedDay?.formattedDate"></span>
+                                </span>
+                            </div>
+                            <span class="text-[11px] text-slate-400 font-mono">Auto-Saved</span>
+                        </div>
+
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                    Symptom Intensity Vector (1-10):
+                                </span>
+                                <span class="font-bold font-mono px-2.5 py-0.5 rounded-lg text-xs" 
+                                      :class="doctorMode ? 'bg-slate-200 text-slate-800' : 'bg-slate-800 text-amber-400 border border-amber-400/20'" 
+                                      x-text="severity + ' / 10'"></span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <input type="range" min="1" max="10" x-model="severity" @input="saveCurrentLog()"
+                                       class="w-full h-2.5 rounded-lg appearance-none cursor-pointer accent-sky-500 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-600 shadow-inner">
+                                <span class="text-xs font-bold shrink-0 min-w-[120px] text-right" 
+                                      :class="doctorMode ? 'text-slate-700' : 'text-slate-300'" 
+                                      x-text="getEmojiExpression(severity)"></span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M11 7h.01M11 11h.01M11 15h.01M15 7h.01M15 11h.01M15 15h.01"/>
+                                </svg>
+                                Co-occurring Symptom Clusters:
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="sym in presetSymptoms" :key="sym">
+                                    <button @click="toggleSymptom(sym)"
+                                            :class="symptoms.includes(sym) ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white border-sky-400 shadow-md shadow-sky-500/20 scale-105' : (doctorMode ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100' : 'bg-slate-800/80 border-white/10 text-slate-400 hover:text-white hover:bg-slate-800')"
+                                            class="px-3 py-1.5 rounded-xl text-xs border transition-all duration-200 font-medium cursor-pointer flex items-center gap-1"
+                                            x-text="sym"></button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-extrabold uppercase tracking-wider opacity-70">Sleep Duration</label>
+                                <select x-model="lifestyle.sleep" @change="saveCurrentLog()" 
+                                        :class="doctorMode ? 'bg-white border-slate-300 text-slate-800' : 'bg-slate-800 border-white/10 text-slate-200'"
+                                        class="w-full border rounded-xl p-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                    <template x-for="h in [4,5,6,7,8,9,10]"><option :value="h" x-text="h + ' Hours'"></option></template>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-extrabold uppercase tracking-wider opacity-70">Stress Index</label>
+                                <select x-model="lifestyle.stress" @change="saveCurrentLog()" 
+                                        :class="doctorMode ? 'bg-white border-slate-300 text-slate-800' : 'bg-slate-800 border-white/10 text-slate-200'"
+                                        class="w-full border rounded-xl p-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                    <template x-for="s in [1,2,3,4,5,6,7,8,9,10]"><option :value="s" x-text="'Level ' + s"></option></template>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-extrabold uppercase tracking-wider opacity-70">Weather Context</label>
+                                <select x-model="lifestyle.weather" @change="saveCurrentLog()" 
+                                        :class="doctorMode ? 'bg-white border-slate-300 text-slate-800' : 'bg-slate-800 border-white/10 text-slate-200'"
+                                        class="w-full border rounded-xl p-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                    <option value="Clear">☀️ Stable</option>
+                                    <option value="Rainy">🌧️ Storm</option>
+                                    <option value="Humid">🌫️ Humid</option>
+                                    <option value="Barometric Drop">📉 Pressure Drop</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="flex flex-col gap-6 overflow-hidden h-full">
+                <div :class="doctorMode ? 'glass-panel-light text-slate-900' : 'glass-panel-dark text-slate-100'" 
+                     class="rounded-2xl p-6 flex flex-col justify-between h-full transition-all duration-300 space-y-4">
+                    
+                    <div class="space-y-4 flex flex-col grow overflow-hidden">
+                        <div class="flex justify-between items-center border-b pb-3" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                            <h3 class="text-xs font-extrabold tracking-widest uppercase flex items-center gap-2" :class="doctorMode ? 'text-sky-800' : 'text-sky-400'">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                                </svg>
+                                Clinical Brief Generator
+                            </h3>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">SOAP Matrix</span>
+                        </div>
+                        
+                        <div :class="doctorMode ? 'bg-slate-50 border-slate-200 text-slate-900' : 'bg-slate-900/60 border-white/10 text-slate-300'" 
+                             class="border rounded-2xl p-5 text-xs grow overflow-y-auto custom-scrollbar flex flex-col justify-between transition-all duration-300 min-h-[360px]">
+                            
+                            <div x-show="Object.keys(logs).length === 0 && !loading && !briefResult" class="text-center my-auto space-y-3 p-4">
+                                <div class="w-12 h-12 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto border border-indigo-500/20">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <p class="font-bold text-slate-300 text-sm">Awaiting Timeline Matrix Data</p>
+                                <p class="text-[11px] text-slate-400 max-w-xs mx-auto">
+                                    Log calendar values or click 'Inject 30-Day Mock Trend Data' to generate structured medical briefs.
+                                </p>
+                            </div>
+
+                            <div x-show="loading" class="space-y-4 animate-pulse my-auto w-full p-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3 h-3 bg-sky-400 rounded-full animate-ping"></div>
+                                    <div class="h-3 bg-slate-400/20 rounded w-1/3"></div>
+                                </div>
+                                <div class="space-y-2 pt-2">
+                                    <div class="h-2.5 bg-slate-400/10 rounded w-full"></div>
+                                    <div class="h-2.5 bg-slate-400/10 rounded w-5/6"></div>
+                                    <div class="h-2.5 bg-slate-400/10 rounded w-4/5"></div>
+                                    <div class="h-2.5 bg-slate-400/10 rounded w-2/3"></div>
+                                </div>
+                                <p class="text-[11px] text-sky-400 font-mono text-center pt-4">Structuring clinical datasets for your practitioner...</p>
+                            </div>
+
+                            <div x-show="briefResult && !loading" class="space-y-3 overflow-y-auto pr-1 text-left w-full custom-scrollbar">
+                                <div class="flex justify-between items-center border-b pb-2 text-[9px] uppercase font-mono tracking-wider text-slate-400"
+                                     :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                                    <span>Engine Optimization:</span>
+                                    <span class="text-emerald-400 font-bold" x-text="activeEngine"></span>
+                                </div>
+                                <div class="text-[11.5px] leading-relaxed font-sans space-y-2 transition-colors duration-200"
+                                     :class="doctorMode ? 'text-slate-800' : 'text-slate-300'"
+                                     x-html="renderMarkdown(briefResult)"></div>
+                            </div>
+
+                            <div x-show="Object.keys(logs).length > 0 && !loading && !briefResult" class="my-auto text-center space-y-2 p-4">
+                                <div class="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                                <p class="text-emerald-400 font-bold text-xs">Telemetry Matrix Ready (<span x-text="Object.keys(logs).length"></span> Days Logged)</p>
+                                <p class="text-slate-400 text-[11px] max-w-xs mx-auto">
+                                    Data is safely tracked in local storage structure. Click below to synthesize SOAP output.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t space-y-2 shrink-0" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                        <template x-if="!briefResult || loading">
+                            <button @click="requestClinicalSynthesis()"
+                                    :disabled="Object.keys(logs).length === 0 || loading"
+                                    :class="Object.keys(logs).length > 0 && !loading ? (doctorMode ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-lg shadow-sky-600/30 hover:scale-[1.01]' : 'bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.01]') : (doctorMode ? 'bg-slate-200 text-slate-400 border-slate-300 border cursor-not-allowed' : 'bg-slate-900 text-slate-600 border-white/5 cursor-not-allowed border')"
+                                    class="w-full font-bold py-3.5 rounded-xl text-xs transition-all duration-200 cursor-pointer text-center uppercase tracking-wider flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                Synthesize Clinical Data Brief
+                            </button>
+                        </template>
+                        
+                        <template x-if="briefResult && !loading">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button @click="requestClinicalSynthesis()" 
+                                        :class="doctorMode ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700' : 'bg-slate-800 hover:bg-slate-700 border-white/10 text-slate-200'"
+                                        class="border font-bold py-3 rounded-xl text-xs transition duration-200 cursor-pointer text-center uppercase tracking-wide flex items-center justify-center gap-1.5">
+                                    <span>🔄</span> Re-Synthesize
+                                </button>
+                                <button @click="exportMarkdownBrief()" 
+                                        :class="doctorMode ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-sm' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20'"
+                                        class="font-bold py-3 rounded-xl text-xs transition duration-200 cursor-pointer text-center uppercase tracking-wide flex items-center justify-center gap-1.5">
+                                    <span>📋</span> Copy Brief
+                                </button>
+                            </div>
+                        </template>
+                        <p class="text-[9.5px] text-slate-500 text-center leading-tight">
+                            Objective processing pipeline explicitly designed for rapid consultation review loops.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="py-4 border-t text-center text-[11px] text-slate-500 transition-colors duration-300"
+            :class="doctorMode ? 'border-slate-200 bg-white/50' : 'border-white/5 bg-slate-950/50'">
+        PulsePlot AI Telemetry Console &bull; Optimized for Standard US Consultation Workflows
+    </footer>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            // Supabase Config - Insert your project parameters or pull dynamically
+            const SUPABASE_URL = window.SUPABASE_URL || "https://your-supabase-project.supabase.co";
+            const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "your-supabase-anon-key";
+            const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+            Alpine.data('pulseApp', () => ({
+                // Auth States
+                user: null,
+                session: null,
+                authTab: 'login', // 'login' or 'signup'
+                authEmail: '',
+                authPassword: '',
+                authLoading: false,
+                authError: '',
+                authSuccess: '',
+
+                // Console Data
+                days: [],
+                selectedDay: null,
+                severity: 5,
+                symptoms: [],
+                lifestyle: { sleep: 7, stress: 4, weather: 'Clear' },
+                logs: {},
+                doctorMode: false,
+                loading: false,
+                briefResult: '',
+                activeEngine: 'openai/gpt-oss-120b',
+                presetSymptoms: ['Migraine', 'Nausea', 'Fatigue', 'Joint Pain', 'Brain Fog', 'Insomnia', 'Anxiety'],
+                
+                async init() {
+                    this.generateMonthGrid();
+
+                    // Check and monitor Supabase Authentication state
+                    if (supabaseClient) {
+                        const { data } = await supabaseClient.auth.getSession();
+                        this.session = data.session;
+                        this.user = data.session?.user || null;
+
+                        supabaseClient.auth.onAuthStateChange((_event, session) => {
+                            this.session = session;
+                            this.user = session?.user || null;
+                        });
+                    }
+                },
+
+                // AUTH HANDLERS
+                async handleSignIn() {
+                    if (!supabaseClient) {
+                        this.authError = "Supabase client unconfigured. Check API key parameters.";
+                        return;
+                    }
+                    this.authLoading = true;
+                    this.authError = '';
+                    this.authSuccess = '';
+                    try {
+                        const { data, error } = await supabaseClient.auth.signInWithPassword({
+                            email: this.authEmail,
+                            password: this.authPassword,
+                        });
+                        if (error) throw error;
+                        this.user = data.user;
+                        this.session = data.session;
+                    } catch (err) {
+                        this.authError = err.message || 'Failed signing in.';
+                    } finally {
+                        this.authLoading = false;
+                    }
+                },
+
+                async handleSignUp() {
+                    if (!supabaseClient) {
+                        this.authError = "Supabase client unconfigured. Check API key parameters.";
+                        return;
+                    }
+                    this.authLoading = true;
+                    this.authError = '';
+                    this.authSuccess = '';
+                    try {
+                        const { data, error } = await supabaseClient.auth.signUp({
+                            email: this.authEmail,
+                            password: this.authPassword,
+                        });
+                        if (error) throw error;
+                        if (data.user && !data.session) {
+                            this.authSuccess = "Account created! Check your email to verify your address.";
+                        } else {
+                            this.user = data.user;
+                            this.session = data.session;
+                        }
+                    } catch (err) {
+                        this.authError = err.message || 'Failed creating account.';
+                    } finally {
+                        this.authLoading = false;
+                    }
+                },
+
+                async signInWithGoogle() {
+                    if (!supabaseClient) {
+                        this.authError = "Supabase client unconfigured. Check API key parameters.";
+                        return;
+                    }
+                    this.authLoading = true;
+                    this.authError = '';
+                    try {
+                        const { error } = await supabaseClient.auth.signInWithOAuth({
+                            provider: 'google',
+                            options: {
+                                redirectTo: window.location.origin
+                            }
+                        });
+                        if (error) throw error;
+                    } catch (err) {
+                        this.authError = err.message || 'Google Authentication failed.';
+                        this.authLoading = false;
+                    }
+                },
+
+                async handleSignOut() {
+                    if (supabaseClient) {
+                        await supabaseClient.auth.signOut();
+                    }
+                    this.user = null;
+                    this.session = null;
+                },
+
+                // CHRONO LOGGING CORE LOGIC
+                generateMonthGrid() {
+                    let daysArr = [];
+                    for(let i = 1; i <= 31; i++) {
+                        let padded = i.toString().padStart(2, '0');
+                        daysArr.push({
+                            dayNum: i,
+                            dateStr: `2026-07-${padded}`,
+                            formattedDate: `07/${padded}/2026`
+                        });
+                    }
+                    this.days = daysArr;
+                    this.selectedDay = daysArr[24] || daysArr[0];
+                    this.loadDayFromLog(this.selectedDay.dateStr);
+                },
+                loadDayFromLog(dateStr) {
+                    if (this.logs[dateStr]) {
+                        this.severity = this.logs[dateStr].severity;
+                        this.symptoms = [...this.logs[dateStr].symptoms];
+                        this.lifestyle = { ...this.logs[dateStr].lifestyle };
+                    } else {
+                        this.severity = 5;
+                        this.symptoms = [];
+                        this.lifestyle = { sleep: 7, stress: 4, weather: 'Clear' };
+                    }
+                },
+                selectDay(dayObj) {
+                    this.selectedDay = dayObj;
+                    this.loadDayFromLog(dayObj.dateStr);
+                },
+                toggleSymptom(sym) {
+                    if(this.symptoms.includes(sym)) {
+                        this.symptoms = this.symptoms.filter(s => s !== sym);
+                    } else {
+                        this.symptoms.push(sym);
+                    }
+                    this.saveCurrentLog();
+                },
+                getEmojiExpression(sev) {
+                    if (sev <= 2) return '😊 Normal';
+                    if (sev <= 5) return '😐 Mild Discomfort';
+                    if (sev <= 8) return '😟 Moderate Pain';
+                    return '😫 Severe Flare';
+                },
+                getThermalBorder(dateStr) {
+                    if (!this.logs[dateStr]) {
+                        return this.doctorMode ? 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-400' : 'border-white/5 bg-slate-900/40 hover:bg-white/10 text-slate-500';
+                    }
+                    let sev = this.logs[dateStr].severity;
+                    if (sev <= 3) return 'border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20';
+                    if (sev <= 7) return 'border-amber-500/60 bg-amber-500/15 text-amber-600 dark:text-amber-300 ring-1 ring-amber-500/20';
+                    return 'border-rose-500/90 bg-rose-500/20 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/40';
+                },
+                saveCurrentLog() {
+                    if(!this.selectedDay) return;
+                    this.logs[this.selectedDay.dateStr] = {
+                        severity: parseInt(this.severity),
+                        symptoms: [...this.symptoms],
+                        lifestyle: { ...this.lifestyle }
+                    };
+                },
+                injectMockTimeline() {
+                    let generatedLogs = {};
+                    this.days.forEach((d, index) => {
+                        if (index % 5 === 0) {
+                            generatedLogs[d.dateStr] = {
+                                severity: Math.floor(Math.random() * 3) + 8, 
+                                symptoms: ['Migraine', 'Nausea'],
+                                lifestyle: { sleep: 4, stress: 8, weather: 'Barometric Drop' }
+                            };
+                        } else if (index % 3 === 0) {
+                            generatedLogs[d.dateStr] = {
+                                severity: Math.floor(Math.random() * 3) + 4, 
+                                symptoms: ['Fatigue', 'Brain Fog'],
+                                lifestyle: { sleep: 6, stress: 6, weather: 'Humid' }
+                            };
+                        } else {
+                            if (Math.random() > 0.3) {
+                                generatedLogs[d.dateStr] = {
+                                    severity: Math.floor(Math.random() * 2) + 1,
+                                    symptoms: [],
+                                    lifestyle: { sleep: 8, stress: 2, weather: 'Clear' }
+                                };
+                            }
+                        }
+                    });
+                    this.logs = generatedLogs;
+                    if(this.selectedDay) {
+                        this.loadDayFromLog(this.selectedDay.dateStr);
+                    }
+                },
+                async requestClinicalSynthesis() {
+                    this.loading = true;
+                    this.briefResult = '';
+                    try {
+                        let res = await fetch('/api/synthesize', { 
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ logs: this.logs })
+                        });
+                        
+                        let data = await res.json();
+                        if(res.ok && data.brief) {
+                            this.briefResult = data.brief;
+                            this.activeEngine = data.engine || 'openai/gpt-oss-120b';
+                        } else {
+                            this.briefResult = `### Data Mapping Error\n* **Detail**: ${data.error || 'The micro-framework returned an unformatted data response stack.'}`;
+                        }
+                    } catch(e) {
+                        this.briefResult = '### Connection Refused\n* **Detail**: Failed connecting to serverless clinical reasoning engine. Verify execution instances are operational.';
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                renderMarkdown(text) {
+                    if(!text) return '';
+                    let html = text
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                    
+                    // Format structural layout configurations
+                    html = html.replace(/^### (.*$)/gim, '<h4 class="text-xs font-bold text-sky-400 dark:text-sky-400 mt-4 mb-1.5 uppercase tracking-wider border-b border-white/10 pb-1">$1</h4>');
+                    html = html.replace(/^## (.*$)/gim, '<h3 class="text-sm font-bold text-slate-200 mt-4 mb-2">$1</h3>');
+                    
+                    // Bold tags
+                    html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-amber-400 font-semibold">$1</strong>');
+                    
+                    // Clean structural markdown table headers/lines safely
+                    html = html.replace(/^\|[-|]*\|$/gim, '');
+                    html = html.replace(/^\| text-.*$/gim, '');
+                    html = html.replace(/^\| (Element|Component) \| Summary \|/gim, '');
+                    
+                    // Format custom data table rows
+                    html = html.replace(/^\| (.*?) \| (.*?) \|/gim, '<div class="flex justify-between bg-white/5 border border-white/5 px-2.5 py-1 rounded my-0.5"><span class="text-slate-400">$1</span><span class="text-white font-mono font-bold">$2</span></div>');
+                    
+                    // Bullet layouts
+                    html = html.replace(/^\* (.*$)/gim, '<div class="pl-3 py-0.5 text-[11px] flex items-start"><span class="text-sky-400 mr-2">•</span><span>$1</span></div>');
+                    
+                    // Remove remaining stray table column bars
+                    html = html.replace(/\|/g, '');
+                    
+                    return html.replace(/\n/g, '<div class="h-1"></div>');
+                },
+                exportMarkdownBrief() {
+                    if(!this.briefResult) return;
+                    navigator.clipboard.writeText(this.briefResult);
+                    alert('Clinical brief copied to clipboard in clean Markdown format.');
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
