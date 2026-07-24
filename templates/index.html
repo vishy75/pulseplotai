@@ -621,10 +621,10 @@
             </div>
 
             <div class="grid grid-cols-2 gap-1 p-1 bg-slate-900/80 rounded-xl border border-white/10 text-xs font-semibold">
-                <button @click="authTab = 'login'; authError = ''; authSuccess = ''" 
+                <button @click="authTab = 'login'; authError = ''; authSuccess = ''; authPasswordVisible = false" 
                         :class="authTab === 'login' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
                         class="py-2 rounded-lg transition duration-200 cursor-pointer">Sign In</button>
-                <button @click="authTab = 'signup'; authError = ''; authSuccess = ''" 
+                <button @click="authTab = 'signup'; authError = ''; authSuccess = ''; authPasswordVisible = false" 
                         :class="authTab === 'signup' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
                         class="py-2 rounded-lg transition duration-200 cursor-pointer">Sign Up</button>
             </div>
@@ -637,8 +637,46 @@
                 </div>
                 <div class="space-y-1 text-left">
                     <label class="text-[11px] font-semibold text-slate-300">Password</label>
-                    <input type="password" required x-model="authPassword" placeholder="••••••••"
-                           class="w-full bg-slate-900/90 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <div class="relative">
+                        <input :type="authPasswordVisible ? 'text' : 'password'"
+                               required
+                               x-model="authPassword"
+                               placeholder="••••••••"
+                               class="w-full bg-slate-900/90 border border-white/10 rounded-xl pl-3.5 pr-11 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <button type="button"
+                                @click="authPasswordVisible = !authPasswordVisible"
+                                :aria-label="authPasswordVisible ? 'Hide password' : 'Show password'"
+                                :title="authPasswordVisible ? 'Hide password' : 'Show password'"
+                                class="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-slate-400 hover:text-sky-300 focus:outline-none focus:text-sky-300 transition-colors cursor-pointer">
+                            <svg x-show="!authPasswordVisible"
+                                 class="w-4.5 h-4.5"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <svg x-show="authPasswordVisible"
+                                 x-cloak
+                                 class="w-4.5 h-4.5"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M3 3l18 18M10.585 10.587a2 2 0 002.828 2.828M9.878 5.09A9.96 9.96 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.978 9.978 0 01-1.273 2.592M6.61 6.61C4.783 7.835 3.397 9.73 2.458 12c1.274 4.057 5.065 7 9.542 7a9.96 9.96 0 004.39-1.017"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div x-show="authError" class="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs" x-text="authError"></div>
@@ -1128,6 +1166,7 @@
                 authTab: 'login',
                 authEmail: '',
                 authPassword: '',
+                authPasswordVisible: false,
                 authError: '',
                 authSuccess: '',
                 authLoading: false,
