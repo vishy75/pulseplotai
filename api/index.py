@@ -243,5 +243,5 @@ def health_check():
         "auth_provider": "Supabase" if supabase_client else "Unconfigured"
     })
 
-if __name__ ==  '__main__':
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
