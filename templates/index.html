@@ -667,19 +667,29 @@
                 <div>
                     <h1 class="text-lg font-extrabold tracking-tight flex items-center gap-2">
                         PulsePlot <span class="text-transparent bg-clip-text" :class="doctorMode ? 'bg-gradient-to-r from-sky-600 to-indigo-600' : 'bg-gradient-to-r from-rose-400 via-indigo-400 to-sky-400'">AI</span>
-                        <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 tracking-normal">v2.4 Live</span>
                     </h1>
                 </div>
             </div>
 
             <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
-                <button @click="injectMockTimeline()" 
+                <button x-show="!sampleDataActive"
+                        @click="injectMockTimeline()" 
                         :class="doctorMode ? 'bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-300 hover:border-sky-400' : 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border-indigo-500/30 hover:border-indigo-400/50 hover:shadow-indigo-500/10'"
                         class="text-xs border px-3.5 py-2 rounded-xl transition-all duration-200 cursor-pointer font-semibold flex items-center gap-2 shadow-sm hover:scale-[1.02] active:scale-[0.98]">
                     <svg class="w-3.5 h-3.5 text-amber-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
                     <span>Load 30-Day Sample Data</span>
+                </button>
+
+                <button x-show="sampleDataActive"
+                        @click="resetSampleData()"
+                        :class="doctorMode ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border-amber-500/30'"
+                        class="text-xs border px-3.5 py-2 rounded-xl transition-all duration-200 cursor-pointer font-semibold flex items-center gap-2 shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h11a4 4 0 010 8H9m-6-8l4-4m-4 4l4 4"/>
+                    </svg>
+                    <span>Restore My Data</span>
                 </button>
 
                 <span :class="doctorMode ? 'bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-900/80 text-slate-400 border-white/10'" 
@@ -880,7 +890,7 @@
                             <h3 class="text-xs font-bold uppercase tracking-widest text-sky-400 flex items-center gap-2">
                                 📅 Logging for <span x-text="selectedDay?.formattedDate" class="text-white underline decoration-sky-500"></span>
                             </h3>
-                            <span class="text-[10px] font-mono text-slate-400">Auto-saves as you update</span>
+                            <span class="text-[10px] font-mono text-slate-400" x-text="sampleDataActive ? 'Sample preview • not saved' : (persistenceStatus || 'Auto-saves as you update')"></span>
                         </div>
 
                         <div class="space-y-2">
@@ -1011,9 +1021,13 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
                             </div>
-                            <p class="text-emerald-400 font-bold text-xs">Calendar Logged (<span x-text="Object.keys(logs).length"></span> Days)</p>
-                            <p class="text-slate-400 text-[11px] max-w-xs mx-auto">
-                                Your data is saved. Generate the report to review possible explanations, rough likelihood estimates, and follow-up questions.
+                            <p class="font-bold text-xs" :class="sampleDataActive ? 'text-amber-400' : 'text-emerald-400'">
+                                <span x-text="sampleDataActive ? 'Sample Calendar Preview' : 'Calendar Logged'"></span>
+                                (<span x-text="Object.keys(logs).length"></span> Days)
+                            </p>
+                            <p class="text-slate-400 text-[11px] max-w-xs mx-auto" x-text="sampleDataActive
+                                ? 'This sample is temporary and is not saved. Use Restore My Data to return to your original calendar.'
+                                : 'Your data is saved automatically. Generate the report to review possible explanations, rough likelihood estimates, and follow-up questions.'">
                             </p>
                         </div>
                     </div>
@@ -1160,6 +1174,10 @@
                 briefResult: '',
                 recommendedDoctors: [],
                 presetSymptoms: ['Headache', 'Migraine', 'Fatigue', 'Joint Pain', 'Nausea', 'Brain Fog', 'Insomnia', 'Anxiety', 'Stomach Pain'],
+                sampleDataActive: false,
+                originalLogsBeforeSample: null,
+                cloudSaveTimer: null,
+                persistenceStatus: '',
 
                 async init() {
                     // Always open on the user's current local month and select today's date.
@@ -1172,16 +1190,16 @@
 
                         if (this.user) {
                             this.loadUserProfile();
-                            this.loadUserLogs();
+                            await this.loadUserLogs();
                         }
 
-                        supabaseClient.auth.onAuthStateChange((_event, session) => {
+                        supabaseClient.auth.onAuthStateChange(async (_event, session) => {
                             this.session = session;
                             this.user = session?.user || null;
 
                             if (this.user) {
                                 this.loadUserProfile();
-                                this.loadUserLogs();
+                                await this.loadUserLogs();
                             } else {
                                 this.profile = {
                                     firstName: '',
@@ -1333,50 +1351,125 @@
                     this.changeCalendarMonth(1);
                 },
 
-                loadUserLogs() {
+                async loadUserLogs() {
                     if (!this.user) {
                         this.logs = {};
                         return;
                     }
 
+                    this.sampleDataActive = false;
+                    this.originalLogsBeforeSample = null;
+                    this.persistenceStatus = 'Loading saved calendar…';
+
+                    let localLogs = {};
                     try {
                         const storageKey = this.getUserLogsStorageKey();
-                        const storedLogs = storageKey
-                            ? localStorage.getItem(storageKey)
-                            : null;
-
-                        const parsedLogs = storedLogs
-                            ? JSON.parse(storedLogs)
-                            : {};
-
-                        this.logs = parsedLogs && typeof parsedLogs === 'object'
+                        const storedLogs = storageKey ? localStorage.getItem(storageKey) : null;
+                        const parsedLogs = storedLogs ? JSON.parse(storedLogs) : {};
+                        localLogs = parsedLogs && typeof parsedLogs === 'object' && !Array.isArray(parsedLogs)
                             ? parsedLogs
                             : {};
-
-                        if (this.selectedDay) {
-                            this.loadDayFromLog(this.selectedDay.dateStr);
-                        }
                     } catch (e) {
-                        console.error("Failed to load saved symptom logs", e);
-                        this.logs = {};
+                        console.error("Failed to load local symptom logs", e);
+                    }
 
-                        if (this.selectedDay) {
-                            this.loadDayFromLog(this.selectedDay.dateStr);
+                    if (supabaseClient && this.session) {
+                        try {
+                            const { data, error } = await supabaseClient
+                                .from('patient_calendar_data')
+                                .select('logs')
+                                .eq('user_id', this.user.id)
+                                .maybeSingle();
+
+                            if (error) throw error;
+
+                            const cloudLogs = data?.logs;
+                            if (cloudLogs && typeof cloudLogs === 'object' && !Array.isArray(cloudLogs)) {
+                                this.logs = cloudLogs;
+                                this.cacheLogsLocally(cloudLogs);
+                                this.persistenceStatus = 'Calendar loaded from your account';
+                            } else {
+                                this.logs = localLogs;
+                                if (Object.keys(localLogs).length > 0) {
+                                    await this.persistUserLogs({ immediate: true });
+                                } else {
+                                    this.persistenceStatus = 'Calendar ready';
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Failed to load cloud symptom logs", e);
+                            this.logs = localLogs;
+                            this.persistenceStatus = 'Using this device until cloud sync is available';
                         }
+                    } else {
+                        this.logs = localLogs;
+                        this.persistenceStatus = 'Saved on this device';
+                    }
+
+                    if (this.selectedDay) {
+                        this.loadDayFromLog(this.selectedDay.dateStr);
                     }
                 },
 
-                persistUserLogs() {
+                cacheLogsLocally(logsToCache = this.logs) {
                     if (!this.user) return;
-
                     try {
                         const storageKey = this.getUserLogsStorageKey();
                         if (storageKey) {
-                            localStorage.setItem(storageKey, JSON.stringify(this.logs));
+                            localStorage.setItem(storageKey, JSON.stringify(logsToCache));
                         }
                     } catch (e) {
-                        console.error("Failed to save symptom logs", e);
+                        console.error("Failed to cache symptom logs locally", e);
                     }
+                },
+
+                async syncLogsToCloud(logSnapshot) {
+                    if (!supabaseClient || !this.user || !this.session || this.sampleDataActive) return;
+
+                    this.persistenceStatus = 'Saving calendar…';
+                    try {
+                        const { error } = await supabaseClient
+                            .from('patient_calendar_data')
+                            .upsert({
+                                user_id: this.user.id,
+                                logs: logSnapshot,
+                                updated_at: new Date().toISOString()
+                            }, { onConflict: 'user_id' });
+
+                        if (error) throw error;
+                        this.persistenceStatus = 'Calendar saved to your account';
+                    } catch (e) {
+                        console.error("Failed to save cloud symptom logs", e);
+                        this.persistenceStatus = 'Saved on this device; cloud sync failed';
+                    }
+                },
+
+                async persistUserLogs({ immediate = false } = {}) {
+                    if (!this.user || this.sampleDataActive) return;
+
+                    const logSnapshot = JSON.parse(JSON.stringify(this.logs));
+                    this.cacheLogsLocally(logSnapshot);
+
+                    if (!supabaseClient || !this.session) {
+                        this.persistenceStatus = 'Saved on this device';
+                        return;
+                    }
+
+                    if (this.cloudSaveTimer) {
+                        clearTimeout(this.cloudSaveTimer);
+                        this.cloudSaveTimer = null;
+                    }
+
+                    if (immediate) {
+                        await this.syncLogsToCloud(logSnapshot);
+                        return;
+                    }
+
+                    this.persistenceStatus = 'Saving calendar…';
+                    this.cloudSaveTimer = setTimeout(() => {
+                        this.cloudSaveTimer = null;
+                        this.syncLogsToCloud(logSnapshot);
+                    }, 500);
                 },
 
                 loadDayFromLog(dateStr) {
@@ -1393,6 +1486,10 @@
 
                 saveCurrentLog() {
                     if (!this.selectedDay) return;
+                    if (this.sampleDataActive) {
+                        this.persistenceStatus = 'Sample data is temporary; restore your data before editing';
+                        return;
+                    }
 
                     const dateStr = this.selectedDay.dateStr;
                     this.logs[dateStr] = {
@@ -1405,6 +1502,10 @@
                 },
 
                 injectMockTimeline() {
+                    if (!this.sampleDataActive) {
+                        this.originalLogsBeforeSample = JSON.parse(JSON.stringify(this.logs));
+                    }
+
                     const mockLogs = {};
                     const symList = ['Migraine', 'Fatigue', 'Joint Pain', 'Brain Fog', 'Insomnia', 'Anxiety', 'Nausea', 'Stomach Pain'];
                     this.days.forEach((d, idx) => {
@@ -1434,8 +1535,23 @@
                         ...nextLogs,
                         ...mockLogs
                     };
+                    this.sampleDataActive = true;
+                    this.persistenceStatus = 'Sample data is temporary and has not been saved';
 
-                    this.persistUserLogs();
+                    if (this.selectedDay) {
+                        this.loadDayFromLog(this.selectedDay.dateStr);
+                    }
+                },
+
+                resetSampleData() {
+                    if (!this.sampleDataActive) return;
+
+                    this.logs = this.originalLogsBeforeSample
+                        ? JSON.parse(JSON.stringify(this.originalLogsBeforeSample))
+                        : {};
+                    this.sampleDataActive = false;
+                    this.originalLogsBeforeSample = null;
+                    this.persistenceStatus = 'Your saved calendar has been restored';
 
                     if (this.selectedDay) {
                         this.loadDayFromLog(this.selectedDay.dateStr);
@@ -1503,7 +1619,7 @@
                         this.user = data.user;
                         this.session = data.session;
                         this.loadUserProfile();
-                        this.loadUserLogs();
+                        await this.loadUserLogs();
                     } catch (err) {
                         this.authError = err.message || 'Failed signing in.';
                     } finally {
@@ -1531,7 +1647,7 @@
                             this.user = data.user;
                             this.session = data.session;
                             this.loadUserProfile();
-                            this.loadUserLogs();
+                            await this.loadUserLogs();
                         }
                     } catch (err) {
                         this.authError = err.message || 'Failed creating account.';
@@ -1576,6 +1692,13 @@
                         completedOnboarding: false
                     };
                     this.logs = {};
+                    this.sampleDataActive = false;
+                    this.originalLogsBeforeSample = null;
+                    this.persistenceStatus = '';
+                    if (this.cloudSaveTimer) {
+                        clearTimeout(this.cloudSaveTimer);
+                        this.cloudSaveTimer = null;
+                    }
                     this.briefResult = '';
                     this.recommendedDoctors = [];
                     this.synthesisEngine = '';
