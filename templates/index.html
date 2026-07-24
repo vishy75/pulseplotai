@@ -431,10 +431,32 @@
                                 Click on any day to record how you feel and add notes.
                             </p>
                         </div>
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold" 
-                              :class="doctorMode ? 'bg-slate-200 text-slate-700' : 'bg-slate-800 text-slate-300'">
-                            July 2026
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <button type="button"
+                                    @click="goToPreviousMonth()"
+                                    aria-label="Go to previous month"
+                                    title="Previous month"
+                                    :class="doctorMode ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-white/10'"
+                                    class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <span class="min-w-[112px] text-center px-2.5 py-1.5 rounded-lg text-xs font-mono font-semibold"
+                                  :class="doctorMode ? 'bg-slate-200 text-slate-700' : 'bg-slate-800 text-slate-300'"
+                                  x-text="calendarMonthLabel">
+                            </span>
+                            <button type="button"
+                                    @click="goToNextMonth()"
+                                    aria-label="Go to next month"
+                                    title="Next month"
+                                    :class="doctorMode ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-white/10'"
+                                    class="w-8 h-8 rounded-lg border flex items-center justify-center transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <div x-show="doctorMode" class="bg-slate-50 border border-slate-300 rounded-xl p-5 space-y-3 animate-fadeIn">
@@ -721,6 +743,8 @@
                     completedOnboarding: false
                 },
 
+                // Calendar and timeline state
+                calendarDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
                 days: [],
                 logs: {},
                 selectedDay: null,
@@ -735,20 +759,26 @@
                 presetSymptoms: ['Headache', 'Migraine', 'Fatigue', 'Joint Pain', 'Nausea', 'Brain Fog', 'Insomnia', 'Anxiety', 'Stomach Pain'],
 
                 async init() {
-                    this.generateCalendarDays();
+                    // Always open on the user's current local month and select today's date.
+                    this.openCalendarOnToday();
+
                     if (supabaseClient) {
                         const { data: { session } } = await supabaseClient.auth.getSession();
                         this.session = session;
                         this.user = session?.user || null;
+
                         if (this.user) {
                             this.loadUserProfile();
+                            this.loadUserLogs();
                         }
 
                         supabaseClient.auth.onAuthStateChange((_event, session) => {
                             this.session = session;
                             this.user = session?.user || null;
+
                             if (this.user) {
                                 this.loadUserProfile();
+                                this.loadUserLogs();
                             } else {
                                 this.profile = {
                                     firstName: '',
@@ -760,9 +790,12 @@
                                     medicalNotes: '',
                                     completedOnboarding: false
                                 };
+                                this.logs = {};
+                                this.openCalendarOnToday();
                             }
                         });
                     }
+
                     this.initSpeech();
                 },
 
@@ -794,25 +827,148 @@
                     this.showProfileModal = false;
                 },
 
-                generateCalendarDays() {
+                get calendarMonthLabel() {
+                    return this.calendarDate.toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                },
+
+                getUserLogsStorageKey() {
+                    if (!this.user) return '';
+                    return 'pulseplot_logs_' + this.user.id;
+                },
+
+                formatDateKey(date) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                },
+
+                openCalendarOnToday() {
+                    const today = new Date();
+                    this.calendarDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    this.generateCalendarDays({
+                        preferredDateStr: this.formatDateKey(today),
+                        preferredDayNumber: today.getDate()
+                    });
+                },
+
+                generateCalendarDays(options = {}) {
+                    const {
+                        preferredDateStr = '',
+                        preferredDayNumber = null
+                    } = options;
+
                     const daysArr = [];
-                    const year = 2026;
-                    const month = 6; // July (0-indexed)
-                    const daysInJuly = 31;
-                    for (let i = 1; i <= daysInJuly; i++) {
-                        const d = new Date(year, month, i);
-                        const dateStr = `2026-07-${String(i).padStart(2, '0')}`;
-                        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+                    const year = this.calendarDate.getFullYear();
+                    const month = this.calendarDate.getMonth();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                    for (let i = 1; i <= daysInMonth; i++) {
+                        const date = new Date(year, month, i);
                         daysArr.push({
                             dayNum: i,
-                            dateStr: dateStr,
-                            dayName: dayName,
-                            formattedDate: `July ${i}, 2026`
+                            dateStr: this.formatDateKey(date),
+                            dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                            formattedDate: date.toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric'
+                            })
                         });
                     }
+
                     this.days = daysArr;
-                    this.selectedDay = daysArr[0];
-                    this.loadDayFromLog(daysArr[0].dateStr);
+
+                    let dayToSelect = preferredDateStr
+                        ? daysArr.find(day => day.dateStr === preferredDateStr)
+                        : null;
+
+                    if (!dayToSelect && preferredDayNumber !== null) {
+                        const clampedDayNumber = Math.min(
+                            Math.max(parseInt(preferredDayNumber, 10) || 1, 1),
+                            daysInMonth
+                        );
+                        dayToSelect = daysArr.find(day => day.dayNum === clampedDayNumber);
+                    }
+
+                    this.selectedDay = dayToSelect || daysArr[0] || null;
+
+                    if (this.selectedDay) {
+                        this.loadDayFromLog(this.selectedDay.dateStr);
+                    }
+                },
+
+                changeCalendarMonth(monthOffset) {
+                    const preferredDayNumber = this.selectedDay
+                        ? this.selectedDay.dayNum
+                        : 1;
+
+                    this.calendarDate = new Date(
+                        this.calendarDate.getFullYear(),
+                        this.calendarDate.getMonth() + monthOffset,
+                        1
+                    );
+
+                    this.generateCalendarDays({
+                        preferredDayNumber: preferredDayNumber
+                    });
+                },
+
+                goToPreviousMonth() {
+                    this.changeCalendarMonth(-1);
+                },
+
+                goToNextMonth() {
+                    this.changeCalendarMonth(1);
+                },
+
+                loadUserLogs() {
+                    if (!this.user) {
+                        this.logs = {};
+                        return;
+                    }
+
+                    try {
+                        const storageKey = this.getUserLogsStorageKey();
+                        const storedLogs = storageKey
+                            ? localStorage.getItem(storageKey)
+                            : null;
+
+                        const parsedLogs = storedLogs
+                            ? JSON.parse(storedLogs)
+                            : {};
+
+                        this.logs = parsedLogs && typeof parsedLogs === 'object'
+                            ? parsedLogs
+                            : {};
+
+                        if (this.selectedDay) {
+                            this.loadDayFromLog(this.selectedDay.dateStr);
+                        }
+                    } catch (e) {
+                        console.error("Failed to load saved symptom logs", e);
+                        this.logs = {};
+
+                        if (this.selectedDay) {
+                            this.loadDayFromLog(this.selectedDay.dateStr);
+                        }
+                    }
+                },
+
+                persistUserLogs() {
+                    if (!this.user) return;
+
+                    try {
+                        const storageKey = this.getUserLogsStorageKey();
+                        if (storageKey) {
+                            localStorage.setItem(storageKey, JSON.stringify(this.logs));
+                        }
+                    } catch (e) {
+                        console.error("Failed to save symptom logs", e);
+                    }
                 },
 
                 loadDayFromLog(dateStr) {
@@ -829,12 +985,15 @@
 
                 saveCurrentLog() {
                     if (!this.selectedDay) return;
+
                     const dateStr = this.selectedDay.dateStr;
                     this.logs[dateStr] = {
                         severity: parseInt(this.severity),
                         symptoms: [...this.symptoms],
                         notes: this.notes
                     };
+
+                    this.persistUserLogs();
                 },
 
                 injectMockTimeline() {
@@ -856,7 +1015,20 @@
                             };
                         }
                     });
-                    this.logs = mockLogs;
+                    const nextLogs = { ...this.logs };
+
+                    // Preserve data from other months while replacing only the visible month's sample set.
+                    this.days.forEach((day) => {
+                        delete nextLogs[day.dateStr];
+                    });
+
+                    this.logs = {
+                        ...nextLogs,
+                        ...mockLogs
+                    };
+
+                    this.persistUserLogs();
+
                     if (this.selectedDay) {
                         this.loadDayFromLog(this.selectedDay.dateStr);
                     }
@@ -923,6 +1095,7 @@
                         this.user = data.user;
                         this.session = data.session;
                         this.loadUserProfile();
+                        this.loadUserLogs();
                     } catch (err) {
                         this.authError = err.message || 'Failed signing in.';
                     } finally {
@@ -950,6 +1123,7 @@
                             this.user = data.user;
                             this.session = data.session;
                             this.loadUserProfile();
+                            this.loadUserLogs();
                         }
                     } catch (err) {
                         this.authError = err.message || 'Failed creating account.';
@@ -993,6 +1167,8 @@
                         medicalNotes: '',
                         completedOnboarding: false
                     };
+                    this.logs = {};
+                    this.openCalendarOnToday();
                 },
 
                 selectDay(dayObj) {
