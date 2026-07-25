@@ -264,22 +264,26 @@ def select_fallback_possibilities(statistics):
     symptoms = set(statistics["symptom_counter"].keys())
     notes = statistics["combined_notes"]
 
-    minor_label = "Temporary lifestyle, sleep, hydration, stress, or routine-related symptom flare"
-    medium_label = "Persistent symptom pattern that should be reviewed by a primary-care clinician"
-    major_label = "Less common medical condition that cannot be excluded without an in-person evaluation"
+    minor_label = "Transient nonspecific symptom flare related to routine, sleep, hydration, stress, meals, or exertion"
+    medium_label = "Persistent nonspecific symptom syndrome requiring primary-care evaluation"
+    major_label = "An underlying medical condition that cannot be safely excluded without an in-person evaluation"
 
     if symptoms.intersection({'headache', 'migraine', 'brain fog'}) or 'dizzy' in notes:
-        medium_label = "Recurring headache or migraine-spectrum pattern"
-        major_label = "Neurologic or vascular condition requiring prompt assessment if warning signs are present"
+        minor_label = "Tension-type headache or a short-lived trigger-related headache"
+        medium_label = "Migraine or another recurrent primary headache disorder"
+        major_label = "A secondary neurologic or vascular headache condition"
     elif symptoms.intersection({'nausea', 'stomach pain'}) or any(term in notes for term in ['stomach', 'gut', 'bloating']):
-        medium_label = "Recurring digestive irritation or functional gastrointestinal pattern"
-        major_label = "Inflammatory, obstructive, bleeding, or other digestive condition requiring medical evaluation"
+        minor_label = "Indigestion, dietary irritation, or functional dyspepsia"
+        medium_label = "Gastroesophageal reflux disease, gastritis, or a functional bowel disorder"
+        major_label = "An inflammatory, obstructive, ulcer-related, or bleeding gastrointestinal condition"
     elif 'joint pain' in symptoms or any(term in notes for term in ['joint', 'stiff', 'swelling']):
-        medium_label = "Muscle, joint, overuse, or inflammatory pain pattern"
-        major_label = "Systemic inflammatory or neurologic condition requiring clinician assessment"
+        minor_label = "Muscle strain, overuse pain, or a temporary soft-tissue flare"
+        medium_label = "Osteoarthritis or another persistent musculoskeletal condition"
+        major_label = "An inflammatory autoimmune, neurologic, or systemic pain condition"
     elif symptoms.intersection({'insomnia', 'anxiety', 'fatigue'}):
-        medium_label = "Sleep and stress-related symptom amplification"
-        major_label = "Underlying medical, sleep, or mental-health condition contributing to persistent symptoms"
+        minor_label = "Temporary sleep disruption or stress-related fatigue"
+        medium_label = "Insomnia disorder or anxiety-related symptom amplification"
+        major_label = "Sleep apnea, an endocrine disorder, anemia, or another medical cause of persistent fatigue"
 
     high_day_ratio = (
         statistics["high_severity_count"] / statistics["total_days"]
@@ -347,17 +351,17 @@ def generate_fallback_synthesis(profile, statistics):
 * **Most Frequent Symptoms**: {symptom_frequency}
 
 ### 3. MINOR / LOWER-CONCERN POSSIBILITY — {possibilities['minor']['probability']}%
-* **Possible Explanation**: {possibilities['minor']['label']}.
+* **AI Condition Assessment (Not Confirmed)**: {possibilities['minor']['label']}.
 * **Why It May Fit**: Short-lived symptom changes commonly vary with sleep, hydration, stress, meals, exertion, and routine. Your entries do not provide an examination, vital signs, or laboratory data to confirm a cause.
 * **What Is Missing**: Duration of each episode, medication history, vital signs, physical examination findings, and relevant laboratory or imaging results.
 
 ### 4. MEDIUM / MODERATE-CONCERN POSSIBILITY — {possibilities['medium']['probability']}%
-* **Possible Explanation**: {possibilities['medium']['label']}.
+* **AI Condition Assessment (Not Confirmed)**: {possibilities['medium']['label']}.
 * **Why It May Fit**: Repeated symptoms across multiple logged days can indicate a recurring pattern rather than one isolated event. A clinician can compare timing, triggers, associated symptoms, and examination findings.
 * **What Is Missing**: A clinician interview, physical examination, and targeted testing needed to distinguish common causes from conditions needing treatment.
 
 ### 5. MAJOR / HIGHER-CONCERN POSSIBILITY — {possibilities['major']['probability']}%
-* **Possible Explanation**: {possibilities['major']['label']}.
+* **AI Condition Assessment (Not Confirmed)**: {possibilities['major']['label']}.
 * **Why It Is Included**: Higher pain levels or persistent symptoms sometimes need prompt evaluation, even when a serious cause is less likely. The tracker cannot safely rule out uncommon conditions.
 * **What Would Raise Concern**: Sudden or rapidly worsening symptoms, fainting, new weakness, confusion, severe chest or abdominal pain, trouble breathing, uncontrolled bleeding, or other major changes.
 
@@ -418,13 +422,13 @@ List name, date of birth/age, gender, height, weight, and medical background exa
 Give objective counts, date range, average and peak severity, high-severity days, common symptoms, and repeated patterns. Do not invent weather, laboratory, medication, or lifestyle information that was not entered.
 
 ### 3. MINOR / LOWER-CONCERN POSSIBILITY — NN%
-Give one plausible lower-concern possible explanation, not a confirmed diagnosis. Include: Possible Explanation, Why It May Fit, What Does Not Fit or Is Missing, and What to Discuss With a Clinician.
+Name one clear, specific suspected condition or clinically recognizable condition category under the exact field **AI Condition Assessment (Not Confirmed)**. Do not use only vague wording such as “symptom pattern” or “medical issue.” Then include: Why It May Fit, What Does Not Fit or Is Missing, and What to Discuss With a Clinician. The condition assessment is an AI-generated differential possibility, not a confirmed diagnosis.
 
 ### 4. MEDIUM / MODERATE-CONCERN POSSIBILITY — NN%
-Give one plausible moderate-concern possible explanation, not a confirmed diagnosis. Include the same four fields.
+Name one clear, specific suspected condition or clinically recognizable condition category under the exact field **AI Condition Assessment (Not Confirmed)**. Then include the same supporting, missing-evidence, and clinician-discussion fields. Do not present it as confirmed.
 
 ### 5. MAJOR / HIGHER-CONCERN POSSIBILITY — NN%
-Give one important higher-concern condition or category that cannot be safely ruled out from self-reported data. Include the same four fields and the specific red flags that would make urgent evaluation appropriate.
+Name one clear, important higher-concern condition or clinically recognizable condition category under the exact field **AI Condition Assessment (Not Confirmed)** that cannot be safely ruled out from self-reported data. Include the same supporting, missing-evidence, and clinician-discussion fields plus the specific red flags that would make urgent evaluation appropriate.
 
 The three percentages must be whole numbers that add to exactly 100. Describe them as rough, non-validated educational estimates based only on the entered data. Do not imply clinical certainty.
 
@@ -483,6 +487,14 @@ def validate_synthesis_result(synthesis_result):
     )
     if len(probability_matches) < 3:
         return False, "The report did not include all three required percentages."
+
+    condition_assessment_count = len(re.findall(
+        r"AI CONDITION ASSESSMENT\s*\(NOT CONFIRMED\)",
+        synthesis_result,
+        flags=re.IGNORECASE
+    ))
+    if condition_assessment_count < 3:
+        return False, "Each concern tier must include an AI Condition Assessment (Not Confirmed)."
 
     probabilities = [int(value) for value in probability_matches[:3]]
     if any(value < 0 or value > 100 for value in probabilities):
@@ -553,8 +565,10 @@ def synthesize_brief():
             try:
                 system_prompt = (
                     "You are a cautious Clinical AI Medical Education Assistant. Convert self-reported profile and symptom "
-                    "timeline data into a clear patient-facing report. You may offer possible explanations and rough educational "
-                    "likelihood estimates, but you must never present them as diagnoses or validated clinical probabilities. "
+                    "timeline data into a clear patient-facing report. For each lower-, moderate-, and higher-concern tier, "
+                    "name one clear suspected condition or clinically recognizable condition category under the label "
+                    "'AI Condition Assessment (Not Confirmed)'. You may offer rough educational likelihood estimates, but you "
+                    "must never present any condition as a confirmed diagnosis or any percentage as a validated clinical probability. "
                     "Use only the supplied data, explicitly identify missing evidence, and prioritize medical safety."
                 )
 
