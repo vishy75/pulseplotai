@@ -307,6 +307,49 @@
                         <div class="grow min-h-0 overflow-y-auto custom-scrollbar p-5 xl:p-6 space-y-6">
                             <section class="space-y-3">
                                 <div class="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="text-[10px] uppercase tracking-[0.22em] font-extrabold text-indigo-400">Chat History</p>
+                                        <h3 class="text-sm font-bold mt-1.5">Previous conversations</h3>
+                                    </div>
+                                    <button type="button"
+                                            @click="startNewChat()"
+                                            class="w-9 h-9 rounded-xl border flex items-center justify-center text-lg font-medium transition cursor-pointer"
+                                            :class="doctorMode ? 'bg-white hover:bg-indigo-50 border-slate-200 text-indigo-600' : 'bg-white/5 hover:bg-indigo-500/10 border-white/10 text-indigo-300'"
+                                            aria-label="Start a new follow-up conversation">+</button>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <template x-if="chatConversations.length === 0">
+                                        <div class="rounded-xl border px-3.5 py-4 text-[10px] leading-relaxed"
+                                             :class="doctorMode ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-white/[0.03] border-white/10 text-slate-400'">
+                                            Your saved conversations will appear here.
+                                        </div>
+                                    </template>
+
+                                    <template x-for="conversation in chatConversations" :key="conversation.id">
+                                        <div class="group flex items-center gap-1 rounded-xl border transition"
+                                             :class="conversation.id === activeChatId
+                                                ? (doctorMode ? 'bg-indigo-50 border-indigo-300' : 'bg-indigo-500/15 border-indigo-500/40')
+                                                : (doctorMode ? 'bg-white border-slate-200 hover:bg-slate-50' : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06]')">
+                                            <button type="button"
+                                                    @click="selectChatConversation(conversation.id)"
+                                                    class="min-w-0 grow text-left px-3 py-3 cursor-pointer">
+                                                <p class="text-[11px] font-bold truncate" x-text="conversation.title"></p>
+                                                <p class="text-[9px] mt-1 truncate"
+                                                   :class="doctorMode ? 'text-slate-500' : 'text-slate-400'"
+                                                   x-text="formatConversationDate(conversation.updatedAt)"></p>
+                                            </button>
+                                            <button type="button"
+                                                    @click.stop="deleteChatConversation(conversation.id)"
+                                                    class="w-8 h-8 mr-1 rounded-lg flex items-center justify-center text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer opacity-70 group-hover:opacity-100"
+                                                    aria-label="Delete conversation">×</button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </section>
+
+                            <section class="space-y-3">
+                                <div class="flex items-center justify-between gap-3">
                                     <p class="text-[10px] uppercase tracking-[0.22em] font-extrabold text-indigo-400">Report Context</p>
                                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                 </div>
@@ -415,6 +458,21 @@
                         <div class="lg:hidden shrink-0 px-4 sm:px-6 py-3 border-b overflow-x-auto custom-scrollbar"
                              :class="doctorMode ? 'bg-white/80 border-slate-200' : 'bg-slate-950/35 border-white/10'">
                             <div class="flex gap-2 min-w-max">
+                                <button type="button"
+                                        @click="startNewChat()"
+                                        class="rounded-full border px-3 py-2 text-[10px] font-bold whitespace-nowrap"
+                                        :class="doctorMode ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-indigo-500/15 border-indigo-500/30 text-indigo-300'">
+                                    + New chat
+                                </button>
+                                <template x-for="conversation in chatConversations.slice(0, 5)" :key="'mobile-' + conversation.id">
+                                    <button type="button"
+                                            @click="selectChatConversation(conversation.id)"
+                                            class="max-w-40 rounded-full border px-3 py-2 text-[10px] font-semibold whitespace-nowrap truncate"
+                                            :class="conversation.id === activeChatId
+                                                ? (doctorMode ? 'bg-indigo-100 border-indigo-300 text-indigo-800' : 'bg-indigo-500/20 border-indigo-400/50 text-indigo-200')
+                                                : (doctorMode ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-white/5 border-white/10 text-slate-300')"
+                                            x-text="conversation.title"></button>
+                                </template>
                                 <button type="button"
                                         @click="chatQuestion = 'What patterns in my symptom timeline are most important to discuss with my doctor?'"
                                         class="rounded-full border px-3 py-2 text-[10px] font-semibold whitespace-nowrap"
@@ -1345,6 +1403,8 @@
                 chatMessages: [],
                 chatLoading: false,
                 chatError: '',
+                chatConversations: [],
+                activeChatId: null,
 
                 // Profile State
                 showProfileModal: false,
@@ -1393,6 +1453,7 @@
                             this.loadUserProfile();
                             await this.loadUserLogs();
                         }
+                        this.loadChatConversations();
 
                         supabaseClient.auth.onAuthStateChange(async (_event, session) => {
                             this.session = session;
@@ -1402,6 +1463,7 @@
                             if (this.user) {
                                 this.loadUserProfile();
                                 await this.loadUserLogs();
+                                this.loadChatConversations();
                             } else {
                                 this.profile = {
                                     firstName: '',
@@ -1419,9 +1481,12 @@
                                 this.synthesisEngine = '';
                                 this.briefGeneratedAt = '';
                                 this.resetChatState();
+                                this.loadChatConversations();
                                 this.openCalendarOnToday();
                             }
                         });
+                    } else {
+                        this.loadChatConversations();
                     }
 
                     this.initSpeech();
@@ -1958,24 +2023,218 @@
                     this.generateSynthesis();
                 },
 
+                chatStorageKey() {
+                    const ownerId = this.user?.id || 'guest';
+                    return 'pulseplot_chat_history_' + ownerId;
+                },
+
+                createChatId() {
+                    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                        return window.crypto.randomUUID();
+                    }
+                    return 'chat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+                },
+
+                initialAssistantMessage() {
+                    return {
+                        role: 'assistant',
+                        content: 'Your AI report is ready. Ask me to explain a probability, compare the three concern tiers, summarize the evidence in simpler words, or help prepare questions for your clinician. I cannot confirm a diagnosis or change medication.'
+                    };
+                },
+
+                normalizeStoredConversation(conversation) {
+                    if (!conversation || typeof conversation !== 'object' || !conversation.id) return null;
+
+                    const messages = Array.isArray(conversation.messages)
+                        ? conversation.messages
+                            .filter(message => message && ['user', 'assistant'].includes(message.role) && typeof message.content === 'string')
+                            .slice(-100)
+                            .map(message => ({ role: message.role, content: message.content.slice(0, 12000) }))
+                        : [];
+
+                    return {
+                        id: String(conversation.id),
+                        title: typeof conversation.title === 'string' && conversation.title.trim()
+                            ? conversation.title.trim().slice(0, 80)
+                            : 'Health follow-up',
+                        messages: messages.length ? messages : [this.initialAssistantMessage()],
+                        brief: typeof conversation.brief === 'string' ? conversation.brief : '',
+                        logs: conversation.logs && typeof conversation.logs === 'object' ? conversation.logs : {},
+                        profile: conversation.profile && typeof conversation.profile === 'object' ? conversation.profile : {},
+                        briefGeneratedAt: typeof conversation.briefGeneratedAt === 'string' ? conversation.briefGeneratedAt : '',
+                        synthesisEngine: typeof conversation.synthesisEngine === 'string' ? conversation.synthesisEngine : '',
+                        createdAt: conversation.createdAt || new Date().toISOString(),
+                        updatedAt: conversation.updatedAt || conversation.createdAt || new Date().toISOString()
+                    };
+                },
+
+                loadChatConversations() {
+                    this.chatConversations = [];
+                    this.activeChatId = null;
+                    this.chatMessages = [];
+
+                    try {
+                        const stored = localStorage.getItem(this.chatStorageKey());
+                        if (!stored) return;
+
+                        const parsed = JSON.parse(stored);
+                        if (!Array.isArray(parsed)) return;
+
+                        this.chatConversations = parsed
+                            .map(conversation => this.normalizeStoredConversation(conversation))
+                            .filter(Boolean)
+                            .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+                            .slice(0, 50);
+                    } catch (error) {
+                        console.error('Failed to load saved chat history', error);
+                        this.chatConversations = [];
+                    }
+                },
+
+                saveChatConversations() {
+                    try {
+                        const conversationsToStore = this.chatConversations
+                            .map(conversation => ({
+                                ...conversation,
+                                messages: Array.isArray(conversation.messages) ? conversation.messages.slice(-100) : []
+                            }))
+                            .slice(0, 50);
+                        localStorage.setItem(this.chatStorageKey(), JSON.stringify(conversationsToStore));
+                    } catch (error) {
+                        console.error('Failed to save chat history', error);
+                    }
+                },
+
+                activeConversation() {
+                    return this.chatConversations.find(conversation => conversation.id === this.activeChatId) || null;
+                },
+
+                persistActiveConversation() {
+                    const conversation = this.activeConversation();
+                    if (!conversation) return;
+
+                    conversation.messages = this.chatMessages.map(message => ({
+                        role: message.role,
+                        content: message.content
+                    })).slice(-100);
+                    conversation.updatedAt = new Date().toISOString();
+
+                    const firstUserMessage = conversation.messages.find(message => message.role === 'user');
+                    if (firstUserMessage && conversation.title === 'New health conversation') {
+                        conversation.title = firstUserMessage.content.replace(/\s+/g, ' ').trim().slice(0, 58) || 'Health follow-up';
+                    }
+
+                    this.chatConversations.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+                    this.saveChatConversations();
+                },
+
+                startNewChat(forceNew = false) {
+                    if (!this.briefResult) return;
+
+                    if (!forceNew) {
+                        const current = this.activeConversation();
+                        const hasUserMessages = current?.messages?.some(message => message.role === 'user');
+                        if (current && !hasUserMessages) {
+                            this.chatMessages = current.messages.map(message => ({ ...message }));
+                            this.chatQuestion = '';
+                            this.chatError = '';
+                            this.scrollChatToBottom();
+                            return;
+                        }
+                    }
+
+                    const now = new Date().toISOString();
+                    const conversation = {
+                        id: this.createChatId(),
+                        title: 'New health conversation',
+                        messages: [this.initialAssistantMessage()],
+                        brief: this.briefResult,
+                        logs: JSON.parse(JSON.stringify(this.logs || {})),
+                        profile: JSON.parse(JSON.stringify(this.profile || {})),
+                        briefGeneratedAt: this.briefGeneratedAt,
+                        synthesisEngine: this.synthesisEngine,
+                        createdAt: now,
+                        updatedAt: now
+                    };
+
+                    this.chatConversations.unshift(conversation);
+                    this.activeChatId = conversation.id;
+                    this.chatMessages = conversation.messages.map(message => ({ ...message }));
+                    this.chatQuestion = '';
+                    this.chatError = '';
+                    this.saveChatConversations();
+                    this.scrollChatToBottom();
+                },
+
+                selectChatConversation(conversationId) {
+                    const conversation = this.chatConversations.find(item => item.id === conversationId);
+                    if (!conversation) return;
+
+                    this.activeChatId = conversation.id;
+                    this.chatMessages = conversation.messages.map(message => ({ ...message }));
+                    this.briefResult = conversation.brief || this.briefResult;
+                    this.briefGeneratedAt = conversation.briefGeneratedAt || this.briefGeneratedAt;
+                    this.synthesisEngine = conversation.synthesisEngine || this.synthesisEngine;
+                    this.chatQuestion = '';
+                    this.chatError = '';
+                    this.showBriefPanel = false;
+                    this.showChatPanel = true;
+                    this.scrollChatToBottom();
+                },
+
+                deleteChatConversation(conversationId) {
+                    const conversation = this.chatConversations.find(item => item.id === conversationId);
+                    if (!conversation) return;
+
+                    if (!window.confirm(`Delete “${conversation.title}”? This cannot be undone.`)) return;
+
+                    this.chatConversations = this.chatConversations.filter(item => item.id !== conversationId);
+                    if (this.activeChatId === conversationId) {
+                        this.activeChatId = null;
+                        this.chatMessages = [];
+                        if (this.chatConversations.length) {
+                            this.selectChatConversation(this.chatConversations[0].id);
+                        } else if (this.briefResult) {
+                            this.startNewChat(true);
+                        }
+                    }
+                    this.saveChatConversations();
+                },
+
+                formatConversationDate(value) {
+                    const date = new Date(value);
+                    if (Number.isNaN(date.getTime())) return 'Saved conversation';
+                    return date.toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    });
+                },
+
                 resetChatState() {
                     this.showBriefPanel = false;
                     this.showChatPanel = false;
                     this.chatQuestion = '';
                     this.chatMessages = [];
+                    this.activeChatId = null;
                     this.chatLoading = false;
                     this.chatError = '';
                 },
 
-                initializeChatForBrief() {
+                initializeChatForBrief(forceNew = false) {
                     this.chatQuestion = '';
                     this.chatError = '';
-                    this.chatMessages = [
-                        {
-                            role: 'assistant',
-                            content: 'Your AI report is ready. Ask me to explain a probability, compare the three concern tiers, summarize the evidence in simpler words, or help prepare questions for your clinician. I cannot confirm a diagnosis or change medication.'
+
+                    if (!forceNew && this.activeChatId) {
+                        const existingConversation = this.activeConversation();
+                        if (existingConversation) {
+                            this.chatMessages = existingConversation.messages.map(message => ({ ...message }));
+                            return;
                         }
-                    ];
+                    }
+
+                    this.startNewChat(true);
                 },
 
                 openBriefPanel() {
@@ -1988,7 +2247,11 @@
                     this.showBriefPanel = false;
                     this.showChatPanel = true;
                     if (this.chatMessages.length === 0) {
-                        this.initializeChatForBrief();
+                        if (this.activeChatId) {
+                            this.selectChatConversation(this.activeChatId);
+                        } else {
+                            this.initializeChatForBrief();
+                        }
                     }
                     this.scrollChatToBottom();
                 },
@@ -1997,7 +2260,11 @@
                     this.showBriefPanel = false;
                     this.showChatPanel = !this.showChatPanel;
                     if (this.showChatPanel && this.chatMessages.length === 0) {
-                        this.initializeChatForBrief();
+                        if (this.activeChatId) {
+                            this.selectChatConversation(this.activeChatId);
+                        } else {
+                            this.initializeChatForBrief();
+                        }
                     }
                     this.scrollChatToBottom();
                 },
@@ -2043,7 +2310,7 @@
                             this.synthesisEngine = data.engine || '';
                             this.aiDisclaimerText = data.disclaimer || this.aiDisclaimerText;
                             this.briefGeneratedAt = new Date().toLocaleString('en-US');
-                            this.initializeChatForBrief();
+                            this.initializeChatForBrief(true);
                             this.showBriefPanel = true;
                         } else {
                             this.briefResult = `**Error Generating Brief**: ${data.error || 'Unknown server error'}`;
@@ -2067,16 +2334,26 @@
                             content: message.content
                         }));
 
+                    if (!this.activeConversation()) {
+                        this.startNewChat(true);
+                    }
+
                     this.chatMessages.push({
                         role: 'user',
                         content: question
                     });
+                    this.persistActiveConversation();
                     this.chatQuestion = '';
                     this.chatError = '';
                     this.chatLoading = true;
                     this.scrollChatToBottom();
 
                     try {
+                        const conversation = this.activeConversation();
+                        const conversationBrief = conversation?.brief || this.briefResult;
+                        const conversationLogs = conversation?.logs || this.logs;
+                        const conversationProfile = conversation?.profile || this.profile;
+
                         const res = await fetch('/api/chat', {
                             method: 'POST',
                             headers: {
@@ -2085,9 +2362,9 @@
                             body: JSON.stringify({
                                 question: question,
                                 history: priorHistory,
-                                brief: this.briefResult,
-                                logs: this.logs,
-                                profile: this.profile
+                                brief: conversationBrief,
+                                logs: conversationLogs,
+                                profile: conversationProfile
                             })
                         });
 
@@ -2097,6 +2374,7 @@
                                 role: 'assistant',
                                 content: data.answer
                             });
+                            this.persistActiveConversation();
                         } else {
                             this.chatError = data.error || 'The follow-up assistant could not answer that question.';
                         }
