@@ -1042,6 +1042,95 @@
             </div>
         </section>
 
+        <section x-show="doctorMode" x-cloak class="rounded-2xl border border-slate-300 bg-white shadow-xl shadow-slate-200/60 overflow-hidden animate-fadeIn">
+            <div class="px-5 sm:px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-sky-50 via-white to-indigo-50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="text-base sm:text-lg font-extrabold text-slate-900">Clinical Quick Review</h2>
+                        <span class="px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[9px] font-extrabold uppercase tracking-widest">Doctor workspace</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-1">A concise, data-only handoff from the patient’s entered profile and timeline. AI output remains educational and unverified.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" @click="copyDoctorHandoff()" :disabled="Object.keys(logs).length === 0" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 disabled:opacity-40 border border-slate-300 text-slate-700 text-[11px] font-bold transition cursor-pointer flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 8h8m0 0l-3-3m3 3l-3 3"/></svg>
+                        <span x-text="doctorCopyStatus || 'Copy Handoff'"></span>
+                    </button>
+                    <button type="button" @click="briefResult ? openBriefPanel() : requestSynthesisWithDisclaimer()" :disabled="Object.keys(logs).length === 0" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white text-[11px] font-bold transition cursor-pointer" x-text="briefResult ? 'Open AI Brief' : 'Generate AI Brief'"></button>
+                    <button type="button" x-show="briefResult" @click="toggleChatPanel()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold transition cursor-pointer">Ask Follow-Up</button>
+                </div>
+            </div>
+
+            <div class="p-5 sm:p-6 space-y-5">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                        <p class="text-[9px] uppercase tracking-widest font-extrabold text-slate-500">Coverage</p>
+                        <p class="text-xl font-mono font-extrabold text-slate-900 mt-1" x-text="doctorMetrics().total + ' logs'"></p>
+                        <p class="text-[10px] text-slate-500 mt-1" x-text="doctorMetrics().firstDate + ' → ' + doctorMetrics().lastDate"></p>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                        <p class="text-[9px] uppercase tracking-widest font-extrabold text-slate-500">Severity</p>
+                        <p class="text-xl font-mono font-extrabold text-slate-900 mt-1"><span x-text="doctorMetrics().average"></span><span class="text-xs text-slate-400"> avg</span></p>
+                        <p class="text-[10px] text-slate-500 mt-1">Peak <strong class="text-slate-700" x-text="doctorMetrics().peak + '/10'"></strong></p>
+                    </div>
+                    <div class="rounded-xl border p-3.5" :class="doctorMetrics().highCount ? 'border-rose-200 bg-rose-50' : 'border-emerald-200 bg-emerald-50'">
+                        <p class="text-[9px] uppercase tracking-widest font-extrabold" :class="doctorMetrics().highCount ? 'text-rose-600' : 'text-emerald-600'">High-severity days</p>
+                        <p class="text-xl font-mono font-extrabold mt-1" :class="doctorMetrics().highCount ? 'text-rose-700' : 'text-emerald-700'" x-text="doctorMetrics().highCount"></p>
+                        <p class="text-[10px] mt-1" :class="doctorMetrics().highCount ? 'text-rose-600' : 'text-emerald-600'">Patient-entered severity 7–10</p>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                        <p class="text-[9px] uppercase tracking-widest font-extrabold text-slate-500">Recent trend</p>
+                        <p class="text-sm font-extrabold mt-2" :class="doctorMetrics().trendDirection === 'up' ? 'text-rose-700' : (doctorMetrics().trendDirection === 'down' ? 'text-emerald-700' : 'text-slate-700')" x-text="doctorMetrics().trendLabel"></p>
+                        <p class="text-[10px] text-slate-500 mt-1">Recent avg <span class="font-bold" x-text="doctorMetrics().recentAverage + '/10'"></span></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr_1.15fr] gap-4">
+                    <div class="rounded-xl border border-slate-200 p-4">
+                        <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-sky-700">Patient snapshot</h3>
+                        <dl class="mt-3 grid grid-cols-[92px_minmax(0,1fr)] gap-x-3 gap-y-2 text-[11px]">
+                            <dt class="text-slate-500">Name</dt><dd class="font-bold text-slate-900 truncate" x-text="[profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'Not provided'"></dd>
+                            <dt class="text-slate-500">DOB</dt><dd class="font-semibold text-slate-700" x-text="profile.birthday || 'Not provided'"></dd>
+                            <dt class="text-slate-500">Gender</dt><dd class="font-semibold text-slate-700" x-text="profile.gender || 'Not provided'"></dd>
+                            <dt class="text-slate-500">Height / Weight</dt><dd class="font-semibold text-slate-700" x-text="(profile.height || '—') + ' / ' + (profile.weight || '—')"></dd>
+                            <dt class="text-slate-500">Background</dt><dd class="font-semibold text-slate-700 max-h-20 overflow-y-auto custom-scrollbar" x-text="profile.medicalNotes || 'None reported'"></dd>
+                        </dl>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-200 p-4">
+                        <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-sky-700">Most frequent symptoms</h3>
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <template x-for="item in doctorTopSymptoms()" :key="item.name">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 text-[10px] font-bold">
+                                    <span x-text="item.name"></span><span class="font-mono text-sky-500" x-text="item.count + '×'"></span>
+                                </span>
+                            </template>
+                            <span x-show="doctorTopSymptoms().length === 0" class="text-[11px] text-slate-500">No symptoms selected in the timeline.</span>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-200 p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-sky-700">Entries needing review</h3>
+                            <span class="text-[9px] text-slate-400">High severity or patient note</span>
+                        </div>
+                        <div class="space-y-2 mt-3 max-h-44 overflow-y-auto custom-scrollbar pr-1">
+                            <template x-for="entry in doctorAttentionEntries()" :key="entry.dateStr">
+                                <button type="button" @click="openDoctorEntry(entry)" class="w-full rounded-lg border border-slate-200 hover:border-sky-300 hover:bg-sky-50 p-2.5 text-left transition cursor-pointer">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-[10px] font-mono font-bold text-slate-700" x-text="entry.formattedDate"></span>
+                                        <span class="text-[9px] font-extrabold px-2 py-0.5 rounded" :class="entry.severity >= 7 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'" x-text="entry.severity + '/10'"></span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-600 truncate mt-1" x-text="entry.notes || entry.symptoms.join(', ') || 'No details entered'"></p>
+                                </button>
+                            </template>
+                            <p x-show="doctorAttentionEntries().length === 0" class="text-[11px] text-slate-500 py-3">No high-severity or note-bearing entries were found.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <div class="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-6 grow items-start">
             
             <section :class="doctorMode ? 'glass-panel-light' : 'glass-panel-dark'" 
@@ -1085,30 +1174,40 @@
                         </div>
                     </div>
 
-                    <div x-show="doctorMode" class="bg-slate-50 border border-slate-300 rounded-xl p-5 space-y-3 animate-fadeIn">
-                        <div class="flex items-center justify-between">
-                            <h4 class="text-xs font-bold text-sky-700 uppercase tracking-widest flex items-center gap-2">
-                                <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                                High-Density Doctor View
-                            </h4>
-                            <span class="text-[10px] font-mono text-slate-500">Fast Scan Mode</span>
-                        </div>
-                        <div class="text-xs space-y-1.5 max-h-60 overflow-y-auto custom-scrollbar pr-2 text-slate-800">
-                            <template x-for="d in days" :key="d.dateStr">
-                                <template x-if="logs[d.dateStr]">
-                                    <div class="flex justify-between items-center border-b border-slate-200 py-1.5 px-2 rounded hover:bg-slate-100 transition">
-                                        <span class="font-mono font-bold text-slate-700" x-text="d.formattedDate"></span>
-                                        <div class="flex space-x-4 items-center">
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold"
-                                                  :class="logs[d.dateStr].severity >= 7 ? 'text-rose-700 bg-rose-100' : 'text-slate-700 bg-slate-200'"
-                                                  x-text="'Pain: ' + logs[d.dateStr].severity"></span>
-                                            <span class="text-slate-900 font-medium max-w-xs truncate" x-text="logs[d.dateStr].symptoms.join(', ') || 'No specific symptoms logged'"></span>
-                                        </div>
-                                    </div>
+                    <div x-show="doctorMode" class="bg-slate-50 border border-slate-300 rounded-xl p-5 space-y-4 animate-fadeIn">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <h4 class="text-xs font-bold text-sky-700 uppercase tracking-widest flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    Complete Clinical Timeline
+                                </h4>
+                                <p class="text-[10px] text-slate-500 mt-1">All logged dates, not only the currently displayed month. Select an entry to open its original log.</p>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                <template x-for="filter in [{id:'all',label:'All'}, {id:'recent',label:'Recent 10'}, {id:'high',label:'Pain 7+'}, {id:'notes',label:'With notes'}]" :key="filter.id">
+                                    <button type="button" @click="doctorTimelineFilter = filter.id"
+                                            :class="doctorTimelineFilter === filter.id ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'"
+                                            class="px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition cursor-pointer"
+                                            x-text="filter.label"></button>
                                 </template>
+                            </div>
+                        </div>
+                        <div class="text-xs space-y-1.5 max-h-72 overflow-y-auto custom-scrollbar pr-2 text-slate-800">
+                            <template x-for="entry in doctorTimelineEntries()" :key="entry.dateStr">
+                                <button type="button" @click="openDoctorEntry(entry)" class="w-full grid grid-cols-[105px_58px_minmax(0,1fr)] gap-3 items-center border border-slate-200 bg-white py-2 px-3 rounded-lg hover:bg-sky-50 hover:border-sky-300 transition text-left cursor-pointer">
+                                    <span class="font-mono font-bold text-slate-700 text-[10px]" x-text="entry.formattedDate"></span>
+                                    <span class="px-2 py-1 rounded text-[10px] font-extrabold text-center"
+                                          :class="entry.severity >= 7 ? 'text-rose-700 bg-rose-100' : (entry.severity >= 4 ? 'text-amber-700 bg-amber-100' : 'text-emerald-700 bg-emerald-100')"
+                                          x-text="entry.severity + '/10'"></span>
+                                    <span class="min-w-0">
+                                        <span class="block text-slate-900 font-semibold truncate" x-text="entry.symptoms.join(', ') || 'No selected symptoms'"></span>
+                                        <span x-show="entry.notes" class="block text-[10px] text-slate-500 truncate mt-0.5" x-text="entry.notes"></span>
+                                    </span>
+                                </button>
                             </template>
+                            <div x-show="doctorTimelineEntries().length === 0" class="text-center py-5 text-slate-500 border border-dashed border-slate-300 rounded-lg">No entries match this filter.</div>
                         </div>
                     </div>
 
@@ -1133,7 +1232,7 @@
                         </template>
                     </div>
 
-                    <div x-show="selectedDay" class="border-t pt-5 space-y-4" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                    <div id="daily-log-editor" x-show="selectedDay" class="border-t pt-5 space-y-4" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
                         <div class="flex justify-between items-center">
                             <h3 class="text-xs font-bold uppercase tracking-widest text-sky-400 flex items-center gap-2">
                                 📅 Logging for <span x-text="selectedDay?.formattedDate" class="text-white underline decoration-sky-500"></span>
@@ -1390,6 +1489,8 @@
                 authLoading: false,
 
                 doctorMode: false,
+                doctorTimelineFilter: 'all',
+                doctorCopyStatus: '',
                 activeDoctorModal: null,
                 showAiDisclaimerModal: false,
                 aiDisclaimerText: 'This summary is generated by AI from user-entered information. It is not a medical diagnosis, does not replace an examination by a licensed clinician, and should be verified before acting on it.',
@@ -1977,6 +2078,180 @@
                 selectDay(dayObj) {
                     this.selectedDay = dayObj;
                     this.loadDayFromLog(dayObj.dateStr);
+                },
+
+                doctorAllTimelineEntries() {
+                    return Object.entries(this.logs || {}).map(([dateStr, rawEntry]) => {
+                        const entry = rawEntry && typeof rawEntry === 'object' ? rawEntry : {};
+                        const parsedDate = new Date(dateStr + 'T12:00:00');
+                        return {
+                            dateStr,
+                            date: parsedDate,
+                            formattedDate: Number.isNaN(parsedDate.getTime())
+                                ? dateStr
+                                : parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                            severity: Math.max(0, Math.min(10, Number(entry.severity) || 0)),
+                            symptoms: Array.isArray(entry.symptoms) ? entry.symptoms.filter(Boolean) : [],
+                            notes: typeof entry.notes === 'string' ? entry.notes.trim() : ''
+                        };
+                    }).sort((a, b) => b.dateStr.localeCompare(a.dateStr));
+                },
+
+                doctorTimelineEntries() {
+                    const entries = this.doctorAllTimelineEntries();
+                    if (this.doctorTimelineFilter === 'high') {
+                        return entries.filter(entry => entry.severity >= 7);
+                    }
+                    if (this.doctorTimelineFilter === 'notes') {
+                        return entries.filter(entry => entry.notes);
+                    }
+                    if (this.doctorTimelineFilter === 'recent') {
+                        return entries.slice(0, 10);
+                    }
+                    return entries;
+                },
+
+                doctorMetrics() {
+                    const entries = this.doctorTimelineEntriesForMetrics();
+                    if (!entries.length) {
+                        return {
+                            total: 0, average: '0.0', peak: 0, highCount: 0,
+                            firstDate: 'No data', lastDate: 'No data', spanDays: 0,
+                            trendLabel: 'Insufficient data', trendDirection: 'stable',
+                            recentAverage: '0.0', previousAverage: '0.0'
+                        };
+                    }
+
+                    const ascending = [...entries].sort((a, b) => a.dateStr.localeCompare(b.dateStr));
+                    const average = ascending.reduce((sum, entry) => sum + entry.severity, 0) / ascending.length;
+                    const recent = ascending.slice(-7);
+                    const previous = ascending.slice(Math.max(0, ascending.length - 14), Math.max(0, ascending.length - 7));
+                    const recentAverage = recent.reduce((sum, entry) => sum + entry.severity, 0) / recent.length;
+                    const previousAverage = previous.length
+                        ? previous.reduce((sum, entry) => sum + entry.severity, 0) / previous.length
+                        : recentAverage;
+                    const difference = recentAverage - previousAverage;
+                    const first = ascending[0].date;
+                    const last = ascending[ascending.length - 1].date;
+                    const spanDays = Number.isNaN(first.getTime()) || Number.isNaN(last.getTime())
+                        ? ascending.length
+                        : Math.max(1, Math.round((last - first) / 86400000) + 1);
+
+                    let trendLabel = 'Stable recently';
+                    let trendDirection = 'stable';
+                    if (previous.length && difference >= 1) {
+                        trendLabel = 'Severity trending higher';
+                        trendDirection = 'up';
+                    } else if (previous.length && difference <= -1) {
+                        trendLabel = 'Severity trending lower';
+                        trendDirection = 'down';
+                    }
+
+                    return {
+                        total: ascending.length,
+                        average: average.toFixed(1),
+                        peak: Math.max(...ascending.map(entry => entry.severity)),
+                        highCount: ascending.filter(entry => entry.severity >= 7).length,
+                        firstDate: ascending[0].formattedDate,
+                        lastDate: ascending[ascending.length - 1].formattedDate,
+                        spanDays,
+                        trendLabel,
+                        trendDirection,
+                        recentAverage: recentAverage.toFixed(1),
+                        previousAverage: previousAverage.toFixed(1)
+                    };
+                },
+
+                doctorTimelineEntriesForMetrics() {
+                    return this.doctorAllTimelineEntries();
+                },
+
+                doctorTopSymptoms(limit = 6) {
+                    const counts = {};
+                    this.doctorTimelineEntriesForMetrics().forEach(entry => {
+                        entry.symptoms.forEach(symptom => {
+                            const key = String(symptom).trim();
+                            if (key) counts[key] = (counts[key] || 0) + 1;
+                        });
+                    });
+                    return Object.entries(counts)
+                        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+                        .slice(0, limit)
+                        .map(([name, count]) => ({ name, count }));
+                },
+
+                doctorAttentionEntries() {
+                    return this.doctorTimelineEntriesForMetrics()
+                        .filter(entry => entry.severity >= 7 || entry.notes)
+                        .sort((a, b) => {
+                            if ((b.severity >= 7) !== (a.severity >= 7)) return Number(b.severity >= 7) - Number(a.severity >= 7);
+                            return b.dateStr.localeCompare(a.dateStr);
+                        })
+                        .slice(0, 6);
+                },
+
+                openDoctorEntry(entry) {
+                    if (!entry || !entry.dateStr) return;
+                    const parsedDate = new Date(entry.dateStr + 'T12:00:00');
+                    if (!Number.isNaN(parsedDate.getTime())) {
+                        this.calendarDate = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1);
+                        this.buildCalendarDays();
+                    }
+                    const day = this.days.find(candidate => candidate.dateStr === entry.dateStr) || {
+                        dateStr: entry.dateStr,
+                        formattedDate: entry.formattedDate
+                    };
+                    this.selectDay(day);
+                    this.$nextTick(() => {
+                        document.getElementById('daily-log-editor')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    });
+                },
+
+                doctorHandoffText() {
+                    const metrics = this.doctorMetrics();
+                    const topSymptoms = this.doctorTopSymptoms(8);
+                    const highEntries = this.doctorTimelineEntriesForMetrics().filter(entry => entry.severity >= 7).slice(0, 8);
+                    const noteEntries = this.doctorTimelineEntriesForMetrics().filter(entry => entry.notes).slice(0, 8);
+                    const patientName = [this.profile.firstName, this.profile.lastName].filter(Boolean).join(' ') || 'Patient';
+                    const lines = [
+                        'PULSEPLOT CLINICAL HANDOFF',
+                        `Patient: ${patientName}`,
+                        `DOB: ${this.profile.birthday || 'Not provided'} | Gender: ${this.profile.gender || 'Not provided'}`,
+                        `Height: ${this.profile.height || 'Not provided'} | Weight: ${this.profile.weight || 'Not provided'}`,
+                        `Coverage: ${metrics.total} logged day(s), ${metrics.firstDate} to ${metrics.lastDate}`,
+                        `Severity: average ${metrics.average}/10, peak ${metrics.peak}/10, high-severity days ${metrics.highCount}`,
+                        `Recent trend: ${metrics.trendLabel} (recent average ${metrics.recentAverage}/10)`,
+                        `Most frequent symptoms: ${topSymptoms.length ? topSymptoms.map(item => `${item.name} (${item.count})`).join(', ') : 'None selected'}`,
+                        `Medical background: ${this.profile.medicalNotes || 'None reported'}`,
+                        '',
+                        'HIGH-SEVERITY ENTRIES:',
+                        ...(highEntries.length ? highEntries.map(entry => `${entry.formattedDate}: ${entry.severity}/10; ${entry.symptoms.join(', ') || 'No selected symptoms'}${entry.notes ? `; Note: ${entry.notes}` : ''}`) : ['None recorded']),
+                        '',
+                        'RECENT PATIENT NOTES:',
+                        ...(noteEntries.length ? noteEntries.map(entry => `${entry.formattedDate}: ${entry.notes}`) : ['None recorded']),
+                        '',
+                        'AI report is educational and is not a diagnosis. Verify all findings clinically.'
+                    ];
+                    return lines.join('\n');
+                },
+
+                async copyDoctorHandoff() {
+                    const text = this.doctorHandoffText();
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        this.doctorCopyStatus = 'Copied';
+                    } catch (_error) {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = text;
+                        textarea.style.position = 'fixed';
+                        textarea.style.opacity = '0';
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        textarea.remove();
+                        this.doctorCopyStatus = 'Copied';
+                    }
+                    window.setTimeout(() => { this.doctorCopyStatus = ''; }, 1800);
                 },
 
                 toggleSymptom(sym) {
