@@ -357,11 +357,111 @@ def format_symptom_frequency(statistics):
     )
 
 
+def format_personalized_symptom_names(statistics, limit=4):
+    """Returns a readable list of the user's most frequently logged symptoms."""
+    symptom_names = [
+        symptom.title()
+        for symptom, _count in statistics["most_common_symptoms"][:limit]
+        if symptom.strip()
+    ]
+
+    if not symptom_names:
+        return "the symptoms and notes you recorded"
+    if len(symptom_names) == 1:
+        return symptom_names[0]
+    if len(symptom_names) == 2:
+        return f"{symptom_names[0]} and {symptom_names[1]}"
+    return f"{', '.join(symptom_names[:-1])}, and {symptom_names[-1]}"
+
+
+def build_personalized_guidance(statistics):
+    """Builds symptom-specific, non-prescriptive do/don't guidance for fallback reports."""
+    symptoms = set(statistics["symptom_counter"].keys())
+    notes = statistics["combined_notes"]
+    symptom_names = format_personalized_symptom_names(statistics)
+    high_dates = ", ".join(statistics["high_severity_days"][:5])
+
+    dos = [
+        (
+            f"Keep tracking {symptom_names} together with onset time, duration, severity, and what was happening before each episode. "
+            "This will help a clinician compare repeated patterns instead of reviewing isolated symptoms."
+        )
+    ]
+    donts = [
+        (
+            f"Do not assume {symptom_names} have one confirmed cause based on this report. "
+            "The entries do not include an examination, vital signs, laboratory testing, or imaging."
+        )
+    ]
+
+    if symptoms.intersection({'headache', 'migraine', 'brain fog'}) or any(term in notes for term in ['headache', 'migraine', 'dizzy']):
+        dos.append(
+            "For headache, migraine, dizziness, or brain-fog episodes, record whether symptoms began suddenly or gradually and whether they occurred with light sensitivity, nausea, vision changes, weakness, numbness, confusion, sleep loss, missed meals, or exertion."
+        )
+        donts.append(
+            "Do not wait for a routine appointment if a headache is sudden and extremely severe or occurs with fainting, confusion, new weakness or numbness, trouble speaking, major vision change, or repeated vomiting; seek urgent or emergency care."
+        )
+
+    if symptoms.intersection({'nausea', 'stomach pain'}) or any(term in notes for term in ['stomach', 'gut', 'bloating', 'nausea', 'abdominal']):
+        dos.append(
+            "For nausea, stomach pain, bloating, or other digestive symptoms, record meal timing, bowel changes, vomiting, reflux, fever, visible blood, and whether pain is localized or spreading. Bring that pattern to a primary-care or digestive-health clinician."
+        )
+        donts.append(
+            "Do not ignore persistent vomiting, inability to keep fluids down, black or bloody stool, vomiting blood, severe or worsening abdominal pain, a rigid abdomen, fainting, or signs of dehydration; these need prompt medical evaluation."
+        )
+
+    if 'joint pain' in symptoms or any(term in notes for term in ['joint', 'stiff', 'swelling', 'arthritis']):
+        dos.append(
+            "For joint pain or stiffness, note which joints are involved, visible swelling or warmth, morning stiffness duration, recent activity or injury, and whether movement improves or worsens the problem."
+        )
+        donts.append(
+            "Do not force activity through a newly swollen, hot, unstable, or severely painful joint, and do not dismiss joint symptoms that are spreading, repeatedly returning, or accompanied by fever or marked weakness."
+        )
+
+    if symptoms.intersection({'insomnia', 'fatigue', 'anxiety'}) or any(term in notes for term in ['sleep', 'exhausted', 'anxious', 'stress', 'fatigue']):
+        dos.append(
+            "For sleep difficulty, fatigue, or anxiety symptoms, track sleep duration, awakenings, daytime sleepiness, stress level, caffeine timing, and whether fatigue improves after rest. Discuss persistent impairment with the appropriate clinician."
+        )
+        donts.append(
+            "Do not attribute persistent fatigue, severe daytime sleepiness, panic-like symptoms, or reduced functioning only to stress without a clinical review, because sleep, medication, blood, endocrine, and other medical factors may need consideration."
+        )
+
+    if statistics["high_severity_count"]:
+        date_detail = f" on {high_dates}" if high_dates else ""
+        dos.insert(1,
+            f"Highlight the {statistics['high_severity_count']} day(s) when severity reached 7/10 or higher{date_detail}. Tell the clinician what changed on those days and whether the symptoms limited walking, eating, sleeping, working, or normal activities."
+        )
+        donts.insert(1,
+            "Do not let a lower AI percentage override a worsening course. Repeated 7/10-or-higher symptoms, rapidly increasing severity, or major loss of normal function should be reviewed promptly."
+        )
+    else:
+        dos.append(
+            "Continue recording whether symptoms are stable, improving, or becoming more frequent, because a change in pattern can be more informative than one severity score."
+        )
+        donts.append(
+            "Do not stop tracking simply because no day reached 7/10; repeated lower-severity symptoms can still deserve evaluation when they persist or interfere with daily life."
+        )
+
+    required_dos = [
+        "Bring the dated symptom timeline, current medication and supplement list, relevant medical history, and specific questions to the clinician so they can decide whether an examination or testing is appropriate.",
+        "Follow care instructions already provided by licensed clinicians, and seek urgent or emergency help for severe, sudden, rapidly worsening, or life-threatening symptoms."
+    ]
+    required_donts = [
+        "Do not start, stop, increase, decrease, or combine prescription medicines, over-the-counter medicines, supplements, or restrictive diets based only on this AI-generated brief.",
+        "Do not use the report or follow-up chatbot as a substitute for emergency services, an in-person examination, or advice from a licensed clinician who knows your medical history."
+    ]
+
+    return dos[:4] + required_dos, donts[:4] + required_donts
+
+
 def generate_fallback_synthesis(profile, statistics):
     """Generates a detailed safe Markdown brief when the AI API key is unconfigured."""
     possibilities = select_fallback_possibilities(statistics)
     symptom_frequency = format_symptom_frequency(statistics)
     high_dates = ", ".join(statistics["high_severity_days"][:8]) or "None recorded"
+    personalized_dos, personalized_donts = build_personalized_guidance(statistics)
+    dos_markdown = "\n".join(f"* {item}" for item in personalized_dos)
+    donts_markdown = "\n".join(f"* {item}" for item in personalized_donts)
 
     return f"""### IMPORTANT AI SAFETY NOTICE
 * {AI_MEDICAL_DISCLAIMER}
@@ -401,23 +501,16 @@ def generate_fallback_synthesis(profile, statistics):
 * Because those missing details can change the conclusion, a licensed clinician must verify the possibilities and percentages.
 
 ### 7. DO'S
-* Continue recording dates, severity, duration, triggers, meals, sleep, activity, medications, and what improved or worsened symptoms.
-* Share this report with a primary-care clinician and ask which findings require examination or testing.
-* Seek urgent or emergency care for severe, sudden, rapidly worsening, or life-threatening symptoms.
-* Follow treatment instructions already provided by your licensed clinicians.
+{dos_markdown}
 
 ### 8. DON'TS
-* Do not treat these possibilities as confirmed diagnoses.
-* Do not start, stop, or change prescription medicine, supplements, or restrictive diets based only on this report.
-* Do not ignore worsening symptoms because the major possibility has a lower percentage.
-* Do not use the chatbot or report as a substitute for emergency services or an in-person medical evaluation.
+{donts_markdown}
 
 ### 9. QUESTIONS TO ASK YOUR CLINICIAN
 * Which possible causes best match my repeated symptoms and timing?
 * Are any physical examinations, laboratory tests, medication reviews, or imaging studies appropriate?
 * Which warning signs should make me seek urgent or emergency care?
 * What should I track next to make the pattern clearer?"""
-
 
 def build_synthesis_prompt(profile_text_block, timeline_payload, statistics):
     """Creates the structured request for the clinical synthesis model."""
@@ -466,10 +559,17 @@ The three percentages must be whole numbers that add to exactly 100. Describe th
 Explain in ordinary language which entered facts support or weaken each possibility. Provide a concise evidence summary, not hidden chain-of-thought or private step-by-step reasoning.
 
 ### 7. DO'S
-Give safe, practical tracking, clinician follow-up, and general self-care actions. Do not prescribe medication or treatment.
+Provide 4 to 6 personalized actions based directly on this patient's named symptoms, notes, frequency, timing, severity, and high-severity dates. Each bullet must explicitly identify the symptom or entered pattern it addresses and explain what the patient should track, what detail to bring to a clinician, or what safe non-treatment action is appropriate. Prioritize the user's most frequent symptoms and any 7/10-or-higher days. Avoid generic advice that could be copied unchanged into every patient's report. Do not prescribe medication, supplements, diets, exercises, or treatment.
 
 ### 8. DON'TS
-Include not changing prescriptions or supplements without a clinician, not delaying care for warning signs, and not treating AI output as a diagnosis.
+Provide 4 to 6 personalized cautions based directly on this patient's named symptoms, notes, frequency, timing, severity, and high-severity dates. Each bullet must explicitly identify the symptom or entered pattern it addresses, including symptom-specific warning signs when supported. Include not changing prescriptions or supplements without a clinician, not delaying care for warning signs, and not treating AI output as a diagnosis. Avoid generic cautions that could be copied unchanged into every patient's report.
+
+Personalization quality requirements for DO'S and DON'TS:
+- Refer to at least two specific symptoms or patterns from the supplied timeline when at least two are available.
+- Mention the patient's high-severity-day count or dates when any severity is 7/10 or higher.
+- Tie every recommendation to information actually entered; do not invent triggers, diagnoses, medications, test results, habits, or medical history.
+- Use conditional wording for possible warning signs and clearly distinguish tracking guidance from medical treatment.
+- Keep all advice medically cautious and suitable for a patient-facing educational report.
 
 ### 9. QUESTIONS TO ASK YOUR CLINICIAN
 Provide four focused questions based on this timeline.
@@ -484,7 +584,7 @@ Safety requirements:
 """
 
 
-def validate_synthesis_result(synthesis_result):
+def validate_synthesis_result(synthesis_result, statistics=None):
     """Confirms that model output contains the required safe structure and probability total."""
     if not isinstance(synthesis_result, str) or not synthesis_result.strip():
         return False, "The model returned an empty report."
@@ -542,6 +642,43 @@ def validate_synthesis_result(synthesis_result):
     lower_result = synthesis_result.lower()
     if any(phrase in lower_result for phrase in unsafe_certainty_phrases):
         return False, "The report used medically unsafe certainty language."
+
+    if statistics:
+        dos_match = re.search(
+            r"###\s*7\.\s*DO['’]S(.*?)(?=###\s*8\.\s*DON['’]TS)",
+            synthesis_result,
+            flags=re.IGNORECASE | re.DOTALL
+        )
+        donts_match = re.search(
+            r"###\s*8\.\s*DON['’]TS(.*?)(?=###\s*9\.)",
+            synthesis_result,
+            flags=re.IGNORECASE | re.DOTALL
+        )
+        if not dos_match or not donts_match:
+            return False, "The personalized do's and don'ts sections could not be parsed."
+
+        dos_section = dos_match.group(1).strip()
+        donts_section = donts_match.group(1).strip()
+        dos_bullets = re.findall(r"^\s*[-*]\s+", dos_section, flags=re.MULTILINE)
+        donts_bullets = re.findall(r"^\s*[-*]\s+", donts_section, flags=re.MULTILINE)
+        if len(dos_bullets) < 4 or len(donts_bullets) < 4:
+            return False, "The report did not include at least four personalized do's and four personalized don'ts."
+
+        guidance_text = f"{dos_section}\n{donts_section}".lower()
+        named_symptoms = [
+            symptom.lower()
+            for symptom, _count in statistics.get("most_common_symptoms", [])
+            if symptom.strip()
+        ]
+        required_mentions = min(2, len(named_symptoms))
+        symptom_mentions = sum(1 for symptom in named_symptoms if symptom in guidance_text)
+        if required_mentions and symptom_mentions < required_mentions:
+            return False, "The do's and don'ts were not sufficiently tied to the patient's named symptoms."
+
+        if statistics.get("high_severity_count", 0):
+            severity_references = ("7/10", "7 out of 10", "high-severity", "high severity")
+            if not any(reference in guidance_text for reference in severity_references):
+                return False, "The personalized guidance did not address the patient's high-severity days."
 
     return True, ""
 
@@ -619,7 +756,7 @@ def synthesize_brief():
                 )
 
                 synthesis_result = chat_completion.choices[0].message.content
-                is_valid_result, validation_error = validate_synthesis_result(synthesis_result)
+                is_valid_result, validation_error = validate_synthesis_result(synthesis_result, statistics)
                 if not is_valid_result:
                     print(f"Groq report validation warning/fallback: {validation_error}")
                     engine_used = "fallback-algorithmic-engine"
