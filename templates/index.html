@@ -713,6 +713,21 @@
                         <label class="text-xs font-semibold text-slate-200">Date of Birth</label>
                         <input type="date" x-model="profile.birthday"
                                class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <p class="text-[10px] text-slate-500" x-show="profile.birthday">Displayed as <span class="font-mono text-sky-300" x-text="formatDisplayDate(profile.birthday)"></span></p>
+                    </div>
+
+                    <div class="space-y-1.5 text-left">
+                        <label class="text-xs font-semibold text-slate-200">Regional Format</label>
+                        <select x-model="profile.regionFormat" @change="applyRegionFormat(profile.regionFormat)"
+                                class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="AUTO" class="bg-slate-900 text-white">Automatic for my location</option>
+                            <option value="US" class="bg-slate-900 text-white">United States — MM/DD/YYYY, lb, ft/in</option>
+                            <option value="EUROPE" class="bg-slate-900 text-white">Europe — DD/MM/YYYY, kg, cm</option>
+                            <option value="EAST_ASIA" class="bg-slate-900 text-white">East Asia — YYYY/MM/DD, kg, cm</option>
+                            <option value="WORLD" class="bg-slate-900 text-white">Rest of World — DD/MM/YYYY, kg, cm</option>
+                            <option value="ISO" class="bg-slate-900 text-white">International ISO — YYYY-MM-DD, kg, cm</option>
+                        </select>
+                        <p class="text-[10px] text-slate-500">Automatic uses your connection region when available, then your browser settings. Saved calendar keys remain in ISO format.</p>
                     </div>
 
                     <div class="space-y-1.5 text-left">
@@ -728,14 +743,14 @@
                     </div>
 
                     <div class="space-y-1.5 text-left">
-                        <label class="text-xs font-semibold text-slate-200">Height</label>
-                        <input type="text" x-model="profile.height" placeholder="e.g. 5' 9&quot; or 175 cm"
+                        <label class="text-xs font-semibold text-slate-200">Height <span class="text-slate-500" x-text="`(${preferredHeightUnitLabel()})`"></span></label>
+                        <input type="text" x-model="profile.height" :placeholder="preferredHeightPlaceholder()"
                                class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
                     </div>
 
                     <div class="space-y-1.5 text-left">
-                        <label class="text-xs font-semibold text-slate-200">Weight</label>
-                        <input type="text" x-model="profile.weight" placeholder="e.g. 160 lbs or 72 kg"
+                        <label class="text-xs font-semibold text-slate-200">Weight <span class="text-slate-500" x-text="`(${preferredWeightUnitLabel()})`"></span></label>
+                        <input type="text" x-model="profile.weight" :placeholder="preferredWeightPlaceholder()"
                                class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
                     </div>
                 </div>
@@ -940,10 +955,36 @@
                     <span>Restore My Data</span>
                 </button>
 
-                <span :class="doctorMode ? 'bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-900/80 text-slate-400 border-white/10'" 
-                      class="text-[11px] px-3 py-2 rounded-xl uppercase tracking-wider font-mono font-medium border hidden md:inline-block">
-                    US Standard Format
-                </span>
+                <div class="relative hidden md:block" @click.outside="showRegionMenu = false">
+                    <button type="button"
+                            @click="showRegionMenu = !showRegionMenu"
+                            :class="doctorMode ? 'bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-300' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-white/10'"
+                            class="text-[11px] px-3 py-2 rounded-xl tracking-wider font-mono font-medium border flex items-center gap-2 transition cursor-pointer"
+                            :aria-expanded="showRegionMenu.toString()"
+                            aria-haspopup="menu">
+                        <span x-text="activeRegionFormatLabel()"></span>
+                        <svg class="w-3.5 h-3.5 transition-transform" :class="showRegionMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="showRegionMenu" x-cloak x-transition
+                         class="absolute right-0 mt-2 w-72 rounded-2xl border p-2 shadow-2xl z-50"
+                         :class="doctorMode ? 'bg-white border-slate-200' : 'bg-slate-900 border-white/10'"
+                         role="menu">
+                        <template x-for="option in regionFormatOptions()" :key="option.value">
+                            <button type="button" @click="applyRegionFormat(option.value); showRegionMenu = false"
+                                    class="w-full text-left rounded-xl px-3 py-2.5 transition cursor-pointer"
+                                    :class="profile.regionFormat === option.value ? (doctorMode ? 'bg-sky-50 text-sky-700' : 'bg-sky-500/15 text-sky-300') : (doctorMode ? 'hover:bg-slate-100 text-slate-700' : 'hover:bg-white/5 text-slate-300')"
+                                    role="menuitem">
+                                <span class="block text-xs font-bold" x-text="option.label"></span>
+                                <span class="block text-[10px] mt-0.5 opacity-70" x-text="option.description"></span>
+                            </button>
+                        </template>
+                        <p x-show="profile.regionFormat === 'AUTO' && detectedRegionLabel"
+                           class="px-3 pt-2 pb-1 text-[9px] text-slate-500"
+                           x-text="`Detected: ${detectedRegionLabel}`"></p>
+                    </div>
+                </div>
 
                 <template x-if="user">
                     <div class="relative pl-2 border-l border-white/10" @click.outside="profileMenuOpen = false">
@@ -1090,7 +1131,7 @@
                         <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-sky-700">Patient snapshot</h3>
                         <dl class="mt-3 grid grid-cols-[92px_minmax(0,1fr)] gap-x-3 gap-y-2 text-[11px]">
                             <dt class="text-slate-500">Name</dt><dd class="font-bold text-slate-900 truncate" x-text="[profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'Not provided'"></dd>
-                            <dt class="text-slate-500">DOB</dt><dd class="font-semibold text-slate-700" x-text="profile.birthday || 'Not provided'"></dd>
+                            <dt class="text-slate-500">DOB</dt><dd class="font-semibold text-slate-700" x-text="profile.birthday ? formatDisplayDate(profile.birthday) : 'Not provided'"></dd>
                             <dt class="text-slate-500">Gender</dt><dd class="font-semibold text-slate-700" x-text="profile.gender || 'Not provided'"></dd>
                             <dt class="text-slate-500">Height / Weight</dt><dd class="font-semibold text-slate-700" x-text="(profile.height || '—') + ' / ' + (profile.weight || '—')"></dd>
                             <dt class="text-slate-500">Background</dt><dd class="font-semibold text-slate-700 max-h-20 overflow-y-auto custom-scrollbar" x-text="profile.medicalNotes || 'None reported'"></dd>
@@ -1510,10 +1551,15 @@
                 // Profile State
                 showProfileModal: false,
                 profileMenuOpen: false,
+                showRegionMenu: false,
+                detectedRegionFormat: '',
+                detectedRegionLabel: '',
                 profile: {
                     firstName: '',
                     lastName: '',
                     birthday: '',
+                    dateFormat: 'AUTO',
+                    regionFormat: 'AUTO',
                     height: '',
                     weight: '',
                     gender: '',
@@ -1541,6 +1587,8 @@
                 persistenceStatus: '',
 
                 async init() {
+                    await this.detectRegionalFormat();
+
                     // Always open on the user's current local month and select today's date.
                     this.openCalendarOnToday();
 
@@ -1570,6 +1618,8 @@
                                     firstName: '',
                                     lastName: '',
                                     birthday: '',
+                                    dateFormat: 'AUTO',
+                    regionFormat: 'AUTO',
                                     height: '',
                                     weight: '',
                                     gender: '',
@@ -1599,6 +1649,10 @@
                         const stored = localStorage.getItem('pulseplot_profile_' + this.user.id);
                         if (stored) {
                             this.profile = { ...this.profile, ...JSON.parse(stored) };
+                            if (!this.profile.dateFormat) this.profile.dateFormat = 'AUTO';
+                            if (!this.profile.regionFormat) {
+                                this.profile.regionFormat = this.regionFormatFromLegacyDateFormat(this.profile.dateFormat);
+                            }
                         }
                         if (!this.profile.completedOnboarding || !this.profile.firstName) {
                             this.showProfileModal = true;
@@ -1622,10 +1676,160 @@
                 },
 
                 get calendarMonthLabel() {
-                    return this.calendarDate.toLocaleDateString('en-US', {
+                    return this.calendarDate.toLocaleDateString(this.getDateLocale(), {
                         month: 'long',
                         year: 'numeric'
                     });
+                },
+
+                regionFormatOptions() {
+                    return [
+                        { value: 'AUTO', label: 'Automatic', description: 'Use detected location and browser region' },
+                        { value: 'US', label: 'US Standard Format', description: 'MM/DD/YYYY • pounds • feet/inches' },
+                        { value: 'EUROPE', label: 'European Format', description: 'DD/MM/YYYY • kilograms • centimeters' },
+                        { value: 'EAST_ASIA', label: 'East Asia Format', description: 'YYYY/MM/DD • kilograms • centimeters' },
+                        { value: 'WORLD', label: 'Rest of World Format', description: 'DD/MM/YYYY • kilograms • centimeters' },
+                        { value: 'ISO', label: 'International ISO Format', description: 'YYYY-MM-DD • kilograms • centimeters' }
+                    ];
+                },
+
+                activeRegionFormat() {
+                    const selected = this.profile?.regionFormat || 'AUTO';
+                    return selected === 'AUTO' ? (this.detectedRegionFormat || this.inferRegionFormatFromBrowser()) : selected;
+                },
+
+                activeRegionFormatLabel() {
+                    const active = this.activeRegionFormat();
+                    const option = this.regionFormatOptions().find(item => item.value === active);
+                    return option ? option.label : 'Regional Format';
+                },
+
+                applyRegionFormat(value) {
+                    const allowed = new Set(['AUTO', 'US', 'EUROPE', 'EAST_ASIA', 'WORLD', 'ISO']);
+                    this.profile.regionFormat = allowed.has(value) ? value : 'AUTO';
+                    this.profile.dateFormat = this.dateFormatForRegion(this.activeRegionFormat());
+                    if (this.user) {
+                        localStorage.setItem('pulseplot_profile_' + this.user.id, JSON.stringify(this.profile));
+                    }
+                    this.generateCalendarDays({
+                        preferredDateStr: this.selectedDay?.dateStr || this.formatDateKey(new Date()),
+                        preferredDayNumber: this.selectedDay?.day || new Date().getDate()
+                    });
+                },
+
+                dateFormatForRegion(regionFormat) {
+                    if (regionFormat === 'US') return 'MDY_SLASH';
+                    if (regionFormat === 'EAST_ASIA') return 'YMD_SLASH';
+                    if (regionFormat === 'ISO') return 'YMD_DASH';
+                    return 'DMY_SLASH';
+                },
+
+                regionFormatFromLegacyDateFormat(dateFormat) {
+                    if (dateFormat === 'MDY_SLASH') return 'US';
+                    if (dateFormat === 'YMD_SLASH') return 'EAST_ASIA';
+                    if (dateFormat === 'YMD_DASH') return 'ISO';
+                    if (dateFormat === 'DMY_DOT') return 'EUROPE';
+                    if (dateFormat === 'DMY_SLASH') return 'WORLD';
+                    return 'AUTO';
+                },
+
+                inferRegionFormatFromBrowser() {
+                    const locale = (navigator.language || 'en-US').toLowerCase();
+                    const regionMatch = locale.match(/[-_]([a-z]{2})$/i);
+                    const region = regionMatch ? regionMatch[1].toUpperCase() : '';
+                    const eastAsiaRegions = new Set(['CN', 'JP', 'KR', 'TW', 'HK', 'MO']);
+                    const europeanRegions = new Set(['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'CH', 'GB']);
+                    if (region === 'US') return 'US';
+                    if (eastAsiaRegions.has(region)) return 'EAST_ASIA';
+                    if (europeanRegions.has(region)) return 'EUROPE';
+                    return 'WORLD';
+                },
+
+                async detectRegionalFormat() {
+                    try {
+                        const response = await fetch('/api/regional-preferences', { headers: { 'Accept': 'application/json' } });
+                        if (!response.ok) throw new Error('Regional preference lookup failed');
+                        const result = await response.json();
+                        const browserFallback = this.inferRegionFormatFromBrowser();
+                        this.detectedRegionFormat = result.source === 'browser_fallback'
+                            ? browserFallback
+                            : (result.region_format || browserFallback);
+                        this.detectedRegionLabel = result.location_label || result.country_code || 'Browser region';
+                    } catch (error) {
+                        this.detectedRegionFormat = this.inferRegionFormatFromBrowser();
+                        this.detectedRegionLabel = 'Browser region';
+                    }
+                    if (!this.profile.regionFormat) this.profile.regionFormat = 'AUTO';
+                    this.profile.dateFormat = this.dateFormatForRegion(this.activeRegionFormat());
+                },
+
+                preferredHeightUnitLabel() {
+                    return this.activeRegionFormat() === 'US' ? 'ft/in' : 'cm';
+                },
+
+                preferredWeightUnitLabel() {
+                    return this.activeRegionFormat() === 'US' ? 'lb' : 'kg';
+                },
+
+                preferredHeightPlaceholder() {
+                    return this.activeRegionFormat() === 'US' ? 'e.g. 5 ft 9 in' : 'e.g. 175 cm';
+                },
+
+                preferredWeightPlaceholder() {
+                    return this.activeRegionFormat() === 'US' ? 'e.g. 160 lb' : 'e.g. 72 kg';
+                },
+
+                getDateLocale() {
+                    const format = this.resolveDateFormat();
+                    if (format === 'MDY_SLASH') return 'en-US';
+                    if (format === 'YMD_SLASH' || format === 'YMD_DASH') return 'ja-JP';
+                    if (this.activeRegionFormat() === 'EUROPE') return 'de-DE';
+                    return 'en-GB';
+                },
+
+                resolveDateFormat() {
+                    return this.dateFormatForRegion(this.activeRegionFormat());
+                },
+
+                parseIsoDate(value) {
+                    if (value instanceof Date) return new Date(value.getTime());
+                    if (typeof value !== 'string') return null;
+                    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                    if (!match) {
+                        const fallback = new Date(value);
+                        return Number.isNaN(fallback.getTime()) ? null : fallback;
+                    }
+                    const parsed = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0);
+                    return Number.isNaN(parsed.getTime()) ? null : parsed;
+                },
+
+                formatDisplayDate(value) {
+                    const date = this.parseIsoDate(value);
+                    if (!date) return value || 'Not provided';
+
+                    const year = String(date.getFullYear()).padStart(4, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+
+                    switch (this.resolveDateFormat()) {
+                        case 'MDY_SLASH': return `${month}/${day}/${year}`;
+                        case 'YMD_SLASH': return `${year}/${month}/${day}`;
+                        case 'YMD_DASH': return `${year}-${month}-${day}`;
+                        case 'DMY_DOT': return `${day}.${month}.${year}`;
+                        case 'DMY_SLASH':
+                        default: return `${day}/${month}/${year}`;
+                    }
+                },
+
+                formatDisplayDateTime(value) {
+                    const date = new Date(value);
+                    if (Number.isNaN(date.getTime())) return 'Saved conversation';
+                    const datePart = this.formatDisplayDate(this.formatDateKey(date));
+                    const timePart = date.toLocaleTimeString(this.getDateLocale(), {
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    });
+                    return `${datePart}, ${timePart}`;
                 },
 
                 getUserLogsStorageKey() {
@@ -1665,12 +1869,8 @@
                         daysArr.push({
                             dayNum: i,
                             dateStr: this.formatDateKey(date),
-                            dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
-                            formattedDate: date.toLocaleDateString('en-US', {
-                                month: 'long',
-                                day: 'numeric',
-                                year: 'numeric'
-                            })
+                            dayName: date.toLocaleDateString(this.getDateLocale(), { weekday: 'short' }),
+                            formattedDate: this.formatDisplayDate(this.formatDateKey(date))
                         });
                     }
 
@@ -2053,6 +2253,8 @@
                         firstName: '',
                         lastName: '',
                         birthday: '',
+                        dateFormat: 'AUTO',
+                    regionFormat: 'AUTO',
                         height: '',
                         weight: '',
                         gender: '',
@@ -2089,7 +2291,7 @@
                             date: parsedDate,
                             formattedDate: Number.isNaN(parsedDate.getTime())
                                 ? dateStr
-                                : parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                                : this.formatDisplayDate(dateStr),
                             severity: Math.max(0, Math.min(10, Number(entry.severity) || 0)),
                             symptoms: Array.isArray(entry.symptoms) ? entry.symptoms.filter(Boolean) : [],
                             notes: typeof entry.notes === 'string' ? entry.notes.trim() : ''
@@ -2216,7 +2418,7 @@
                     const lines = [
                         'PULSEPLOT CLINICAL HANDOFF',
                         `Patient: ${patientName}`,
-                        `DOB: ${this.profile.birthday || 'Not provided'} | Gender: ${this.profile.gender || 'Not provided'}`,
+                        `DOB: ${this.profile.birthday ? this.formatDisplayDate(this.profile.birthday) : 'Not provided'} | Gender: ${this.profile.gender || 'Not provided'}`,
                         `Height: ${this.profile.height || 'Not provided'} | Weight: ${this.profile.weight || 'Not provided'}`,
                         `Coverage: ${metrics.total} logged day(s), ${metrics.firstDate} to ${metrics.lastDate}`,
                         `Severity: average ${metrics.average}/10, peak ${metrics.peak}/10, high-severity days ${metrics.highCount}`,
@@ -2477,14 +2679,7 @@
                 },
 
                 formatConversationDate(value) {
-                    const date = new Date(value);
-                    if (Number.isNaN(date.getTime())) return 'Saved conversation';
-                    return date.toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit'
-                    });
+                    return this.formatDisplayDateTime(value);
                 },
 
                 resetChatState() {
@@ -2584,7 +2779,7 @@
                             this.recommendedDoctors = data.recommended_doctors || [];
                             this.synthesisEngine = data.engine || '';
                             this.aiDisclaimerText = data.disclaimer || this.aiDisclaimerText;
-                            this.briefGeneratedAt = new Date().toLocaleString('en-US');
+                            this.briefGeneratedAt = this.formatDisplayDateTime(new Date().toISOString());
                             this.initializeChatForBrief(true);
                             this.showBriefPanel = true;
                         } else {
@@ -2744,7 +2939,7 @@
 
                     this.pdfCursorY = 52;
                     const patientName = `${this.profile.firstName || ''} ${this.profile.lastName || ''}`.trim() || 'Patient';
-                    const generatedDate = this.briefGeneratedAt || new Date().toLocaleString('en-US');
+                    const generatedDate = this.briefGeneratedAt || this.formatDisplayDateTime(new Date().toISOString());
 
                     this.addPdfTextBlock(doc, 'PulsePlot AI Clinical Health Summary', {
                         fontSize: 17,
