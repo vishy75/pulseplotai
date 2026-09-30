@@ -101,11 +101,138 @@
             background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px);
             background-size: 24px 24px;
         }
+        /* Appointment preparation: styles are scoped to this feature. */
+        .ap-dialog { --ap-bg:#101827; --ap-card:#182337; --ap-line:#334155; --ap-text:#e2e8f0; --ap-muted:#a8b7cb; --ap-accent:#7dd3fc; background:var(--ap-bg); color:var(--ap-text); border:1px solid var(--ap-line); border-radius:24px; width:min(960px,96vw); max-height:92dvh; padding:0; margin:auto; box-shadow:0 30px 100px #0008; }
+        .ap-dialog.ap-light { --ap-bg:#f8fafc; --ap-card:#fff; --ap-line:#cbd5e1; --ap-text:#0f172a; --ap-muted:#475569; --ap-accent:#0369a1; }
+        .ap-dialog::backdrop { background:#020617c9; backdrop-filter:blur(7px); }
+        .ap-header,.ap-footer { padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; border-bottom:1px solid var(--ap-line); }
+        .ap-footer { border-top:1px solid var(--ap-line); border-bottom:0; flex-wrap:wrap; }
+        .ap-content { padding:24px; overflow-y:auto; overscroll-behavior:contain; min-height:0; }
+        .ap-shell { display:flex; flex-direction:column; max-height:90dvh; }
+        .ap-steps { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:16px 24px 0; }
+        .ap-btn { border:1px solid var(--ap-line); border-radius:12px; padding:10px 14px; font-size:13px; font-weight:600; cursor:pointer; background:var(--ap-card); color:var(--ap-text); }
+        .ap-btn:hover { border-color:var(--ap-accent); }
+        .ap-btn:disabled { opacity:.45; cursor:not-allowed; }
+        .ap-btn:focus-visible,.ap-field:focus-visible { outline:3px solid var(--ap-accent); outline-offset:2px; }
+        .ap-primary,.ap-step-active { background:#0369a1; border-color:#0284c7; color:white; }
+        .ap-card { background:var(--ap-card); border:1px solid var(--ap-line); border-radius:16px; padding:16px; }
+        .ap-field { width:100%; padding:10px 12px; border:1px solid var(--ap-line); border-radius:10px; background:var(--ap-bg); color:var(--ap-text); font-size:14px; margin-top:6px; }
+        .ap-field::placeholder { color:var(--ap-muted); opacity:.8; }
+        .ap-label { display:block; font-size:13px; font-weight:600; }
+        .ap-muted { color:var(--ap-muted); font-size:13px; line-height:1.6; }
+        .ap-stack > * + * { margin-top:16px; }
+        .ap-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .ap-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .ap-title { font-size:20px; font-weight:800; }
+        .ap-preview { white-space:pre-wrap; overflow-wrap:anywhere; font:14px/1.8 'Plus Jakarta Sans',sans-serif; }
+        .ap-date { display:flex; align-items:flex-start; gap:12px; cursor:pointer; }
+        .ap-date input { margin-top:5px; width:18px; height:18px; accent-color:#0284c7; flex-shrink:0; }
+        @media(max-width:600px) { .ap-grid { grid-template-columns:1fr; } .ap-header,.ap-footer,.ap-content { padding:16px; } .ap-steps { padding:12px 16px 0; gap:4px; } .ap-steps .ap-btn { padding:9px 4px; font-size:11px; } .ap-dialog { border-radius:16px; max-height:96dvh; } .ap-shell { max-height:94dvh; } }
     </style>
 </head>
 <body class="font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
       :class="doctorMode ? 'bg-slate-100 text-slate-900 bg-grid-pattern-light' : 'bg-[#090d16] text-slate-100 bg-grid-pattern'">
+
+    <dialog x-ref="appointmentDialog" class="ap-dialog" :class="{ 'ap-light': doctorMode }"
+            aria-labelledby="appointment-title" @cancel.prevent="closeAppointmentPrep()"
+            @close="showAppointmentPrep = false">
+        <div class="ap-shell">
+            <header class="ap-header">
+                <div>
+                    <p class="ap-muted">Your next conversation, prepared</p>
+                    <h2 id="appointment-title" class="ap-title">Appointment preparation</h2>
+                    <p class="ap-muted" x-text="profile.firstName ? 'A visit plan for ' + profile.firstName : 'Make room for what matters to you.'"></p>
+                </div>
+                <button type="button" class="ap-btn" @click="closeAppointmentPrep()" aria-label="Close appointment preparation">Close</button>
+            </header>
+            <nav class="ap-steps" aria-label="Appointment preparation steps">
+                <template x-for="(label, index) in ['Concerns', 'Key dates', 'Questions', 'Review']" :key="label">
+                    <button type="button" class="ap-btn" :class="{ 'ap-step-active': appointmentStep === index + 1 }"
+                            :aria-current="appointmentStep === index + 1 ? 'step' : null"
+                            @click="goAppointmentStep(index + 1)" x-text="(index + 1) + '. ' + label"></button>
+                </template>
+            </nav>
+            <div class="ap-content ap-stack" x-ref="appointmentContent">
+                <p class="ap-muted" role="status" aria-live="polite" x-text="appointmentSaveStatus"></p>
+                <p x-show="appointmentMessage" role="status" class="ap-card" x-text="appointmentMessage"></p>
+                <section x-show="appointmentStep === 1" class="ap-stack" aria-label="Appointment details and priorities">
+                    <h3 class="ap-title">What matters most to you?</h3>
+                    <p class="ap-muted">Choose up to three concerns, in priority order. Every field is optional.</p>
+                    <div class="ap-grid">
+                        <label class="ap-label">Appointment date<input class="ap-field" type="date" x-model="appointmentDraft.date" @input="saveAppointmentDraft()"></label>
+                        <label class="ap-label">Clinician or clinic<input class="ap-field" maxlength="150" placeholder="Who are you seeing?" x-model="appointmentDraft.clinician" @input="saveAppointmentDraft()"></label>
+                    </div>
+                    <label class="ap-label">What would make this visit helpful?<textarea class="ap-field" rows="2" maxlength="600" placeholder="For example: understand what to track next" x-model="appointmentDraft.goal" @input="saveAppointmentDraft()"></textarea></label>
+                    <template x-for="(concern, index) in appointmentDraft.concerns" :key="index">
+                        <div class="ap-card ap-stack">
+                            <label class="ap-label"><span x-text="'Priority ' + (index + 1)"></span><input class="ap-field" maxlength="200" placeholder="A symptom, change, or concern" x-model="concern.text" @input="saveAppointmentDraft()"></label>
+                            <label class="ap-label">How does it affect your day?<textarea class="ap-field" rows="2" maxlength="500" placeholder="Sleep, school/work, activities, or anything else" x-model="concern.impact" @input="saveAppointmentDraft()"></textarea></label>
+                        </div>
+                    </template>
+                </section>
+                <section x-show="appointmentStep === 2" class="ap-stack" aria-label="Select important timeline dates">
+                    <h3 class="ap-title">Bring the moments that matter</h3>
+                    <p class="ap-muted">Select up to ten dates. Include better days, changes, and difficult episodes. Selected entries use your current calendar details.</p>
+                    <div class="ap-row">
+                        <button type="button" class="ap-btn" @click="suggestAppointmentDates()">Add up to 3 recent high-severity days</button>
+                        <span class="ap-muted" x-text="appointmentDraft.dates.length + ' / 10 selected'"></span>
+                    </div>
+                    <label class="ap-label">Filter entries<input class="ap-field" type="search" placeholder="Search symptoms, notes, or a date" x-model="appointmentDateFilter"></label>
+                    <template x-for="date in appointmentMissingDates()" :key="date">
+                        <div class="ap-card ap-row"><span class="ap-muted" x-text="date + ' is no longer in your calendar and will be omitted.'"></span><button type="button" class="ap-btn" @click="toggleAppointmentDate(date)">Remove selection</button></div>
+                    </template>
+                    <p x-show="appointmentEntries().length === 0" class="ap-muted">No matching entries. You can continue preparing without selecting dates.</p>
+                    <template x-for="entry in appointmentEntries()" :key="entry.dateStr">
+                        <label class="ap-card ap-date">
+                            <input type="checkbox" :checked="appointmentDraft.dates.includes(entry.dateStr)" @change="toggleAppointmentDate(entry.dateStr)"
+                                   :disabled="appointmentDraft.dates.length >= 10 && !appointmentDraft.dates.includes(entry.dateStr)">
+                            <span style="min-width:0;overflow-wrap:anywhere">
+                                <strong x-text="entry.formattedDate + ' · ' + entry.severity + '/10'"></strong>
+                                <span class="ap-muted" style="display:block" x-text="entry.symptoms.join(', ') || 'No named symptoms'"></span>
+                                <span class="ap-muted" style="display:block;white-space:pre-wrap" x-text="entry.notes || 'No notes for this day.'"></span>
+                            </span>
+                        </label>
+                    </template>
+                </section>
+                <section x-show="appointmentStep === 3" class="ap-stack" aria-label="Questions and information to bring">
+                    <h3 class="ap-title">Make space for your questions</h3>
+                    <p class="ap-muted">Pick a starting question or write your own. Edit every question in your own words.</p>
+                    <div class="ap-stack">
+                        <template x-for="question in appointmentQuestionSuggestions()" :key="question">
+                            <button type="button" class="ap-btn" style="display:block;text-align:left;width:100%" @click="addAppointmentQuestion(question)" :disabled="appointmentDraft.questions.length >= 12 || appointmentDraft.questions.some(item => item.text.trim() === question)" x-text="'+ ' + question"></button>
+                        </template>
+                    </div>
+                    <template x-for="(question, index) in appointmentDraft.questions" :key="question.id">
+                        <div class="ap-card">
+                            <label class="ap-label"><span x-text="'Question ' + (index + 1)"></span><textarea class="ap-field" rows="2" maxlength="500" x-model="question.text" @input="saveAppointmentDraft()"></textarea></label>
+                            <button type="button" class="ap-btn" style="margin-top:8px" @click="removeAppointmentQuestion(question.id)" :aria-label="'Remove question ' + (index + 1)">Remove</button>
+                        </div>
+                    </template>
+                    <button type="button" class="ap-btn" @click="addAppointmentQuestion('')" :disabled="appointmentDraft.questions.length >= 12">Add my own question</button>
+                    <label class="ap-label">Medication / supplement list to discuss<textarea class="ap-field" rows="3" maxlength="2000" placeholder="Names, doses, and timing, if you want to include them" x-model="appointmentDraft.medications" @input="saveAppointmentDraft()"></textarea></label>
+                    <label class="ap-label">Other details to bring<textarea class="ap-field" rows="3" maxlength="2000" placeholder="Recent changes, test results to bring, or details you do not want to forget" x-model="appointmentDraft.notes" @input="saveAppointmentDraft()"></textarea></label>
+                </section>
+                <section x-show="appointmentStep === 4" class="ap-stack" aria-label="Review appointment summary">
+                    <h3 class="ap-title">Your visit, on your terms</h3>
+                    <p class="ap-muted">Review your details before sharing. This summary contains your entries and calendar counts; it does not generate diagnoses. You can export it even without an AI report.</p>
+                    <div class="ap-row">
+                        <button type="button" class="ap-btn ap-primary" @click="exportAppointmentPdf()">Download appointment PDF</button>
+                        <button type="button" class="ap-btn" @click="copyAppointmentSummary()">Copy summary</button>
+                    </div>
+                    <pre class="ap-card ap-preview" x-text="appointmentSummaryText()"></pre>
+                    <p class="ap-muted">Drafts are saved for your account on this browser only. Downloads and copied text include the personal details shown above.</p>
+                    <button type="button" class="ap-btn" @click="resetAppointmentDraft()">Start a new appointment</button>
+                </section>
+            </div>
+            <footer class="ap-footer">
+                <button type="button" class="ap-btn" @click="goAppointmentStep(appointmentStep - 1)" :disabled="appointmentStep === 1">Back</button>
+                <span class="ap-muted" x-text="'Step ' + appointmentStep + ' of 4'"></span>
+                <button type="button" class="ap-btn ap-primary" x-show="appointmentStep < 4" @click="goAppointmentStep(appointmentStep + 1)">Continue</button>
+                <button type="button" class="ap-btn ap-primary" x-show="appointmentStep === 4" @click="closeAppointmentPrep()">Done</button>
+            </footer>
+        </div>
+    </dialog>
 
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div class="absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl opacity-20 transition-colors duration-500"
@@ -1036,6 +1163,11 @@
 
     <main x-show="user" class="p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto flex flex-col gap-6 grow z-10">
         
+        <section class="rounded-2xl border p-5 flex flex-col sm:flex-row gap-4 sm:items-center justify-between" :class="doctorMode ? 'bg-sky-50 border-sky-200 text-slate-900' : 'bg-sky-950/40 border-sky-500/25 text-slate-100'">
+            <div><h2 class="font-bold text-base">Make your next appointment count</h2><p class="text-sm mt-1 opacity-75" x-text="sampleDataActive ? 'Restore your data to prepare an appointment using your own entries.' : 'Bring your priorities, important dates, and questions together.'"></p></div>
+            <button type="button" @click="openAppointmentPrep()" :disabled="sampleDataActive" class="shrink-0 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold px-5 py-3">Prepare for appointment</button>
+        </section>
+
         <section class="zoom-feature-card rounded-2xl p-6 relative overflow-hidden transition-all duration-300"
                  :class="doctorMode ? 'glass-panel-light border-slate-300' : 'glass-panel-dark glow-border'">
             <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
@@ -1586,7 +1718,253 @@
                 cloudSaveTimer: null,
                 persistenceStatus: '',
 
+                // Appointment preparation is independent of AI reports and cloud schemas.
+                showAppointmentPrep: false,
+                appointmentStep: 1,
+                appointmentOwnerId: '',
+                appointmentDateFilter: '',
+                appointmentSaveStatus: '',
+                appointmentMessage: '',
+                appointmentDraft: { date: '', clinician: '', goal: '', concerns: [{text:'',impact:''},{text:'',impact:''},{text:'',impact:''}], dates: [], questions: [], medications: '', notes: '' },
+
+                emptyAppointmentDraft() {
+                    return { date: '', clinician: '', goal: '', concerns: Array.from({length:3}, () => ({text:'',impact:''})), dates: [], questions: [], medications: '', notes: '' };
+                },
+
+                normalizeAppointmentDraft(raw) {
+                    const draft = this.emptyAppointmentDraft();
+                    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return draft;
+                    const text = (value, limit) => typeof value === 'string' ? value.slice(0, limit) : '';
+                    const validDate = value => {
+                        if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+                        const date = new Date(value + 'T12:00:00Z');
+                        return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+                    };
+                    draft.date = validDate(raw.date) ? raw.date : '';
+                    for (const [key, limit] of Object.entries({clinician:150,goal:600,medications:2000,notes:2000})) draft[key] = text(raw[key], limit);
+                    draft.concerns = draft.concerns.map((blank, index) => {
+                        const item = Array.isArray(raw.concerns) ? raw.concerns[index] : null;
+                        return item && typeof item === 'object' ? {text:text(item.text,200),impact:text(item.impact,500)} : blank;
+                    });
+                    draft.dates = Array.isArray(raw.dates) ? [...new Set(raw.dates.filter(validDate))].slice(0,10) : [];
+                    draft.questions = Array.isArray(raw.questions) ? raw.questions.filter(item => item && typeof item.text === 'string').slice(0,12).map((item,index) => ({id:'loaded-' + index,text:text(item.text,500)})) : [];
+                    return draft;
+                },
+
+                appointmentStorageKey() {
+                    return this.user?.id ? 'pulseplot_appointment_' + this.user.id : '';
+                },
+
+                loadAppointmentDraft() {
+                    this.appointmentDraft = this.emptyAppointmentDraft();
+                    this.appointmentOwnerId = this.user?.id || '';
+                    this.appointmentMessage = '';
+                    this.appointmentSaveStatus = 'Your draft stays on this browser.';
+                    const key = this.appointmentStorageKey();
+                    if (!key) return;
+                    try {
+                        const stored = localStorage.getItem(key);
+                        if (stored) {
+                            this.appointmentDraft = this.normalizeAppointmentDraft(JSON.parse(stored));
+                            this.appointmentSaveStatus = 'Saved draft restored from this browser.';
+                        }
+                    } catch (_error) {
+                        this.appointmentSaveStatus = 'The saved draft could not be loaded. You can still prepare and export a summary.';
+                    }
+                },
+
+                saveAppointmentDraft() {
+                    const key = this.appointmentStorageKey();
+                    if (!key || this.appointmentOwnerId !== this.user.id || this.sampleDataActive) return false;
+                    try {
+                        localStorage.setItem(key, JSON.stringify(this.appointmentDraft));
+                        this.appointmentSaveStatus = 'Draft saved on this browser.';
+                        return true;
+                    } catch (_error) {
+                        this.appointmentSaveStatus = 'Draft could not be saved. Keep this window open and copy or download your summary.';
+                        return false;
+                    }
+                },
+
+                openAppointmentPrep() {
+                    if (!this.user || this.sampleDataActive) return;
+                    if (this.appointmentOwnerId !== this.user.id) this.loadAppointmentDraft();
+                    this.appointmentStep = 1;
+                    this.appointmentDateFilter = '';
+                    this.appointmentMessage = '';
+                    this.showAppointmentPrep = true;
+                    this.$nextTick(() => {
+                        if (!this.showAppointmentPrep || this.appointmentOwnerId !== this.user?.id) return;
+                        if (!this.$refs.appointmentDialog.open) this.$refs.appointmentDialog.showModal();
+                    });
+                },
+
+                closeAppointmentPrep() {
+                    this.showAppointmentPrep = false;
+                    if (this.$refs.appointmentDialog?.open) this.$refs.appointmentDialog.close();
+                },
+
+                goAppointmentStep(step) {
+                    this.appointmentStep = Math.max(1, Math.min(4, step));
+                    this.appointmentMessage = '';
+                    this.$nextTick(() => {
+                        this.$refs.appointmentContent.scrollTop = 0;
+                        const section = this.$refs.appointmentContent.querySelectorAll('section')[this.appointmentStep - 1];
+                        const heading = section?.querySelector('h3');
+                        if (heading) { heading.setAttribute('tabindex','-1'); heading.focus({preventScroll:true}); }
+                    });
+                },
+
+                appointmentEntries() {
+                    const query = this.appointmentDateFilter.trim().toLowerCase();
+                    return this.doctorAllTimelineEntries().filter(entry => !query ||
+                        [entry.dateStr,entry.formattedDate,entry.symptoms.join(' '),entry.notes].join(' ').toLowerCase().includes(query));
+                },
+
+                appointmentMissingDates() {
+                    return this.appointmentDraft.dates.filter(date => !Object.prototype.hasOwnProperty.call(this.logs, date));
+                },
+
+                toggleAppointmentDate(date) {
+                    if (this.appointmentDraft.dates.includes(date)) {
+                        this.appointmentDraft.dates = this.appointmentDraft.dates.filter(item => item !== date);
+                    } else if (this.appointmentDraft.dates.length < 10 && Object.prototype.hasOwnProperty.call(this.logs,date)) {
+                        this.appointmentDraft.dates.push(date);
+                    }
+                    this.saveAppointmentDraft();
+                },
+
+                suggestAppointmentDates() {
+                    const suggested = this.doctorAllTimelineEntries().filter(entry => entry.severity >= 7 && !this.appointmentDraft.dates.includes(entry.dateStr))
+                        .slice(0, Math.min(3,10-this.appointmentDraft.dates.length));
+                    this.appointmentDraft.dates.push(...suggested.map(entry => entry.dateStr));
+                    this.appointmentMessage = suggested.length ? 'Added ' + suggested.length + ' date(s). You can uncheck any of them.' : 'No additional high-severity dates are available, or ten dates are already selected.';
+                    this.saveAppointmentDraft();
+                },
+
+                appointmentQuestionSuggestions() {
+                    const topic = this.appointmentDraft.concerns.map(item => item.text.trim()).find(Boolean)
+                        || this.doctorTopSymptoms(1)[0]?.name || 'my symptoms';
+                    return [
+                        'What should we discuss first about ' + topic + '?',
+                        'Which details in my symptom timeline would help you evaluate this?',
+                        'Could any of my medicines or supplements be relevant to these symptoms?',
+                        'What changes should prompt me to seek care sooner?',
+                        'What should I track before our next appointment?'
+                    ];
+                },
+
+                addAppointmentQuestion(text) {
+                    if (this.appointmentDraft.questions.length >= 12) return;
+                    if (text && this.appointmentDraft.questions.some(item => item.text.trim() === text.trim())) return;
+                    this.appointmentDraft.questions.push({id:this.createChatId(),text:text.slice(0,500)});
+                    this.saveAppointmentDraft();
+                },
+
+                removeAppointmentQuestion(id) {
+                    this.appointmentDraft.questions = this.appointmentDraft.questions.filter(item => item.id !== id);
+                    this.saveAppointmentDraft();
+                },
+
+                appointmentSummaryText() {
+                    if (!this.user || this.appointmentOwnerId !== this.user.id || this.sampleDataActive) return '';
+                    const draft = this.appointmentDraft;
+                    const entries = this.doctorAllTimelineEntries();
+                    const selected = entries.filter(entry => draft.dates.includes(entry.dateStr)).sort((a,b) => a.dateStr.localeCompare(b.dateStr));
+                    const concerns = draft.concerns.filter(item => item.text.trim() || item.impact.trim());
+                    const questions = draft.questions.map(item => item.text.trim()).filter(Boolean);
+                    const patient = [this.profile.firstName,this.profile.lastName].filter(Boolean).join(' ') || 'Not provided';
+                    const total = entries.length;
+                    const average = total ? (entries.reduce((sum,entry) => sum + entry.severity,0)/total).toFixed(1) : 'Not available';
+                    const lines = [
+                        'APPOINTMENT PREPARATION',
+                        'Patient: ' + patient,
+                        'Date of birth: ' + (this.profile.birthday ? this.formatDisplayDate(this.profile.birthday) : 'Not provided'),
+                        'Appointment: ' + (draft.date ? this.formatDisplayDate(draft.date) : 'Not set'),
+                        'Clinician / clinic: ' + (draft.clinician.trim() || 'Not provided'),
+                        '', 'WHAT I HOPE TO GET FROM THIS VISIT', draft.goal.trim() || 'Not entered',
+                        '', 'MY TOP CONCERNS',
+                        ...(concerns.length ? concerns.map((item,index) => (index+1) + '. ' + (item.text.trim() || 'Concern not named') + (item.impact.trim() ? '\n   Daily-life impact: ' + item.impact.trim() : '')) : ['No concerns entered']),
+                        '', 'CALENDAR OVERVIEW (ALL LOGGED DAYS)',
+                        'Logged days: ' + total,
+                        ...(total ? [
+                            'Date range: ' + entries[entries.length-1].formattedDate + ' to ' + entries[0].formattedDate,
+                            'Average severity: ' + average + '/10; peak: ' + Math.max(...entries.map(entry => entry.severity)) + '/10',
+                            'Days at 7/10 or higher: ' + entries.filter(entry => entry.severity >= 7).length,
+                            'Common symptoms: ' + (this.doctorTopSymptoms(5).map(item => item.name + ' (' + item.count + ' logged days)').join(', ') || 'No named symptoms'),
+                            'Unlogged days are not assumed to be symptom-free.'
+                        ] : ['No calendar entries yet.']),
+                        '', 'DATES I WANT TO DISCUSS',
+                        ...(selected.length ? selected.map(entry => entry.formattedDate + ' | ' + entry.severity + '/10 | ' + (entry.symptoms.join(', ') || 'No named symptoms') + '\n' + (entry.notes || 'No notes entered')) : ['No dates selected']),
+                        ...(this.appointmentMissingDates().length ? ['Some selected dates were removed from the calendar and are omitted.'] : []),
+                        '', 'MY QUESTIONS',
+                        ...(questions.length ? questions.map((question,index) => (index+1) + '. ' + question) : ['No questions entered']),
+                        '', 'MEDICATIONS / SUPPLEMENTS TO DISCUSS',draft.medications.trim() || 'Not entered (does not mean none)',
+                        '', 'MEDICAL BACKGROUND FROM MY PROFILE',this.profile.medicalNotes?.trim() || 'Not entered',
+                        '', 'OTHER DETAILS TO BRING',draft.notes.trim() || 'Not entered',
+                        '', 'Prepared from patient-entered information for discussion with a clinician. Not a diagnosis.'
+                    ];
+                    return lines.join('\n');
+                },
+
+                async copyAppointmentSummary() {
+                    const text = this.appointmentSummaryText();
+                    const owner = this.user?.id;
+                    if (!text) return;
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        if (this.user?.id === owner) this.appointmentMessage = 'Appointment summary copied.';
+                    } catch (_error) {
+                        if (this.user?.id !== owner) return;
+                        this.appointmentMessage = 'Clipboard access is unavailable. Select the preview text to copy it, or download the PDF.';
+                    }
+                },
+
+                exportAppointmentPdf() {
+                    const text = this.appointmentSummaryText();
+                    if (!text) return;
+                    if (!window.jspdf?.jsPDF) {
+                        this.appointmentMessage = 'The PDF library did not load. Please copy the summary or refresh and try again.';
+                        return;
+                    }
+                    try {
+                        const doc = new window.jspdf.jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
+                        let y = 48;
+                        const width = doc.internal.pageSize.getWidth() - 96;
+                        for (const paragraph of text.split('\n')) {
+                            const heading = /^[A-Z][A-Z /()]+$/.test(paragraph);
+                            doc.setFont('helvetica', heading ? 'bold' : 'normal');
+                            doc.setFontSize(heading ? 11 : 10);
+                            for (const line of doc.splitTextToSize(paragraph || ' ',width)) {
+                                if (y > doc.internal.pageSize.getHeight() - 48) { doc.addPage(); y = 48; }
+                                doc.text(line,48,y);
+                                y += 15;
+                            }
+                        }
+                        const date = this.appointmentDraft.date || this.formatDateKey(new Date());
+                        doc.save('PulsePlot_Appointment_' + date + '.pdf');
+                        this.appointmentMessage = 'Appointment PDF download started.';
+                    } catch (_error) {
+                        this.appointmentMessage = 'The PDF could not be created. You can still copy the summary.';
+                    }
+                },
+
+                resetAppointmentDraft() {
+                    if (!window.confirm('Replace this appointment draft with a new blank draft? Your symptom calendar and AI reports will stay as they are.')) return;
+                    this.appointmentDraft = this.emptyAppointmentDraft();
+                    this.appointmentDateFilter = '';
+                    this.appointmentMessage = '';
+                    this.saveAppointmentDraft();
+                    this.goAppointmentStep(1);
+                },
+
                 async init() {
+                    this.$watch('user', () => {
+                        if ((this.user?.id || '') !== this.appointmentOwnerId) {
+                            this.closeAppointmentPrep();
+                            this.loadAppointmentDraft();
+                        }
+                    });
                     await this.detectRegionalFormat();
 
                     // Always open on the user's current local month and select today's date.
