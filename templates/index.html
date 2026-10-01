@@ -8,6 +8,38 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <script id="pp-theme-controller">
+        (() => {
+            const key = 'pulseplot_theme';
+            let theme = 'light';
+            try { const saved = localStorage.getItem(key); if (saved === 'dark' || saved === 'light') theme = saved; } catch (_) {}
+            const apply = (value) => {
+                document.documentElement.dataset.theme = value;
+                document.documentElement.style.colorScheme = value;
+                document.querySelectorAll('[data-pp-theme-toggle]').forEach(button => {
+                    button.setAttribute('aria-label', value === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+                    button.setAttribute('aria-pressed', String(value === 'dark'));
+                    const label = button.querySelector('[data-pp-theme-label]');
+                    if (label) label.textContent = value === 'dark' ? 'Light mode' : 'Dark mode';
+                });
+            };
+            apply(theme);
+            document.addEventListener('DOMContentLoaded', () => {
+                apply(document.documentElement.dataset.theme);
+                document.querySelectorAll('[data-pp-theme-toggle]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+                        apply(next);
+                        try { localStorage.setItem(key, next); } catch (_) {}
+                    });
+                });
+            });
+            window.addEventListener('storage', event => {
+                if (event.key === key && (event.newValue === 'light' || event.newValue === 'dark')) apply(event.newValue);
+            });
+        })();
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     
     <script>
@@ -253,6 +285,66 @@ body.pp-design { font-family:'Plus Jakarta Sans',sans-serif; color:var(--pp-ink)
 @media(max-width:700px) { #symptom-calendar .zoom-day-block { height:52px; }.pp-summary>div:first-child { min-height:0; }.pp-summary .my-auto { margin:12px 0!important; } }
 .pp-design div[class*="bg-gradient-to-"][class~="text-white"] { background:linear-gradient(140deg,#b7a7cb,#8ca99c)!important;box-shadow:0 5px 15px #76628f15!important; }
 .pp-design [role="dialog"] .blur-3xl { opacity:.07!important; }
+
+/* Stable workspace: long reports never stretch the calendar's preceding rows. */
+.pp-design .pp-workspace { display:flex!important;flex-direction:column;align-items:stretch;gap:22px!important; }
+.pp-design .pp-welcome { order:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.65fr);gap:26px;align-items:center; }
+.pp-design .pp-welcome .pp-metrics { margin:0!important;align-items:stretch; }
+.pp-design .pp-visit { order:1;min-height:174px;flex-direction:row!important;align-items:center!important;gap:20px!important;padding:24px!important; }
+.pp-design .pp-visit-copy { max-width:59%; }.pp-design .pp-visit>button { width:auto;flex-shrink:0;margin-left:auto;align-self:flex-end; }.pp-design .pp-hero-art { width:180px;right:18px;top:0;opacity:.45; }
+.pp-design #doctor-review { order:2; }
+.pp-design .pp-content-grid { order:3;display:grid!important;grid-template-columns:minmax(0,1.1fr) minmax(330px,.9fr);gap:22px;align-items:start; }
+.pp-design #symptom-calendar { grid-column:auto;grid-row:auto;min-width:0; }
+.pp-design .pp-summary { grid-column:auto;grid-row:auto;position:sticky;top:20px;min-width:0;min-height:0;height:auto!important; }
+.pp-design .pp-summary>div:first-child { min-height:0;gap:18px; }
+.pp-design .pp-summary>div:first-child>div:first-child { flex-grow:0; }
+.pp-design .pp-summary .pp-brief-preview { max-height:min(540px,60dvh);overflow-y:auto!important;overscroll-behavior:contain;min-height:0;scrollbar-gutter:stable;padding-right:10px;overflow-wrap:anywhere; }
+.pp-design .pp-summary .pp-brief-preview h2,.pp-design .pp-summary .pp-brief-preview h3 { font-size:16px!important;font-weight:650!important;letter-spacing:-.2px; }
+.pp-design .pp-summary .pp-brief-preview p,.pp-design .pp-summary .pp-brief-preview li { font-size:13px;line-height:1.8; }
+.pp-design .pp-brief-actions { margin-top:0!important; }
+.pp-design .pp-summary .my-auto { min-height:200px;margin:0!important; }
+.pp-design .pp-brand-mark { display:none!important; }
+.pp-design .pp-topbar>div>div:first-child>div:not(.pp-brand-mark) { background:transparent!important;color:inherit!important;box-shadow:none!important;margin:0!important; }
+.pp-design .pp-topbar h1 { margin:0; }
+.pp-design .pp-header-actions { flex-wrap:wrap;gap:9px; }
+.pp-theme-toggle { display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;flex-shrink:0;padding:9px 13px;border:1px solid #c7c4d2;border-radius:14px;color:#544865;background:#ffffff9c;cursor:pointer;font:600 11px/1.4 'Plus Jakarta Sans',sans-serif;box-shadow:0 2px 8px #38324a09; }
+.pp-theme-toggle svg { width:17px;height:17px; }.pp-sun { display:none; }html[data-theme="dark"] .pp-sun { display:block; }html[data-theme="dark"] .pp-moon { display:none; }
+.pp-design .pp-brief-loading { display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px;width:100%;min-height:290px;margin:0!important;padding:28px 20px;border:1px solid #ffffff9c;border-radius:23px;background:#ffffff30; }
+.pp-brief-loading strong { font-size:14px;font-weight:600; }.pp-brief-loading p { max-width:260px;margin:0;font-size:12px;line-height:1.8;color:#607077; }
+.pp-design .pp-loading-spinner { display:block;flex:none;width:48px;height:48px;margin:0;border:3px solid #b9afca55;border-top-color:#806a99;border-right-color:#8fa99d;border-radius:50%;animation:pp-spin 1.1s linear infinite; }
+.pp-loading-lines { width:min(210px,85%);display:flex;align-items:center;flex-direction:column;gap:7px;margin:0; }.pp-loading-lines span { display:block;width:100%;height:5px;border-radius:8px;background:#9a8da326; }.pp-loading-lines span:nth-child(2) { width:82%; }.pp-loading-lines span:nth-child(3) { width:60%; }
+@keyframes pp-spin { to { transform:rotate(360deg); } }
+/* A theme independent of Doctor Mode. Tokens apply to all screens and dialogs. */
+html[data-theme="dark"] { --pp-ink:#e4edf2;--pp-muted:#b0bdc8;--pp-purple:#c6b4de;--pp-line:#ffffff1c;--pp-shadow:0 8px 24px #0508102b,inset 0 1px 0 #ffffff0a; }
+html[data-theme="dark"] body.pp-design { color:#e4edf2!important;background:radial-gradient(ellipse at 88% 70%,#393048 0,transparent 55%),radial-gradient(ellipse at 5% 85%,#273c3c 0,transparent 50%),linear-gradient(140deg,#161e2c,#1d2636)!important;background-attachment:fixed!important; }
+html[data-theme="dark"] .pp-shell { background:linear-gradient(130deg,#263344df,#242d3bdf 55%,#362f44df);border-color:#ffffff25;box-shadow:0 30px 80px #0004,inset 0 1px 0 #fff1; }
+html[data-theme="dark"] .pp-design [class*="text-slate-"],html[data-theme="dark"] .pp-design [class~="text-white"],html[data-theme="dark"] .pp-design [class~="text-black"] { color:#e4edf2!important; }
+html[data-theme="dark"] .pp-design [class*="text-slate-4"],html[data-theme="dark"] .pp-design [class*="text-slate-5"],html[data-theme="dark"] .pp-design [class*="text-slate-6"] { color:#adbac7!important; }
+html[data-theme="dark"] .pp-design [class*="text-sky-"],html[data-theme="dark"] .pp-design [class*="text-indigo-"],html[data-theme="dark"] .pp-design .text-transparent { color:#cbb8e3!important; }
+html[data-theme="dark"] .pp-design [class*="text-rose-"] { color:#f3a5b4!important; }html[data-theme="dark"] .pp-design [class*="text-amber-"] { color:#eaca91!important; }html[data-theme="dark"] .pp-design [class*="text-emerald-"] { color:#8ecab5!important; }
+html[data-theme="dark"] .pp-design [class*="bg-slate-"],html[data-theme="dark"] .pp-design [class*="bg-[#0"],html[data-theme="dark"] .pp-design [class*="bg-white"] { background-color:#273243!important;color:#e4edf2; }
+html[data-theme="dark"] .pp-design [class*="border-white/"],html[data-theme="dark"] .pp-design [class*="border-slate-"] { border-color:#ffffff20!important; }
+html[data-theme="dark"] .pp-design [class*="bg-sky-50"],html[data-theme="dark"] .pp-design [class*="bg-sky-100"],html[data-theme="dark"] .pp-design [class*="bg-indigo-50"],html[data-theme="dark"] .pp-design [class*="bg-indigo-100"],html[data-theme="dark"] .pp-design [class*="bg-sky-600/"],html[data-theme="dark"] .pp-design [class*="bg-indigo-600/"],html[data-theme="dark"] .pp-design [class*="bg-indigo-500/"] { background:#bca2d41a!important;border-color:#bca2d450!important; }
+html[data-theme="dark"] .pp-design [class*="bg-amber-50"],html[data-theme="dark"] .pp-design [class*="bg-amber-100"] { background:#d8ac5220!important;border-color:#d8ac5250!important; }
+html[data-theme="dark"] .pp-design .glass-panel-dark,html[data-theme="dark"] .pp-design .glass-panel-light { background:linear-gradient(135deg,#344151c9,#2a3346c9)!important;border-color:#ffffff20!important;color:#e4edf2!important;box-shadow:var(--pp-shadow); }
+html[data-theme="dark"] .pp-design .pp-topbar,html[data-theme="dark"] .pp-design .pp-footer,html[data-theme="dark"] .pp-design .pp-welcome { background:transparent!important; }
+html[data-theme="dark"] .pp-nav-link { color:#c0cbd4; }html[data-theme="dark"] .pp-nav-link:first-child,html[data-theme="dark"] .pp-nav-link:hover,html[data-theme="dark"] .pp-nav-link[aria-pressed="true"] { background:linear-gradient(120deg,#ffffff15,#ffffff06);border-color:#ffffff2a;color:#f0f4f7; }
+html[data-theme="dark"] .pp-nav-label,html[data-theme="dark"] .pp-sidebar-bottom { color:#9aaab9; }html[data-theme="dark"] .pp-sidebar-note { background:linear-gradient(140deg,#3941538c,#34473e52);border-color:#ffffff20; }html[data-theme="dark"] .pp-sidebar-note p { color:#b6c4cb; }
+html[data-theme="dark"] .pp-design .pp-welcome h2>span.block,html[data-theme="dark"] .pp-design .pp-welcome p,html[data-theme="dark"] .pp-design .pp-welcome .inline-flex { color:#b5c2cd!important; }html[data-theme="dark"] .pp-design .pp-welcome button { background:#ffffff09!important;color:#e2eaf0!important;border-color:#ffffff24!important; }
+html[data-theme="dark"] .pp-design .pp-metrics>div { background:linear-gradient(135deg,#ffffff0e,#ffffff03);border-color:#ffffff25; }html[data-theme="dark"] .pp-design .pp-metrics>div>span { color:#abbac7!important; }html[data-theme="dark"] .pp-design .pp-metrics p { color:#e7eef3!important; }html[data-theme="dark"] .pp-design .pp-metrics>div:nth-child(2) p { color:#f1a3b2!important; }
+html[data-theme="dark"] .pp-design .pp-visit { background:linear-gradient(120deg,#34423f,#363448)!important;border-color:#ffffff28!important; }html[data-theme="dark"] .pp-visit-copy>p:last-child,html[data-theme="dark"] .pp-eyebrow { color:#c2ccce!important; }html[data-theme="dark"] .pp-hero-art { opacity:.27; }
+html[data-theme="dark"] .pp-design .pp-summary { background:linear-gradient(150deg,#ffffff07,#5b426826);border-color:#ffffff24;box-shadow:inset 0 1px 0 #ffffff12; }html[data-theme="dark"] .pp-design .pp-summary>div:first-child { background:transparent!important; }html[data-theme="dark"] .pp-design .pp-summary .my-auto,html[data-theme="dark"] .pp-design .pp-brief-loading { background:#ffffff04!important;border-color:#ffffff1c; }html[data-theme="dark"] .pp-design .pp-summary .my-auto>div:first-child { background:#c8b4dd12!important;border-color:#c8b4dd40!important; }html[data-theme="dark"] .pp-brief-loading p { color:#b4c2ce; }html[data-theme="dark"] .pp-loading-spinner { border-top-color:#ccb3e5!important;border-right-color:#96c6b3!important; }
+html[data-theme="dark"] .pp-design input:not([type="range"]):not([type="checkbox"]),html[data-theme="dark"] .pp-design select,html[data-theme="dark"] .pp-design textarea { background:#182332c9!important;color:#e4edf2!important;border-color:#586378!important; }html[data-theme="dark"] .pp-design input::placeholder,html[data-theme="dark"] .pp-design textarea::placeholder { color:#96a6b7!important; }
+html[data-theme="dark"] .pp-design .pp-theme-toggle { background:#ffffff0b;color:#dbcbea;border-color:#9e8daf70; }html[data-theme="dark"] .pp-design [x-show="profileMenuOpen"],html[data-theme="dark"] .pp-design [x-show="showRegionMenu"] { background:#283243!important; }
+html[data-theme="dark"] .pp-design [x-show="!user"] { background:transparent!important; }html[data-theme="dark"] .pp-design [x-show="!user"]>div>nav,html[data-theme="dark"] .pp-design [x-show="!user"] footer { background:#ffffff05!important; }html[data-theme="dark"] .pp-design [x-show="!user && showAuthModal"]>div,html[data-theme="dark"] .pp-design [x-show="user && showProfileModal"]>div { background:#253142!important;border-color:#ffffff26!important; }
+html[data-theme="dark"] .pp-design .ap-dialog,html[data-theme="dark"] .pp-design .ap-dialog.ap-light { --ap-bg:#202b3b;--ap-card:#2d394b;--ap-line:#566074;--ap-text:#e4edf2;--ap-muted:#b1c0ce;--ap-accent:#c4afe0;background:linear-gradient(135deg,#263445,#302c40);border-color:#ffffff30; }html[data-theme="dark"] .pp-design .ap-steps .ap-btn:not(.ap-step-active) { background:#ffffff05; }html[data-theme="dark"] .pp-design .ap-card { background:#ffffff04; }html[data-theme="dark"] .pp-design .ap-primary,html[data-theme="dark"] .pp-design .ap-step-active { background:#806793;color:white; }
+html[data-theme="dark"] .pp-design .dr-panel { background:#253244d9;color:#e4edf2;border-color:#ffffff25; }html[data-theme="dark"] .pp-design .dr-heading { background:linear-gradient(110deg,#37473f80,#4c3d5480);border-color:#ffffff20; }html[data-theme="dark"] .pp-design .dr-heading p,html[data-theme="dark"] .pp-design .dr-caption { color:#b3c0ce; }html[data-theme="dark"] .pp-design .dr-card { background:#ffffff05;border-color:#ffffff18; }html[data-theme="dark"] .pp-design .dr-btn { background:#344155;color:#e4edf2;border-color:#667086; }html[data-theme="dark"] .pp-design .dr-primary { background:#806793; }html[data-theme="dark"] .pp-design .dr-selected { background:#b79dcc14;border-color:#b79dcc55; }html[data-theme="dark"] .pp-design .dr-kicker { color:#cbb6df!important; }html[data-theme="dark"] .pp-design .dr-track { background:#ffffff13; }html[data-theme="dark"] .pp-design .dr-notice { background:#cba36318;color:#efd3a1;border-color:#cba36355; }
+html[data-theme="dark"] .pp-design .dr-dot:focus-visible,html[data-theme="dark"] .pp-design .dr-dot[aria-pressed="true"] { outline-color:#dbcbea; }
+html[data-theme="dark"] .pp-design [class*="bg-slate-950/"][class*="fixed"] { background:#080f1ac4!important; }
+@media(max-width:1180px) { .pp-design .pp-welcome { grid-template-columns:1fr;gap:18px; }.pp-design .pp-content-grid { grid-template-columns:minmax(0,1fr) minmax(290px,.85fr);gap:16px; } }
+@media(max-width:1020px) { .pp-design .pp-content-grid { grid-template-columns:minmax(0,1fr); }.pp-design .pp-summary { position:static; }.pp-design .pp-visit { flex-direction:column!important;align-items:flex-start!important; }.pp-design .pp-visit>button { margin-left:0;width:100%; }.pp-design .pp-visit-copy { max-width:72%; }.pp-design .pp-summary .pp-brief-preview { max-height:460px; } }
+@media(max-width:700px) { .pp-design .pp-welcome { display:block; }.pp-design .pp-welcome .pp-metrics { margin-top:20px!important; }.pp-theme-toggle { min-height:38px;padding:8px 10px;font-size:10px; }.pp-design .pp-visit { padding:19px!important; }.pp-design .pp-hero-art { width:120px; }.pp-design .pp-brief-loading { min-height:250px; }.pp-design .pp-summary .pp-brief-preview { max-height:420px; }.pp-design #symptom-calendar>div>div:first-child { gap:12px; } }
+@media(prefers-reduced-motion:reduce) { .pp-design .pp-loading-spinner { animation:none!important;border-style:dotted; } }
 
 </style>
 </head>
@@ -1059,16 +1151,15 @@ body.pp-design { font-family:'Plus Jakarta Sans',sans-serif; color:var(--pp-ink)
             <nav class="sticky top-0 z-30 border-b border-white/10 bg-[#090d16]/75 backdrop-blur-2xl">
                 <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-4 flex items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
-                        <div class="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-indigo-600 text-white shadow-lg shadow-rose-500/20">
-                            <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
+                        <div class="pp-brand-mark relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-indigo-600 text-white shadow-lg shadow-rose-500/20">
+                            
                         </div>
                         <div>
                             <p class="text-lg font-extrabold tracking-tight">PulsePlot <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-indigo-400 to-sky-400">AI</span></p>
                             <p class="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-slate-500 font-mono">Personal Health Timeline</p>
                         </div>
                     </div>
+                    <button type="button" class="pp-theme-toggle" data-pp-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><svg class="pp-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20.8 13A9 9 0 0 1 11 3.2 9 9 0 1 0 20.8 13Z"/></svg><svg class="pp-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span data-pp-theme-label>Dark mode</span></button>
                     <button type="button"
                             @click="showAuthModal = true; authError = ''; authSuccess = ''; authPasswordVisible = false"
                             class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-bold transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
@@ -1194,11 +1285,9 @@ body.pp-design { font-family:'Plus Jakarta Sans',sans-serif; color:var(--pp-ink)
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             
             <div class="flex items-center space-x-3">
-                <div class="relative flex items-center justify-center w-8 h-8 rounded-xl"
+                <div class="pp-brand-mark relative flex items-center justify-center w-8 h-8 rounded-xl"
                      :class="doctorMode ? 'bg-sky-600 text-white' : 'bg-gradient-to-tr from-rose-500 to-indigo-600 text-white shadow-lg shadow-rose-500/20'">
-                    <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                    </svg>
+                    
                 </div>
                 <div>
                     <h1 class="text-lg font-extrabold tracking-tight flex items-center gap-2">
@@ -1207,7 +1296,8 @@ body.pp-design { font-family:'Plus Jakarta Sans',sans-serif; color:var(--pp-ink)
                 </div>
             </div>
 
-            <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+            <div class="pp-header-actions flex items-center space-x-3 w-full sm:w-auto justify-end">
+<button type="button" class="pp-theme-toggle" data-pp-theme-toggle aria-label="Switch to dark mode" aria-pressed="false"><svg class="pp-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20.8 13A9 9 0 0 1 11 3.2 9 9 0 1 0 20.8 13Z"/></svg><svg class="pp-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span data-pp-theme-label>Dark mode</span></button>
                 <button x-show="!sampleDataActive"
                         @click="injectMockTimeline()" 
                         :class="doctorMode ? 'bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-300 hover:border-sky-400' : 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border-indigo-500/30 hover:border-indigo-400/50 hover:shadow-indigo-500/10'"
@@ -1638,21 +1728,14 @@ body.pp-design { font-family:'Plus Jakarta Sans',sans-serif; color:var(--pp-ink)
                             </p>
                         </div>
 
-                        <div x-show="loading" class="space-y-4 animate-pulse my-auto w-full p-2">
-                            <div class="flex items-center gap-3">
-                                <div class="w-3 h-3 bg-sky-400 rounded-full animate-ping"></div>
-                                <div class="h-3 bg-slate-400/20 rounded w-1/3"></div>
-                            </div>
-                            <div class="space-y-2 pt-2">
-                                <div class="h-2.5 bg-slate-400/10 rounded w-full"></div>
-                                <div class="h-2.5 bg-slate-400/10 rounded w-5/6"></div>
-                                <div class="h-2.5 bg-slate-400/10 rounded w-4/5"></div>
-                                <div class="h-2.5 bg-slate-400/10 rounded w-2/3"></div>
-                            </div>
-                            <p class="text-[11px] text-sky-400 font-mono text-center pt-4">Preparing your detailed educational health summary...</p>
+                        <div x-show="loading" class="pp-brief-loading" role="status" aria-live="polite" aria-atomic="true">
+                            <span class="pp-loading-spinner" aria-hidden="true"></span>
+                            <strong>Preparing your health summary</strong>
+                            <p>Bringing your symptoms, notes, and health profile together.</p>
+                            <div class="pp-loading-lines" aria-hidden="true"><span></span><span></span><span></span></div>
                         </div>
 
-                        <div x-show="briefResult && !loading" class="space-y-3 overflow-y-auto pr-1 text-left w-full custom-scrollbar">
+                        <div x-show="briefResult && !loading" class="pp-brief-preview space-y-3 overflow-y-auto pr-1 text-left w-full custom-scrollbar">
                             <div class="rounded-xl border px-3 py-2 text-[10px] leading-relaxed"
                                  :class="doctorMode ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-amber-500/10 border-amber-500/20 text-amber-200'">
                                 <strong>Reminder:</strong> Verify this AI-generated report with a licensed clinician before acting on it.
@@ -1679,7 +1762,7 @@ body.pp-design { font-family:'Plus Jakarta Sans',sans-serif; color:var(--pp-ink)
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t space-y-2 shrink-0" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
+                    <div class="pp-brief-actions pt-4 border-t space-y-2 shrink-0" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
                         <template x-if="!briefResult">
                             <button @click="requestSynthesisWithDisclaimer()" 
                                     :disabled="loading || Object.keys(logs).length === 0" 
