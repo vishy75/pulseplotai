@@ -428,6 +428,75 @@ html[data-theme="dark"] #health-chat .pp-chat-orb { filter:brightness(.83);box-s
 
 #health-chat .pp-chat-sidebar .group:has(.pp-chat-history[aria-current="true"]) { background:var(--chat-selected)!important;border-color:#a58bb645!important; }
 </style>
+<style id="pp-health-report-design">
+/* Focused health report: reference-inspired card layout, existing application palette.
+   Scoped styles preserve the original renderer, data bindings, and actions. */
+#pp-health-report { --r-bg:#e8e8ed;--r-card:#ffffff;--r-ink:#334550;--r-muted:#697680;--r-line:#e9e9ee;--r-accent:#79648f;--r-soft:#f3eff7;--r-sage:#e5eeea; padding:24px; background:radial-gradient(ellipse at 90% 10%,#ded0e5,transparent 65%),linear-gradient(135deg,#d9e4df,#e6e3ec); }
+html[data-theme="dark"] #pp-health-report { --r-bg:#202a38;--r-card:#293545;--r-ink:#e5ecf1;--r-muted:#afbbc7;--r-line:#ffffff18;--r-accent:#cfb9e4;--r-soft:#38384c;--r-sage:#304541;background:radial-gradient(ellipse at 90% 10%,#3e324e,transparent 65%),#15222c; }
+#pp-health-report .pp-report-backdrop { position:relative;inset:auto;width:100%;height:100%;background:var(--r-bg)!important;border:1px solid #ffffff40;border-radius:32px;overflow:hidden;box-shadow:0 25px 90px #27354126; }
+#pp-health-report .pp-report-backdrop>div.pointer-events-none { display:none; }
+#pp-health-report .pp-report-shell { width:100%;height:100%;color:var(--r-ink)!important; }
+#pp-health-report .pp-report-header { background:transparent!important;border:0!important;box-shadow:none!important;padding:25px 32px 17px;gap:18px; }
+#pp-health-report .pp-report-brand { width:42px;height:42px;border-radius:14px;background:var(--r-soft)!important;color:var(--r-accent)!important;box-shadow:none; }
+#pp-health-report .pp-report-header h2 { font-size:18px;font-weight:700;letter-spacing:-.6px;color:var(--r-ink)!important; }
+#pp-health-report .pp-report-wordmark { font-size:13px;font-weight:500;color:var(--r-muted);letter-spacing:0; }
+#pp-health-report .pp-report-header h2+span { font-size:8px;color:var(--r-accent)!important;background:var(--r-soft)!important;border:0;padding:5px 8px; }
+#pp-health-report .pp-report-header p { color:var(--r-muted)!important;font-size:11px; }
+#pp-health-report .pp-report-header button { display:flex!important;background:var(--r-card)!important;color:var(--r-ink)!important;border:1px solid var(--r-line)!important;border-radius:30px;box-shadow:none;font-size:11px;font-weight:600;padding:10px 16px;min-height:42px; }
+#pp-health-report .pp-report-main { padding:20px 32px 32px;scrollbar-color:#b6a8c1 transparent; }
+#pp-health-report .pp-report-content { max-width:1440px; }
+#pp-health-report .pp-report-intro { display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:30px; }
+#pp-health-report .pp-report-eyebrow { font-size:9px;font-weight:700;letter-spacing:.17em;color:var(--r-accent);margin:0 0 12px; }
+#pp-health-report .pp-report-intro h1 { font-size:clamp(28px,3.2vw,44px);font-weight:500;letter-spacing:-1.8px;line-height:1.2;margin:0 0 10px;color:var(--r-ink); }
+#pp-health-report .pp-report-intro>div>p:last-child { font-size:13px;color:var(--r-muted);line-height:1.7; }
+#pp-health-report .pp-report-status { display:flex;align-items:center;gap:9px;font-size:11px;color:var(--r-muted);white-space:nowrap; }
+#pp-health-report .pp-report-status>span { width:8px;height:8px;border-radius:50%;background:#769e8b;box-shadow:0 0 0 5px #769e8b16; }
+#pp-health-report .pp-report-grid { display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:24px;align-items:start; }
+#pp-health-report .pp-report-reading { min-width:0; }
+#pp-health-report .pp-report-notice { background:var(--r-sage)!important;color:var(--r-ink)!important;border:0!important;border-radius:17px;padding:15px 20px;margin-bottom:18px;font-size:12px;line-height:1.7; }
+#pp-health-report .pp-report-article { background:var(--r-card)!important;border:1px solid var(--r-line)!important;box-shadow:none!important;border-radius:26px;padding:30px clamp(22px,3.2vw,48px) 40px; }
+#pp-health-report .pp-report-document-label { display:flex;gap:10px;align-items:center;color:var(--r-muted);font-size:12px;font-weight:600;padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--r-line); }
+#pp-health-report .pp-report-document-label svg { color:var(--r-accent); }
+#pp-health-report .pp-report-prose { max-width:78ch;margin:auto;font-size:15px!important;line-height:1.95!important;color:var(--r-ink)!important;overflow-wrap:anywhere; }
+#pp-health-report .pp-report-prose h2 { font-size:25px!important;line-height:1.4;letter-spacing:-.6px;font-weight:600!important;margin:30px 0 17px!important;color:var(--r-ink)!important; }
+#pp-health-report .pp-report-prose h3 { font-size:20px!important;line-height:1.45;font-weight:600!important;margin:30px 0 14px!important;padding-top:24px;border-top:1px solid var(--r-line);color:var(--r-ink)!important; }
+#pp-health-report .pp-report-prose h4 { font-size:12px!important;line-height:1.6;letter-spacing:.08em;font-weight:700!important;color:var(--r-accent)!important;border:0!important;background:var(--r-soft);padding:10px 14px;margin:24px 0 12px!important;border-radius:10px; }
+#pp-health-report .pp-report-prose>h2:first-child,#pp-health-report .pp-report-prose>h3:first-child { margin-top:0!important;padding-top:0;border-top:0; }
+#pp-health-report .pp-report-prose strong { color:var(--r-ink)!important;font-weight:650; }
+#pp-health-report .pp-report-prose div.flex { font-size:14px!important;line-height:1.9;padding:7px 0;gap:4px; }
+#pp-health-report .pp-report-prose div.flex>span { color:var(--r-ink)!important;min-width:0; }
+#pp-health-report .pp-report-prose div.flex>span:first-child { color:var(--r-accent)!important; }
+#pp-health-report .pp-report-prose div.justify-between { gap:24px;background:var(--r-soft)!important;border:0!important;padding:12px 16px;border-radius:10px;flex-wrap:wrap; }
+#pp-health-report .pp-report-prose div.justify-between>span:last-child { font-family:inherit;text-align:right; }
+#pp-health-report .pp-report-sidebar { display:flex;flex-direction:column;gap:20px;position:sticky;top:0;min-width:0; }
+#pp-health-report .pp-report-profile { background:var(--r-card);padding:24px;border-radius:24px;border:1px solid var(--r-line); }
+#pp-health-report .pp-report-person { display:flex;gap:12px;align-items:center;margin:20px 0 23px;min-width:0; }
+#pp-health-report .pp-report-avatar { width:44px;height:44px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;background:var(--r-soft);color:var(--r-accent);font-size:18px; }
+#pp-health-report .pp-report-person h3 { font-size:14px;font-weight:600;overflow-wrap:anywhere; }
+#pp-health-report .pp-report-person p { font-size:10px;color:var(--r-muted);margin-top:4px; }
+#pp-health-report .pp-report-profile dl>div { padding:13px 0;border-top:1px solid var(--r-line); }
+#pp-health-report .pp-report-profile dl>div:last-child { padding-bottom:0; }
+#pp-health-report .pp-report-profile dt { color:var(--r-muted);font-size:10px;margin-bottom:5px; }
+#pp-health-report .pp-report-profile dd { font-size:12px;font-weight:600;overflow-wrap:anywhere; }
+#pp-health-report .pp-report-actions { background:var(--r-soft)!important;border:1px solid var(--r-line)!important;padding:24px;border-radius:24px; }
+#pp-health-report .pp-report-actions h3,#pp-health-report .pp-report-guide h3 { font-size:19px;font-weight:500;letter-spacing:-.6px;line-height:1.4; }
+#pp-health-report .pp-report-action-copy { font-size:12px;color:var(--r-muted);line-height:1.8;margin:10px 0 20px; }
+#pp-health-report .pp-report-actions>div { display:flex;flex-direction:column;align-items:stretch;gap:16px; }
+#pp-health-report .pp-report-actions>div>p { order:2;font-family:inherit;font-size:9px;color:var(--r-muted)!important;text-align:left;line-height:1.7;overflow-wrap:anywhere; }
+#pp-health-report .pp-report-actions>div>div { display:flex;flex-direction:column;gap:9px; }
+#pp-health-report .pp-report-actions button { min-height:44px;border-radius:25px;font-size:11px;font-weight:600;padding:12px 14px;border:1px solid var(--r-line);background:var(--r-card)!important;color:var(--r-ink)!important; }
+#pp-health-report .pp-report-actions button:last-child { order:-1;background:#79648f!important;color:white!important;border-color:transparent; }
+#pp-health-report button:hover { box-shadow:0 5px 15px #443a5415;transform:translateY(-1px); }
+#pp-health-report button:focus-visible { outline:3px solid var(--r-accent)!important;outline-offset:3px; }
+#pp-health-report .pp-report-guide { background:linear-gradient(140deg,var(--r-sage),var(--r-soft));border-radius:24px;padding:24px;color:var(--r-ink); }
+#pp-health-report .pp-report-guide-icon { display:grid;place-items:center;width:35px;height:35px;border-radius:50%;border:1px solid #9fadae55;margin-bottom:22px;font-size:20px; }
+#pp-health-report .pp-report-guide p { font-size:12px;line-height:1.85;color:var(--r-muted);margin:12px 0 20px; }
+#pp-health-report .pp-report-guide-note { border-top:1px solid #9fadae40;padding-top:14px;font-size:10px;line-height:1.8;color:var(--r-muted); }
+@media(min-width:1600px) { #pp-health-report { padding:38px; } }
+@media(max-width:1050px) { #pp-health-report { padding:14px; }#pp-health-report .pp-report-grid { grid-template-columns:minmax(0,1fr) 250px;gap:18px; }#pp-health-report .pp-report-header { flex-wrap:wrap;padding:22px; }#pp-health-report .pp-report-main { padding:15px 22px 26px; }#pp-health-report .pp-report-status { display:none; } }
+@media(max-width:760px) { #pp-health-report { padding:0; }#pp-health-report .pp-report-backdrop { border:0;border-radius:0; }#pp-health-report .pp-report-header { padding:16px;gap:12px; }#pp-health-report .pp-report-header>div:last-child { width:100%; }#pp-health-report .pp-report-header button { flex:1;font-size:10px;padding:9px 12px; }#pp-health-report .pp-report-header h2 { font-size:17px; }#pp-health-report .pp-report-wordmark { font-size:11px; }#pp-health-report .pp-report-main { padding:12px 16px 26px; }#pp-health-report .pp-report-intro { margin-bottom:22px; }#pp-health-report .pp-report-intro h1 { letter-spacing:-1px; }#pp-health-report .pp-report-grid { grid-template-columns:1fr; }#pp-health-report .pp-report-article { padding:24px 20px; border-radius:22px; }#pp-health-report .pp-report-sidebar { position:static; }#pp-health-report .pp-report-prose { font-size:14px!important; }#pp-health-report .pp-report-prose h2 { font-size:22px!important; }#pp-health-report .pp-report-prose h3 { font-size:18px!important; }#pp-health-report .pp-report-profile { order:1; }#pp-health-report .pp-report-guide { order:2; } }
+@media(prefers-reduced-motion:reduce) { #pp-health-report,#pp-health-report * { animation:none!important;transition:none!important;scroll-behavior:auto!important; } }
+</style>
 </head>
 <body class="pp-design font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
@@ -560,7 +629,7 @@ html[data-theme="dark"] #health-chat .pp-chat-orb { filter:brightness(.83);box-s
     </div>
 
 
-    <div x-show="briefResult && showBriefPanel"
+    <div id="pp-health-report" x-show="briefResult && showBriefPanel"
          x-cloak
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -573,7 +642,7 @@ html[data-theme="dark"] #health-chat .pp-chat-orb { filter:brightness(.83);box-s
          aria-modal="true"
          aria-label="Full-screen AI clinical health summary"
          class="fixed inset-0 z-[9998] w-screen h-[100dvh] overflow-hidden overscroll-contain">
-        <div class="absolute inset-0" :class="doctorMode ? 'bg-slate-100' : 'bg-[#070b14]'">
+        <div class="pp-report-backdrop absolute inset-0" :class="doctorMode ? 'bg-slate-100' : 'bg-[#070b14]'">
             <div class="absolute inset-0 pointer-events-none overflow-hidden">
                 <div class="absolute -top-52 -left-40 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-20"
                      :class="doctorMode ? 'bg-sky-300' : 'bg-sky-700'"></div>
@@ -583,26 +652,26 @@ html[data-theme="dark"] #health-chat .pp-chat-orb { filter:brightness(.83);box-s
                      :class="doctorMode ? 'bg-grid-pattern-light opacity-60' : 'bg-grid-pattern opacity-40'"></div>
             </div>
 
-            <div class="relative w-screen h-[100dvh] flex flex-col overflow-hidden"
+            <div class="pp-report-shell relative w-screen h-[100dvh] flex flex-col overflow-hidden"
                  :class="doctorMode ? 'text-slate-900' : 'text-slate-100'">
-                <header class="shrink-0 min-h-[76px] flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 xl:px-10 py-3.5 sm:py-4 border-b backdrop-blur-2xl"
+                <header class="pp-report-header shrink-0 min-h-[76px] flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 xl:px-10 py-3.5 sm:py-4 border-b backdrop-blur-2xl"
                         :class="doctorMode ? 'bg-white/90 border-slate-200 shadow-sm' : 'bg-[#090e1a]/90 border-white/10 shadow-2xl shadow-black/30'">
                     <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-                        <div class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-sky-500 via-indigo-600 to-rose-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 shrink-0">
+                        <div class="pp-report-brand relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-sky-500 via-indigo-600 to-rose-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 shrink-0">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
                         <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                                <h2 class="text-base sm:text-xl lg:text-2xl font-extrabold tracking-tight">AI Clinical Health Summary</h2>
+                                <h2 class="text-base sm:text-xl lg:text-2xl font-extrabold tracking-tight">PulsePlot <span class="pp-report-wordmark">/ Health summary</span></h2>
                                 <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
                                     AI • Not a Diagnosis
                                 </span>
                             </div>
                             <p class="hidden sm:block text-[10px] sm:text-xs mt-1 truncate"
                                :class="doctorMode ? 'text-slate-500' : 'text-slate-400'">
-                                Your complete generated brief, displayed in a focused full-screen view.
+                                Your health, with a little more clarity.
                             </p>
                         </div>
                     </div>
@@ -631,25 +700,34 @@ html[data-theme="dark"] #health-chat .pp-chat-orb { filter:brightness(.83);box-s
                     </div>
                 </header>
 
-                <main class="grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar px-4 sm:px-8 lg:px-12 xl:px-20 py-6 sm:py-8 lg:py-10">
-                    <div class="w-full max-w-6xl mx-auto space-y-5">
-                        <div class="rounded-2xl border px-4 sm:px-5 py-3.5 text-[11px] sm:text-xs leading-relaxed"
+                <main class="pp-report-main grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar px-4 sm:px-8 lg:px-12 xl:px-20 py-6 sm:py-8 lg:py-10">
+                    <div class="pp-report-content w-full max-w-6xl mx-auto space-y-5">
+                        <section class="pp-report-intro" aria-label="Report overview">
+                            <div><p class="pp-report-eyebrow">YOUR PERSONAL HEALTH BRIEF</p><h1>Your health, at a glance.</h1><p>A clearer view of your symptoms, patterns, and questions to discuss.</p></div>
+                            <div class="pp-report-status"><span aria-hidden="true"></span> AI-generated report</div>
+                        </section>
+                        <div class="pp-report-grid"><div class="pp-report-reading">
+                        <div class="pp-report-notice rounded-2xl border px-4 sm:px-5 py-3.5 text-[11px] sm:text-xs leading-relaxed"
                              :class="doctorMode ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-amber-500/10 border-amber-500/20 text-amber-200'">
                             <strong>Reminder:</strong> Verify this AI-generated report with a licensed clinician before acting on it.
                         </div>
 
-                        <article class="rounded-3xl border p-5 sm:p-7 lg:p-10 shadow-2xl"
+                        <article class="pp-report-article rounded-3xl border p-5 sm:p-7 lg:p-10 shadow-2xl"
                                  :class="doctorMode ? 'bg-white border-slate-200 shadow-slate-200/70' : 'bg-slate-900/88 border-white/10 shadow-black/30'">
-                            <div class="text-xs sm:text-sm lg:text-[15px] leading-relaxed font-sans space-y-3 transition-colors duration-200"
+                            <div class="pp-report-document-label"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h5"/></svg><span>AI Clinical Health Summary</span></div>
+                            <div class="pp-report-prose text-xs sm:text-sm lg:text-[15px] leading-relaxed font-sans space-y-3 transition-colors duration-200"
                                  :class="doctorMode ? 'text-slate-800' : 'text-slate-200'"
                                  x-html="renderMarkdown(briefResult)"></div>
                         </article>
-                    </div>
-                </main>
-
-                <footer class="shrink-0 border-t backdrop-blur-2xl px-4 sm:px-8 lg:px-12 xl:px-20 py-3 sm:py-4"
+                        </div><aside class="pp-report-sidebar" aria-label="Report details and actions">
+                            <section class="pp-report-profile">
+                                <p class="pp-report-eyebrow">PREPARED FOR</p>
+                                <div class="pp-report-person"><span class="pp-report-avatar" x-text="profile.firstName ? profile.firstName.charAt(0).toUpperCase() : 'P'"></span><div><h3 x-text="profile.firstName ? profile.firstName + (profile.lastName ? ' ' + profile.lastName : '') : 'Your health profile'"></h3><p>Personal health summary</p></div></div>
+                                <dl><div><dt>Available log days</dt><dd x-text="Object.keys(logs).length"></dd></div><div><dt>Report generated</dt><dd x-text="briefGeneratedAt || 'Current session'"></dd></div><div><dt>Viewing mode</dt><dd x-text="doctorMode ? 'Doctor view' : 'Patient view'"></dd></div></dl>
+                            </section>
+                <footer class="pp-report-actions shrink-0 border-t backdrop-blur-2xl px-4 sm:px-8 lg:px-12 xl:px-20 py-3 sm:py-4"
                         :class="doctorMode ? 'bg-white/95 border-slate-200' : 'bg-[#090e1a]/92 border-white/10'">
-                    <div class="w-full max-w-6xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <h3>Continue the conversation</h3><p class="pp-report-action-copy">Explore your report or refresh it after updating your entries.</p><div class="w-full max-w-6xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                         <p class="text-[9px] sm:text-[10px] font-mono text-center sm:text-left"
                            :class="doctorMode ? 'text-slate-500' : 'text-slate-400'">
                             Generated <span x-text="briefGeneratedAt || 'in this session'"></span><span x-show="synthesisEngine"> • <span x-text="synthesisEngine"></span></span>
@@ -669,6 +747,12 @@ html[data-theme="dark"] #health-chat .pp-chat-orb { filter:brightness(.83);box-s
                         </div>
                     </div>
                 </footer>
+                            <section class="pp-report-guide"><span class="pp-report-guide-icon" aria-hidden="true">↗</span><h3>Make your next visit count.</h3><p>Bring this report to your appointment. Highlight what has changed and the questions you want to ask.</p><div class="pp-report-guide-note">Your observations. A more informed conversation.</div></section>
+                        </aside></div>
+                    </div>
+                </main>
+
+
             </div>
         </div>
     </div>
