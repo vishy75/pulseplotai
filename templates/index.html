@@ -128,7 +128,22 @@
         .ap-date { display:flex; align-items:flex-start; gap:12px; cursor:pointer; }
         .ap-date input { margin-top:5px; width:18px; height:18px; accent-color:#0284c7; flex-shrink:0; }
         @media(max-width:600px) { .ap-grid { grid-template-columns:1fr; } .ap-header,.ap-footer,.ap-content { padding:16px; } .ap-steps { padding:12px 16px 0; gap:4px; } .ap-steps .ap-btn { padding:9px 4px; font-size:11px; } .ap-dialog { border-radius:16px; max-height:96dvh; } .ap-shell { max-height:94dvh; } }
-    </style>
+            .dr-panel {background:white;border:1px solid #cbd5e1;border-radius:20px;overflow:hidden;color:#0f172a;box-shadow:0 10px 40px #0f172a0a;}
+        .dr-heading {padding:24px;background:linear-gradient(120deg,#e0f2fe,#fff,#eef2ff);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;}
+        .dr-heading h2 {font-size:22px;font-weight:800;}.dr-heading p {font-size:13px;line-height:1.6;color:#475569;}
+        .dr-body {padding:24px;display:grid;gap:18px;}.dr-actions {display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
+        .dr-btn {font-size:12px;font-weight:700;border:1px solid #cbd5e1;border-radius:10px;padding:9px 12px;background:#fff;color:#334155;cursor:pointer;}.dr-btn:hover {border-color:#0284c7;background:#f0f9ff;}.dr-primary {background:#0369a1;border-color:#0369a1;color:white;}.dr-primary:hover {background:#075985;color:white;}.dr-btn:disabled{opacity:.45;cursor:not-allowed;}
+        .dr-filters {display:grid;grid-template-columns:1fr 1fr 1fr 1.4fr;gap:12px;}.dr-filters label,.dr-label {font-size:12px;font-weight:700;display:block;}
+        .dr-filters input,.dr-filters select,.dr-label select {display:block;width:100%;min-width:0;margin-top:6px;border:1px solid #cbd5e1;border-radius:9px;background:white;color:#0f172a;font-size:13px;padding:9px;}
+        .dr-metrics {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}.dr-card{border:1px solid #e2e8f0;border-radius:14px;padding:16px;min-width:0;}.dr-card h3{font-size:15px;font-weight:800;margin-bottom:8px;}.dr-card p{font-size:13px;line-height:1.65;}.dr-metrics strong{display:block;font-size:22px;margin:8px 0;}.dr-metrics .dr-small-stat{font-size:16px;}.dr-kicker{font-size:10px!important;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#0369a1!important;}
+        .dr-columns{display:grid;grid-template-columns:1fr 1fr;gap:16px;}.dr-caption{font-size:12px!important;color:#64748b;line-height:1.6;}.dr-chart{width:100%;height:auto;margin-top:12px;overflow:visible;}.dr-chart circle{cursor:pointer;}.dr-chart circle:focus-visible{outline:3px solid #0f172a;outline-offset:3px;}
+        .dr-symptom{margin-top:14px;font-size:12px;}.dr-track{height:6px;background:#e2e8f0;border-radius:9px;margin:6px 0;overflow:hidden;}.dr-track div{height:100%;background:#0284c7;}.dr-full-note{white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0;}.dr-selected{background:#f0f9ff;border-color:#7dd3fc;}.dr-notice{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:12px;padding:12px;font-size:13px;}
+        .ap-check{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5;}.ap-check input{margin-top:3px;accent-color:#0284c7;}.ap-compact{padding:6px 10px;font-size:12px;}
+        @media(max-width:800px){.dr-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.dr-filters{grid-template-columns:1fr 1fr;}.dr-columns{grid-template-columns:1fr;}}
+        @media(max-width:480px){.dr-heading,.dr-body{padding:16px;}.dr-filters{grid-template-columns:1fr;}.dr-metrics strong{font-size:18px;}}
+
+.dr-dot{position:absolute;width:16px;height:16px;border:2px solid white;border-radius:50%;transform:translate(-50%,-50%);cursor:pointer}.dr-dot:focus-visible,.dr-dot[aria-pressed="true"]{outline:3px solid #0f172a;outline-offset:2px}
+</style>
 </head>
 <body class="font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
@@ -146,6 +161,10 @@
                 </div>
                 <button type="button" class="ap-btn" @click="closeAppointmentPrep()" aria-label="Close appointment preparation">Close</button>
             </header>
+            <div class="ap-card ap-row" style="margin:12px 20px 0">
+                <label class="ap-label" style="flex:1;min-width:180px">Saved visit plan<select class="ap-field" :value="activeAppointmentId" @change="selectAppointmentPlan($event.target.value)"><template x-for="plan in appointmentPlans" :key="plan.id"><option :value="plan.id" x-text="appointmentPlanLabel(plan)"></option></template></select></label>
+                <button type="button" class="ap-btn" @click="newAppointmentPlan()">New visit plan</button>
+            </div>
             <nav class="ap-steps" aria-label="Appointment preparation steps">
                 <template x-for="(label, index) in ['Concerns', 'Key dates', 'Questions', 'Review']" :key="label">
                     <button type="button" class="ap-btn" :class="{ 'ap-step-active': appointmentStep === index + 1 }"
@@ -164,9 +183,13 @@
                         <label class="ap-label">Clinician or clinic<input class="ap-field" maxlength="150" placeholder="Who are you seeing?" x-model="appointmentDraft.clinician" @input="saveAppointmentDraft()"></label>
                     </div>
                     <label class="ap-label">What would make this visit helpful?<textarea class="ap-field" rows="2" maxlength="600" placeholder="For example: understand what to track next" x-model="appointmentDraft.goal" @input="saveAppointmentDraft()"></textarea></label>
+                    <div class="ap-row"><span class="ap-muted">Start with a logged symptom:</span><template x-for="symptom in appointmentScopeSymptoms()" :key="symptom.name"><button type="button" class="ap-btn" @click="addSymptomConcern(symptom.name)" x-text="'+ '+symptom.name"></button></template></div>
                     <template x-for="(concern, index) in appointmentDraft.concerns" :key="index">
                         <div class="ap-card ap-stack">
                             <label class="ap-label"><span x-text="'Priority ' + (index + 1)"></span><input class="ap-field" maxlength="200" placeholder="A symptom, change, or concern" x-model="concern.text" @input="saveAppointmentDraft()"></label>
+                            <div class="ap-row"><button type="button" class="ap-btn" :disabled="index===0" @click="moveAppointmentConcern(index,-1)">Move priority up</button><button type="button" class="ap-btn" :disabled="index===2" @click="moveAppointmentConcern(index,1)">Move priority down</button></div>
+                            <div class="ap-grid"><label class="ap-label">When did it start?<input class="ap-field" maxlength="150" placeholder="Approximate date or how long ago" x-model="concern.onset" @input="saveAppointmentDraft()"></label><label class="ap-label">How often and how long?<input class="ap-field" maxlength="250" placeholder="Frequency and episode length" x-model="concern.pattern" @input="saveAppointmentDraft()"></label></div>
+                            <label class="ap-label">What seems to help or worsen it?<textarea class="ap-field" rows="2" maxlength="300" placeholder="Your observations; these do not establish a cause" x-model="concern.factors" @input="saveAppointmentDraft()"></textarea></label>
                             <label class="ap-label">How does it affect your day?<textarea class="ap-field" rows="2" maxlength="500" placeholder="Sleep, school/work, activities, or anything else" x-model="concern.impact" @input="saveAppointmentDraft()"></textarea></label>
                         </div>
                     </template>
@@ -178,6 +201,11 @@
                         <button type="button" class="ap-btn" @click="suggestAppointmentDates()">Add up to 3 recent high-severity days</button>
                         <span class="ap-muted" x-text="appointmentDraft.dates.length + ' / 10 selected'"></span>
                     </div>
+                    <div class="ap-grid"><label class="ap-label">Overview from<input class="ap-field" type="date" x-model="appointmentDraft.rangeStart" @input="saveAppointmentDraft()"></label><label class="ap-label">Overview through<input class="ap-field" type="date" x-model="appointmentDraft.rangeEnd" @input="saveAppointmentDraft()"></label></div>
+                    <button type="button" class="ap-btn" x-show="doctorMode" @click="appointmentDraft.rangeStart=doctorRangeStart;appointmentDraft.rangeEnd=doctorRangeEnd;saveAppointmentDraft()">Use Doctor Mode date range</button>
+                    <p class="ap-muted" role="status" x-text="appointmentRangeMessage()"></p>
+                    <p class="ap-muted">The range controls the overview and suggestions. Previously selected dates remain included until removed.</p>
+                    <div class="ap-row"><template x-for="date in appointmentDraft.dates" :key="date"><button type="button" class="ap-btn" @click="toggleAppointmentDate(date)" x-text="'Remove '+formatDisplayDate(date)"></button></template></div>
                     <label class="ap-label">Filter entries<input class="ap-field" type="search" placeholder="Search symptoms, notes, or a date" x-model="appointmentDateFilter"></label>
                     <template x-for="date in appointmentMissingDates()" :key="date">
                         <div class="ap-card ap-row"><span class="ap-muted" x-text="date + ' is no longer in your calendar and will be omitted.'"></span><button type="button" class="ap-btn" @click="toggleAppointmentDate(date)">Remove selection</button></div>
@@ -206,10 +234,12 @@
                     <template x-for="(question, index) in appointmentDraft.questions" :key="question.id">
                         <div class="ap-card">
                             <label class="ap-label"><span x-text="'Question ' + (index + 1)"></span><textarea class="ap-field" rows="2" maxlength="500" x-model="question.text" @input="saveAppointmentDraft()"></textarea></label>
+                            <div class="ap-row" style="margin-top:8px"><button type="button" class="ap-btn" :disabled="index===0" @click="moveAppointmentQuestion(index,-1)">Move question up</button><button type="button" class="ap-btn" :disabled="index===appointmentDraft.questions.length-1" @click="moveAppointmentQuestion(index,1)">Move question down</button></div>
                             <button type="button" class="ap-btn" style="margin-top:8px" @click="removeAppointmentQuestion(question.id)" :aria-label="'Remove question ' + (index + 1)">Remove</button>
                         </div>
                     </template>
                     <button type="button" class="ap-btn" @click="addAppointmentQuestion('')" :disabled="appointmentDraft.questions.length >= 12">Add my own question</button>
+                    <div class="ap-card ap-stack"><h4>Things to bring</h4><template x-for="item in appointmentBringItems" :key="item.id"><label class="ap-check"><input type="checkbox" x-model="appointmentDraft.checklist[item.id]" @change="saveAppointmentDraft()"><span x-text="item.label"></span></label></template></div>
                     <label class="ap-label">Medication / supplement list to discuss<textarea class="ap-field" rows="3" maxlength="2000" placeholder="Names, doses, and timing, if you want to include them" x-model="appointmentDraft.medications" @input="saveAppointmentDraft()"></textarea></label>
                     <label class="ap-label">Other details to bring<textarea class="ap-field" rows="3" maxlength="2000" placeholder="Recent changes, test results to bring, or details you do not want to forget" x-model="appointmentDraft.notes" @input="saveAppointmentDraft()"></textarea></label>
                 </section>
@@ -220,9 +250,13 @@
                         <button type="button" class="ap-btn ap-primary" @click="exportAppointmentPdf()">Download appointment PDF</button>
                         <button type="button" class="ap-btn" @click="copyAppointmentSummary()">Copy summary</button>
                     </div>
+                    <div class="ap-card ap-stack"><h4>Preparation checklist (optional)</h4><template x-for="item in appointmentReadiness()" :key="item.label"><p class="ap-muted" x-text="(item.done?'Ready: ':'To consider: ')+item.label"></p></template></div>
+                    <div class="ap-card ap-stack"><h4>After the appointment</h4><label class="ap-label">Visit status<select class="ap-field" x-model="appointmentDraft.status" @change="saveAppointmentDraft()"><option value="planning">Preparing for visit</option><option value="completed">Visit completed</option></select></label><label class="ap-label">What we discussed<textarea class="ap-field" rows="3" maxlength="2000" x-model="appointmentDraft.visitNotes" @input="saveAppointmentDraft()"></textarea></label><label class="ap-label">Next steps to confirm<textarea class="ap-field" rows="3" maxlength="2000" placeholder="Record your understanding; confirm instructions with your clinician" x-model="appointmentDraft.nextSteps" @input="saveAppointmentDraft()"></textarea></label><label class="ap-label">Follow-up date<input type="date" class="ap-field" x-model="appointmentDraft.followUpDate" @input="saveAppointmentDraft()"></label></div>
+                    <p class="ap-muted">Visit plans are saved on this browser for your account. Calendar details in a plan reflect current entries. Download a PDF to keep a snapshot.</p>
+                    <button type="button" class="ap-btn" @click="deleteAppointmentPlan()">Delete this visit plan</button>
                     <pre class="ap-card ap-preview" x-text="appointmentSummaryText()"></pre>
                     <p class="ap-muted">Drafts are saved for your account on this browser only. Downloads and copied text include the personal details shown above.</p>
-                    <button type="button" class="ap-btn" @click="resetAppointmentDraft()">Start a new appointment</button>
+                    <button type="button" class="ap-btn" @click="newAppointmentPlan()">Start a new appointment</button>
                 </section>
             </div>
             <footer class="ap-footer">
@@ -1215,94 +1249,70 @@
             </div>
         </section>
 
-        <section x-show="doctorMode" x-cloak class="rounded-2xl border border-slate-300 bg-white shadow-xl shadow-slate-200/60 overflow-hidden animate-fadeIn">
-            <div class="px-5 sm:px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-sky-50 via-white to-indigo-50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <h2 class="text-base sm:text-lg font-extrabold text-slate-900">Clinical Quick Review</h2>
-                        <span class="px-2 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-[9px] font-extrabold uppercase tracking-widest">Doctor workspace</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500 mt-1">A concise, data-only handoff from the patient’s entered profile and timeline. AI output remains educational and unverified.</p>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <button type="button" @click="copyDoctorHandoff()" :disabled="Object.keys(logs).length === 0" class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 disabled:opacity-40 border border-slate-300 text-slate-700 text-[11px] font-bold transition cursor-pointer flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 8h8m0 0l-3-3m3 3l-3 3"/></svg>
-                        <span x-text="doctorCopyStatus || 'Copy Handoff'"></span>
-                    </button>
-                    <button type="button" @click="briefResult ? openBriefPanel() : requestSynthesisWithDisclaimer()" :disabled="Object.keys(logs).length === 0" class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white text-[11px] font-bold transition cursor-pointer" x-text="briefResult ? 'Open AI Brief' : 'Generate AI Brief'"></button>
-                    <button type="button" x-show="briefResult" @click="toggleChatPanel()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold transition cursor-pointer">Ask Follow-Up</button>
+        <section x-show="doctorMode" x-cloak id="doctor-review" class="dr-panel">
+            <div class="dr-heading">
+                <div><p class="dr-kicker">Doctor workspace · patient-entered information</p><h2>Clinical Quick Review</h2><p>Find the pattern, inspect the original entries, and bring a focused handoff to the visit.</p></div>
+                <div class="dr-actions">
+                    <button type="button" class="dr-btn" @click="copyDoctorReview()">Copy handoff</button>
+                    <button type="button" class="dr-btn dr-primary" @click="downloadDoctorReview()">Download handoff PDF</button>
+                    <button type="button" class="dr-btn" @click="openAppointmentPrep()" :disabled="sampleDataActive">Open visit plan</button>
+                    <button type="button" class="dr-btn" @click="briefResult ? openBriefPanel() : requestSynthesisWithDisclaimer()" :disabled="!Object.keys(logs).length" x-text="briefResult ? 'Open AI Brief' : 'Generate AI Brief'"></button>
+                    <button type="button" class="dr-btn" x-show="briefResult" @click="toggleChatPanel()">Ask Follow-Up</button>
                 </div>
             </div>
-
-            <div class="p-5 sm:p-6 space-y-5">
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
-                        <p class="text-[9px] uppercase tracking-widest font-extrabold text-slate-500">Coverage</p>
-                        <p class="text-xl font-mono font-extrabold text-slate-900 mt-1" x-text="doctorMetrics().total + ' logs'"></p>
-                        <p class="text-[10px] text-slate-500 mt-1" x-text="doctorMetrics().firstDate + ' → ' + doctorMetrics().lastDate"></p>
+            <div class="dr-body">
+                <p x-show="sampleDataActive" class="dr-notice">Sample preview — these entries are not a patient record. Exported handoffs are labeled SAMPLE DATA.</p>
+                <p x-show="doctorExportStatus" role="status" class="dr-notice" x-text="doctorExportStatus"></p>
+                <div class="dr-filters">
+                    <label>From<input type="date" x-model="doctorRangeStart"></label>
+                    <label>Through<input type="date" x-model="doctorRangeEnd"></label>
+                    <label>Symptom<select aria-label="Symptom" x-model="doctorSymptomFilter"><option value="">All symptoms</option><template x-for="item in doctorAvailableSymptoms()" :key="item.name"><option :value="item.name" x-text="item.name"></option></template></select></label>
+                    <label>Search notes / dates<input type="search" x-model="doctorSearch" placeholder="Find an entered detail"></label>
+                </div>
+                <div class="dr-actions"><button type="button" class="dr-btn" @click="setDoctorRange(30)">Latest 30 days of logs</button><button type="button" class="dr-btn" @click="setDoctorRange(90)">Latest 90 days of logs</button><button type="button" class="dr-btn" @click="resetDoctorFilters()">Reset filters</button></div>
+                <p x-show="doctorRangeStart && doctorRangeEnd && doctorRangeStart > doctorRangeEnd" role="alert" class="dr-notice">Start date must be on or before end date.</p>
+                <div class="dr-metrics">
+                    <div class="dr-card"><p class="dr-kicker">Matching entries</p><strong x-text="doctorReviewMetrics().total + ' days'"></strong><p x-text="doctorReviewMetrics().firstDate + ' to ' + doctorReviewMetrics().lastDate"></p></div>
+                    <div class="dr-card"><p class="dr-kicker">Daily severity</p><strong x-text="doctorReviewMetrics().average + '/10 average'"></strong><p x-text="'Peak: ' + doctorReviewMetrics().peak + '/10'"></p></div>
+                    <div class="dr-card"><p class="dr-kicker">Severity 7–10</p><strong x-text="doctorReviewMetrics().highCount + ' days'"></strong><p>Based on the patient's overall daily score</p></div>
+                    <div class="dr-card"><p class="dr-kicker">Two calendar-week comparison</p><strong class="dr-small-stat" x-text="doctorReviewMetrics().trendLabel"></strong><p x-text="'Last 7 days: ' + doctorReviewMetrics().recentAverage + ' (' + doctorReviewMetrics().recentCount + ' logs); prior 7: ' + doctorReviewMetrics().previousAverage + ' (' + doctorReviewMetrics().previousCount + ' logs)'"></p></div>
+                </div>
+                <p class="dr-caption" x-text="'Comparison ends ' + doctorReviewMetrics().comparisonEnd + '. ' + doctorReviewMetrics().periodTotal + ' total logged days in the date range; ' + doctorReviewMetrics().missingDays + ' unlogged days. Missing logs do not mean symptom-free days. At least two logs in each week are needed to compare averages.'"></p>
+                <div class="dr-columns">
+                    <div class="dr-card">
+                        <h3>Severity across the selected dates</h3><p class="dr-caption">Each dot is one log. Select a dot to read the full entry. Gaps contain no assumed values.</p>
+                        <div x-show="doctorReviewEntries().length" style="position:relative;width:100%;aspect-ratio:640/185" role="group" aria-label="Interactive daily severity chart">
+                            <svg viewBox="0 0 640 185" aria-hidden="true" style="display:block;width:100%;height:100%">
+                                <line x1="32" x2="608" y1="24" y2="24" stroke="#cbd5e1"/><text x="6" y="28" font-size="12" fill="#475569">10</text>
+                                <line x1="32" x2="608" y1="89" y2="89" stroke="#e2e8f0"/><text x="12" y="93" font-size="12" fill="#475569">5</text>
+                                <line x1="32" x2="608" y1="154" y2="154" stroke="#cbd5e1"/><text x="12" y="158" font-size="12" fill="#475569">0</text>
+                            </svg>
+                            <template x-for="point in doctorChartPoints()" :key="point.dateStr"><button type="button" class="dr-dot" :style="'left:'+(point.x/640*100)+'%;top:'+(point.y/185*100)+'%;background:'+(point.severity>=7?'#be123c':'#0369a1')" :aria-pressed="doctorSelectedDate===point.dateStr" :aria-label="point.formattedDate+', severity '+point.severity+' of 10'" :title="point.formattedDate+': '+point.severity+'/10'" @click="doctorSelectedDate=point.dateStr"></button></template>
+                        </div>
+                        <div class="dr-actions dr-caption" style="justify-content:space-between" x-show="doctorReviewEntries().length"><span x-text="doctorReviewMetrics().firstDate"></span><span x-text="doctorReviewMetrics().lastDate"></span></div>
+                        <p x-show="!doctorReviewEntries().length" class="dr-caption">No entries match these filters.</p>
+                        <label class="dr-label" style="margin-top:12px">Inspect an entry<select :value="doctorSelectedDate" @change="doctorSelectedDate=$event.target.value"><option value="">Choose a date</option><template x-for="entry in doctorReviewEntries()" :key="entry.dateStr"><option :value="entry.dateStr" x-text="entry.formattedDate + ' · ' + entry.severity + '/10'"></option></template></select></label>
                     </div>
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
-                        <p class="text-[9px] uppercase tracking-widest font-extrabold text-slate-500">Severity</p>
-                        <p class="text-xl font-mono font-extrabold text-slate-900 mt-1"><span x-text="doctorMetrics().average"></span><span class="text-xs text-slate-400"> avg</span></p>
-                        <p class="text-[10px] text-slate-500 mt-1">Peak <strong class="text-slate-700" x-text="doctorMetrics().peak + '/10'"></strong></p>
-                    </div>
-                    <div class="rounded-xl border p-3.5" :class="doctorMetrics().highCount ? 'border-rose-200 bg-rose-50' : 'border-emerald-200 bg-emerald-50'">
-                        <p class="text-[9px] uppercase tracking-widest font-extrabold" :class="doctorMetrics().highCount ? 'text-rose-600' : 'text-emerald-600'">High-severity days</p>
-                        <p class="text-xl font-mono font-extrabold mt-1" :class="doctorMetrics().highCount ? 'text-rose-700' : 'text-emerald-700'" x-text="doctorMetrics().highCount"></p>
-                        <p class="text-[10px] mt-1" :class="doctorMetrics().highCount ? 'text-rose-600' : 'text-emerald-600'">Patient-entered severity 7–10</p>
-                    </div>
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3.5">
-                        <p class="text-[9px] uppercase tracking-widest font-extrabold text-slate-500">Recent trend</p>
-                        <p class="text-sm font-extrabold mt-2" :class="doctorMetrics().trendDirection === 'up' ? 'text-rose-700' : (doctorMetrics().trendDirection === 'down' ? 'text-emerald-700' : 'text-slate-700')" x-text="doctorMetrics().trendLabel"></p>
-                        <p class="text-[10px] text-slate-500 mt-1">Recent avg <span class="font-bold" x-text="doctorMetrics().recentAverage + '/10'"></span></p>
+                    <div class="dr-card">
+                        <h3>Symptom frequency</h3><p class="dr-caption">Share of matching logged days. Severity is the overall daily score, not symptom-specific.</p>
+                        <template x-for="item in doctorReviewSymptoms()" :key="item.name"><div class="dr-symptom"><div class="dr-actions" style="justify-content:space-between"><strong x-text="item.name"></strong><span x-text="item.count + ' days · ' + item.percent + '%'"></span></div><div class="dr-track"><div :style="'width:' + item.percent + '%'"></div></div><p class="dr-caption" x-text="'Mean daily severity on these days: ' + item.average + '/10'"></p></div></template>
+                        <p x-show="!doctorReviewSymptoms().length" class="dr-caption">No named symptoms in the matching entries.</p>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr_1.15fr] gap-4">
-                    <div class="rounded-xl border border-slate-200 p-4">
-                        <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-sky-700">Patient snapshot</h3>
-                        <dl class="mt-3 grid grid-cols-[92px_minmax(0,1fr)] gap-x-3 gap-y-2 text-[11px]">
-                            <dt class="text-slate-500">Name</dt><dd class="font-bold text-slate-900 truncate" x-text="[profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'Not provided'"></dd>
-                            <dt class="text-slate-500">DOB</dt><dd class="font-semibold text-slate-700" x-text="profile.birthday ? formatDisplayDate(profile.birthday) : 'Not provided'"></dd>
-                            <dt class="text-slate-500">Gender</dt><dd class="font-semibold text-slate-700" x-text="profile.gender || 'Not provided'"></dd>
-                            <dt class="text-slate-500">Height / Weight</dt><dd class="font-semibold text-slate-700" x-text="(profile.height || '—') + ' / ' + (profile.weight || '—')"></dd>
-                            <dt class="text-slate-500">Background</dt><dd class="font-semibold text-slate-700 max-h-20 overflow-y-auto custom-scrollbar" x-text="profile.medicalNotes || 'None reported'"></dd>
-                        </dl>
-                    </div>
-
-                    <div class="rounded-xl border border-slate-200 p-4">
-                        <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-sky-700">Most frequent symptoms</h3>
-                        <div class="flex flex-wrap gap-2 mt-3">
-                            <template x-for="item in doctorTopSymptoms()" :key="item.name">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 text-[10px] font-bold">
-                                    <span x-text="item.name"></span><span class="font-mono text-sky-500" x-text="item.count + '×'"></span>
-                                </span>
-                            </template>
-                            <span x-show="doctorTopSymptoms().length === 0" class="text-[11px] text-slate-500">No symptoms selected in the timeline.</span>
-                        </div>
-                    </div>
-
-                    <div class="rounded-xl border border-slate-200 p-4">
-                        <div class="flex items-center justify-between gap-3">
-                            <h3 class="text-[10px] uppercase tracking-widest font-extrabold text-sky-700">Entries needing review</h3>
-                            <span class="text-[9px] text-slate-400">High severity or patient note</span>
-                        </div>
-                        <div class="space-y-2 mt-3 max-h-44 overflow-y-auto custom-scrollbar pr-1">
-                            <template x-for="entry in doctorAttentionEntries()" :key="entry.dateStr">
-                                <button type="button" @click="openDoctorEntry(entry)" class="w-full rounded-lg border border-slate-200 hover:border-sky-300 hover:bg-sky-50 p-2.5 text-left transition cursor-pointer">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <span class="text-[10px] font-mono font-bold text-slate-700" x-text="entry.formattedDate"></span>
-                                        <span class="text-[9px] font-extrabold px-2 py-0.5 rounded" :class="entry.severity >= 7 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'" x-text="entry.severity + '/10'"></span>
-                                    </div>
-                                    <p class="text-[10px] text-slate-600 truncate mt-1" x-text="entry.notes || entry.symptoms.join(', ') || 'No details entered'"></p>
-                                </button>
-                            </template>
-                            <p x-show="doctorAttentionEntries().length === 0" class="text-[11px] text-slate-500 py-3">No high-severity or note-bearing entries were found.</p>
-                        </div>
-                    </div>
+                <div x-show="doctorSelectedEntry()" class="dr-card dr-selected">
+                    <h3 x-text="doctorSelectedEntry()?.formattedDate + ' · ' + doctorSelectedEntry()?.severity + '/10'"></h3>
+                    <p x-text="doctorSelectedEntry()?.symptoms.join(', ') || 'No named symptoms'"></p>
+                    <p class="dr-full-note" x-text="doctorSelectedEntry()?.notes || 'No note entered.'"></p>
+                    <div class="dr-actions"><button type="button" class="dr-btn" @click="openDoctorEntry(doctorSelectedEntry())">Open original calendar log</button><button type="button" class="dr-btn dr-primary" :disabled="sampleDataActive" @click="addDoctorDateToAppointment(doctorSelectedDate)">Add date to active visit plan</button></div>
                 </div>
+                <div class="dr-columns">
+                    <div class="dr-card"><h3>Patient snapshot</h3><p><strong x-text="[profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'Name not entered'"></strong></p><p x-text="'DOB: ' + (profile.birthday ? formatDisplayDate(profile.birthday) : 'Not entered') + ' · ' + (profile.gender || 'Gender not entered')"></p><p x-text="'Height / weight: ' + (profile.height || 'Not entered') + ' / ' + (profile.weight || 'Not entered')"></p><p class="dr-full-note" x-text="profile.medicalNotes || 'Medical background not entered.'"></p></div>
+                    <div class="dr-card"><h3>What the patient wants to discuss</h3><p x-text="appointmentOwnerId === user?.id && !sampleDataActive ? (appointmentDraft.goal || 'No visit goal entered yet.') : 'Open a visit plan to prepare your priorities.'"></p><template x-for="(item,index) in (appointmentOwnerId === user?.id && !sampleDataActive ? appointmentDraft.concerns.filter(item => item.text || item.impact) : [])" :key="index"><p class="dr-full-note"><strong x-text="(index+1) + '. ' + item.text"></strong><span style="display:block" x-text="item.impact"></span></p></template><button type="button" class="dr-btn" @click="openAppointmentPrep()" :disabled="sampleDataActive">Edit priorities and questions</button></div>
+                </div>
+                <p class="dr-caption">Date, symptom, and search filters control this review and its handoff. The timeline's All / Recent / Pain / Notes buttons below only narrow that list. AI reports retain their existing scope.</p>
             </div>
         </section>
+
 
         <div class="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-6 grow items-start">
             
@@ -1725,13 +1735,13 @@
                 appointmentDateFilter: '',
                 appointmentSaveStatus: '',
                 appointmentMessage: '',
-                appointmentDraft: { date: '', clinician: '', goal: '', concerns: [{text:'',impact:''},{text:'',impact:''},{text:'',impact:''}], dates: [], questions: [], medications: '', notes: '' },
+                appointmentDraft: { date: '', clinician: '', goal: '', concerns: [{text:'',impact:'',onset:'',pattern:'',factors:''},{text:'',impact:'',onset:'',pattern:'',factors:''},{text:'',impact:'',onset:'',pattern:'',factors:''}], dates: [], questions: [], medications: '', notes: '', rangeStart:'', rangeEnd:'', followUpDate:'', visitNotes:'', nextSteps:'', status:'planning', checklist:{medicines:false,results:false,questions:false,summary:false} },
 
                 emptyAppointmentDraft() {
-                    return { date: '', clinician: '', goal: '', concerns: Array.from({length:3}, () => ({text:'',impact:''})), dates: [], questions: [], medications: '', notes: '' };
+                    return { date: '', clinician: '', goal: '', concerns: Array.from({length:3}, () => ({text:'',impact:'',onset:'',pattern:'',factors:''})), dates: [], questions: [], medications: '', notes: '', rangeStart:'', rangeEnd:'', followUpDate:'', visitNotes:'', nextSteps:'', status:'planning', checklist:{medicines:false,results:false,questions:false,summary:false} };
                 },
 
-                normalizeAppointmentDraft(raw) {
+                normalizeAppointmentBaseDraft(raw) {
                     const draft = this.emptyAppointmentDraft();
                     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return draft;
                     const text = (value, limit) => typeof value === 'string' ? value.slice(0, limit) : '';
@@ -1753,37 +1763,6 @@
 
                 appointmentStorageKey() {
                     return this.user?.id ? 'pulseplot_appointment_' + this.user.id : '';
-                },
-
-                loadAppointmentDraft() {
-                    this.appointmentDraft = this.emptyAppointmentDraft();
-                    this.appointmentOwnerId = this.user?.id || '';
-                    this.appointmentMessage = '';
-                    this.appointmentSaveStatus = 'Your draft stays on this browser.';
-                    const key = this.appointmentStorageKey();
-                    if (!key) return;
-                    try {
-                        const stored = localStorage.getItem(key);
-                        if (stored) {
-                            this.appointmentDraft = this.normalizeAppointmentDraft(JSON.parse(stored));
-                            this.appointmentSaveStatus = 'Saved draft restored from this browser.';
-                        }
-                    } catch (_error) {
-                        this.appointmentSaveStatus = 'The saved draft could not be loaded. You can still prepare and export a summary.';
-                    }
-                },
-
-                saveAppointmentDraft() {
-                    const key = this.appointmentStorageKey();
-                    if (!key || this.appointmentOwnerId !== this.user.id || this.sampleDataActive) return false;
-                    try {
-                        localStorage.setItem(key, JSON.stringify(this.appointmentDraft));
-                        this.appointmentSaveStatus = 'Draft saved on this browser.';
-                        return true;
-                    } catch (_error) {
-                        this.appointmentSaveStatus = 'Draft could not be saved. Keep this window open and copy or download your summary.';
-                        return false;
-                    }
                 },
 
                 openAppointmentPrep() {
@@ -1817,7 +1796,7 @@
 
                 appointmentEntries() {
                     const query = this.appointmentDateFilter.trim().toLowerCase();
-                    return this.doctorAllTimelineEntries().filter(entry => !query ||
+                    return this.appointmentScopeEntries().filter(entry => !query ||
                         [entry.dateStr,entry.formattedDate,entry.symptoms.join(' '),entry.notes].join(' ').toLowerCase().includes(query));
                 },
 
@@ -1835,7 +1814,7 @@
                 },
 
                 suggestAppointmentDates() {
-                    const suggested = this.doctorAllTimelineEntries().filter(entry => entry.severity >= 7 && !this.appointmentDraft.dates.includes(entry.dateStr))
+                    const suggested = this.appointmentScopeEntries().filter(entry => entry.severity >= 7 && !this.appointmentDraft.dates.includes(entry.dateStr))
                         .slice(0, Math.min(3,10-this.appointmentDraft.dates.length));
                     this.appointmentDraft.dates.push(...suggested.map(entry => entry.dateStr));
                     this.appointmentMessage = suggested.length ? 'Added ' + suggested.length + ' date(s). You can uncheck any of them.' : 'No additional high-severity dates are available, or ten dates are already selected.';
@@ -1844,7 +1823,7 @@
 
                 appointmentQuestionSuggestions() {
                     const topic = this.appointmentDraft.concerns.map(item => item.text.trim()).find(Boolean)
-                        || this.doctorTopSymptoms(1)[0]?.name || 'my symptoms';
+                        || this.appointmentScopeSymptoms()[0]?.name || 'my symptoms';
                     return [
                         'What should we discuss first about ' + topic + '?',
                         'Which details in my symptom timeline would help you evaluate this?',
@@ -1866,11 +1845,11 @@
                     this.saveAppointmentDraft();
                 },
 
-                appointmentSummaryText() {
+                appointmentBaseSummaryText() {
                     if (!this.user || this.appointmentOwnerId !== this.user.id || this.sampleDataActive) return '';
                     const draft = this.appointmentDraft;
-                    const entries = this.doctorAllTimelineEntries();
-                    const selected = entries.filter(entry => draft.dates.includes(entry.dateStr)).sort((a,b) => a.dateStr.localeCompare(b.dateStr));
+                    const entries = this.appointmentScopeEntries();
+                    const selected = this.doctorAllTimelineEntries().filter(entry => draft.dates.includes(entry.dateStr)).sort((a,b) => a.dateStr.localeCompare(b.dateStr));
                     const concerns = draft.concerns.filter(item => item.text.trim() || item.impact.trim());
                     const questions = draft.questions.map(item => item.text.trim()).filter(Boolean);
                     const patient = [this.profile.firstName,this.profile.lastName].filter(Boolean).join(' ') || 'Not provided';
@@ -1885,16 +1864,17 @@
                         '', 'WHAT I HOPE TO GET FROM THIS VISIT', draft.goal.trim() || 'Not entered',
                         '', 'MY TOP CONCERNS',
                         ...(concerns.length ? concerns.map((item,index) => (index+1) + '. ' + (item.text.trim() || 'Concern not named') + (item.impact.trim() ? '\n   Daily-life impact: ' + item.impact.trim() : '')) : ['No concerns entered']),
-                        '', 'CALENDAR OVERVIEW (ALL LOGGED DAYS)',
+                        '', 'CALENDAR OVERVIEW (SELECTED DATE RANGE)',
+                        'Scope: '+(draft.rangeStart || 'earliest log')+' to '+(draft.rangeEnd || 'latest log'),
                         'Logged days: ' + total,
                         ...(total ? [
                             'Date range: ' + entries[entries.length-1].formattedDate + ' to ' + entries[0].formattedDate,
                             'Average severity: ' + average + '/10; peak: ' + Math.max(...entries.map(entry => entry.severity)) + '/10',
                             'Days at 7/10 or higher: ' + entries.filter(entry => entry.severity >= 7).length,
-                            'Common symptoms: ' + (this.doctorTopSymptoms(5).map(item => item.name + ' (' + item.count + ' logged days)').join(', ') || 'No named symptoms'),
+                            'Common symptoms: ' + (this.appointmentScopeSymptoms().map(item => item.name + ' (' + item.count + ' logged days)').join(', ') || 'No named symptoms'),
                             'Unlogged days are not assumed to be symptom-free.'
                         ] : ['No calendar entries yet.']),
-                        '', 'DATES I WANT TO DISCUSS',
+                        '', 'DATES I WANT TO DISCUSS (may include selections outside the overview range)',
                         ...(selected.length ? selected.map(entry => entry.formattedDate + ' | ' + entry.severity + '/10 | ' + (entry.symptoms.join(', ') || 'No named symptoms') + '\n' + (entry.notes || 'No notes entered')) : ['No dates selected']),
                         ...(this.appointmentMissingDates().length ? ['Some selected dates were removed from the calendar and are omitted.'] : []),
                         '', 'MY QUESTIONS',
@@ -1958,10 +1938,310 @@
                     this.goAppointmentStep(1);
                 },
 
+                doctorRangeStart: '',
+                doctorRangeEnd: '',
+                doctorSymptomFilter: '',
+                doctorSearch: '',
+                doctorSelectedDate: '',
+                doctorExportStatus: '',
+
+                dateOrdinal(value) {
+                    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+                    const timestamp = Date.parse(value + 'T12:00:00Z');
+                    return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0,10) === value ? Math.floor(timestamp/86400000) : null;
+                },
+
+                entriesInRange(start, end) {
+                    if (start && end && start > end) return [];
+                    return this.doctorAllTimelineEntries().filter(entry => this.dateOrdinal(entry.dateStr) !== null && (!start || entry.dateStr >= start) && (!end || entry.dateStr <= end));
+                },
+
+                doctorReviewEntries() {
+                    const query = this.doctorSearch.trim().toLowerCase();
+                    return this.entriesInRange(this.doctorRangeStart,this.doctorRangeEnd).filter(entry =>
+                        (!this.doctorSymptomFilter || entry.symptoms.some(symptom => String(symptom).toLowerCase() === this.doctorSymptomFilter.toLowerCase())) &&
+                        (!query || [entry.dateStr,entry.formattedDate,entry.symptoms.join(' '),entry.notes].join(' ').toLowerCase().includes(query)));
+                },
+
+                summarizeRecordedEntries(entries) {
+                    const ascending = [...entries].sort((a,b) => a.dateStr.localeCompare(b.dateStr));
+                    return {
+                        total:entries.length,
+                        average:entries.length ? (entries.reduce((sum,item) => sum+item.severity,0)/entries.length).toFixed(1) : '—',
+                        peak:entries.length ? Math.max(...entries.map(item => item.severity)) : '—',
+                        highCount:entries.filter(item => item.severity>=7).length,
+                        firstDate:ascending[0]?.formattedDate || 'No data',lastDate:ascending.at(-1)?.formattedDate || 'No data'
+                    };
+                },
+
+                symptomCountsFor(entries, limit=8) {
+                    const counts = new Map();
+                    entries.forEach(entry => {
+                        const seen = new Set();
+                        entry.symptoms.forEach(symptom => {
+                            const name=String(symptom).trim(), key=name.toLowerCase();
+                            if (!key || seen.has(key)) return;
+                            seen.add(key);
+                            const item=counts.get(key) || {name,count:0,totalSeverity:0};
+                            item.count++;item.totalSeverity+=entry.severity;counts.set(key,item);
+                        });
+                    });
+                    return [...counts.values()].sort((a,b)=>b.count-a.count || a.name.localeCompare(b.name)).slice(0,limit)
+                        .map(item=>({...item,average:(item.totalSeverity/item.count).toFixed(1),percent:Math.round(100*item.count/entries.length)}));
+                },
+
+                doctorReviewSymptoms() { return this.symptomCountsFor(this.doctorReviewEntries()); },
+                doctorAvailableSymptoms() { return this.symptomCountsFor(this.entriesInRange(this.doctorRangeStart,this.doctorRangeEnd),100); },
+
+                doctorReviewMetrics() {
+                    const entries=this.doctorReviewEntries(), stats=this.summarizeRecordedEntries(entries);
+                    const periodEntries=this.entriesInRange(this.doctorRangeStart,this.doctorRangeEnd);
+                    const end=this.doctorRangeEnd || periodEntries[0]?.dateStr;
+                    const start=this.doctorRangeStart || periodEntries.at(-1)?.dateStr;
+                    const span=start && end ? this.dateOrdinal(end)-this.dateOrdinal(start)+1 : 0;
+                    const last=this.dateOrdinal(end);
+                    const recent=entries.filter(item=>{const age=last-this.dateOrdinal(item.dateStr);return age>=0 && age<7;});
+                    const previous=entries.filter(item=>{const age=last-this.dateOrdinal(item.dateStr);return age>=7 && age<14;});
+                    const avg=list=>list.length ? list.reduce((sum,item)=>sum+item.severity,0)/list.length : null;
+                    const a=avg(recent),b=avg(previous),enough=recent.length>=2 && previous.length>=2;
+                    const delta=enough ? a-b : null;
+                    return {...stats,periodTotal:periodEntries.length,span:Math.max(0,span),missingDays:Math.max(0,span-periodEntries.length),
+                        recentCount:recent.length,previousCount:previous.length,recentAverage:a===null?'—':a.toFixed(1),previousAverage:b===null?'—':b.toFixed(1),
+                        comparisonEnd:end?this.formatDisplayDate(end):'No data',
+                        trendLabel:!enough?'Not enough logs to compare':Math.abs(delta)<0.05?'No change in logged averages':Math.abs(delta).toFixed(1)+' points '+(delta>0?'higher':'lower'),
+                        trendDirection:!enough || Math.abs(delta)<0.05?'stable':delta>0?'up':'down'};
+                },
+
+                setDoctorRange(days) {
+                    const entries=this.doctorAllTimelineEntries().filter(entry=>this.dateOrdinal(entry.dateStr)!==null);
+                    this.doctorRangeEnd=days && entries.length ? entries[0].dateStr : '';
+                    this.doctorRangeStart=days && entries.length ? new Date((this.dateOrdinal(entries[0].dateStr)-days+1)*86400000).toISOString().slice(0,10) : '';
+                    this.doctorSelectedDate='';
+                },
+
+                resetDoctorFilters() {
+                    this.doctorRangeStart='';this.doctorRangeEnd='';this.doctorSymptomFilter='';this.doctorSearch='';this.doctorTimelineFilter='all';this.doctorSelectedDate='';this.doctorExportStatus='';
+                },
+
+                doctorChartPoints() {
+                    const entries=[...this.doctorReviewEntries()].sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
+                    const first=this.dateOrdinal(entries[0]?.dateStr),last=this.dateOrdinal(entries.at(-1)?.dateStr);
+                    return entries.map(entry=>({...entry,x:entries.length===1?320:32+(this.dateOrdinal(entry.dateStr)-first)/Math.max(1,last-first)*576,y:154-entry.severity*13}));
+                },
+
+                doctorSelectedEntry() { return this.doctorReviewEntries().find(entry=>entry.dateStr===this.doctorSelectedDate) || null; },
+
+                addDoctorDateToAppointment(date) {
+                    if (!this.user || this.sampleDataActive) return;
+                    this.openAppointmentPrep();
+                    if (!this.appointmentDraft.dates.includes(date)) this.toggleAppointmentDate(date);
+                    this.goAppointmentStep(2);
+                    this.appointmentMessage=this.appointmentDraft.dates.includes(date)?'This date is included in the active visit plan.':'This plan already has ten dates. Remove one to add another.';
+                },
+
+                doctorReviewHandoffText() {
+                    const metrics=this.doctorReviewMetrics(),entries=this.doctorReviewEntries();
+                    const plan=this.appointmentOwnerId===this.user?.id && !this.sampleDataActive ? this.appointmentDraft : null;
+                    const lines=[this.sampleDataActive?'SAMPLE DATA — NOT A PATIENT HANDOFF':'PULSEPLOT — DOCTOR HANDOFF',
+                        'Patient: '+([this.profile.firstName,this.profile.lastName].filter(Boolean).join(' ') || 'Not entered'),
+                        'DOB: '+(this.profile.birthday?this.formatDisplayDate(this.profile.birthday):'Not entered'),
+                        'Gender: '+(this.profile.gender || 'Not entered')+' | Height / weight: '+(this.profile.height || 'Not entered')+' / '+(this.profile.weight || 'Not entered'),
+                        'Medical background (patient-entered): '+(this.profile.medicalNotes || 'Not entered'),
+                        '', 'REVIEW SCOPE',
+                        'Date filter: '+(this.doctorRangeStart || 'earliest log')+' to '+(this.doctorRangeEnd || 'latest log'),
+                        'Symptom filter: '+(this.doctorSymptomFilter || 'all')+'; text filter: '+(this.doctorSearch || 'none'),
+                        'Matched logs: '+metrics.total+'; total logs in date range: '+metrics.periodTotal,
+                        'Logged severity: average '+metrics.average+'/10; peak '+metrics.peak+'/10; days 7/10 or higher: '+metrics.highCount,
+                        'Comparison ending '+metrics.comparisonEnd+': last 7 calendar days '+metrics.recentAverage+'/10 ('+metrics.recentCount+' logs), prior 7 days '+metrics.previousAverage+'/10 ('+metrics.previousCount+' logs). '+metrics.trendLabel+'.',
+                        'Unlogged days within the date interval: '+metrics.missingDays+'. Missing logs do not mean absence of symptoms.',
+                        '', 'FREQUENT SYMPTOMS',...this.doctorReviewSymptoms().map(item=>item.name+': '+item.count+' of '+metrics.total+' matched days; mean daily severity '+item.average+'/10'),
+                        '', 'HIGHEST-SEVERITY ENTRIES (up to 5)',
+                        ...[...entries].sort((a,b)=>b.severity-a.severity || b.dateStr.localeCompare(a.dateStr)).slice(0,5).map(entry=>entry.formattedDate+' | '+entry.severity+'/10 | '+entry.symptoms.join(', ')+'\n'+(entry.notes || 'No note entered'))];
+                    if (plan) lines.push('', 'ACTIVE VISIT PLAN (patient-entered)',
+                        'Appointment: '+(plan.date || 'Not set')+' | '+(plan.clinician || 'Clinician not entered'),
+                        'Goal: '+(plan.goal || 'Not entered'),
+                        ...plan.concerns.filter(item=>item.text || item.impact).map((item,index)=>(index+1)+'. '+(item.text || 'Unnamed concern')+(item.impact?' — impact: '+item.impact:'')),
+                        'Questions: '+(plan.questions.map(item=>item.text.trim()).filter(Boolean).join(' | ') || 'None entered'),
+                        'Medication / supplement list: '+(plan.medications || 'Not entered (does not mean none)'));
+                    lines.push('','Data-only summary from patient entries. Daily severity is an overall log score, not a separate score for each symptom. Patterns do not establish causes or diagnoses.');
+                    return lines.join('\n');
+                },
+
+                async copyDoctorReview() {
+                    const owner=this.user?.id,text=this.doctorReviewHandoffText();
+                    try { await navigator.clipboard.writeText(text); if(this.user?.id===owner)this.doctorExportStatus='Handoff copied.'; }
+                    catch(_error) { if(this.user?.id===owner)this.doctorExportStatus='Clipboard unavailable. Download the handoff PDF instead.'; }
+                },
+
+                exportPlainSummaryPdf(text, filename) {
+                    if (!window.jspdf?.jsPDF) throw new Error('PDF library unavailable');
+                    const doc=new window.jspdf.jsPDF({orientation:'portrait',unit:'pt',format:'letter'});let y=48;
+                    for (const paragraph of text.split('\n')) {
+                        const heading=/^[A-Z][A-Z /()—–-]+$/.test(paragraph);
+                        doc.setFont('helvetica',heading?'bold':'normal');doc.setFontSize(heading?11:10);
+                        for (const line of doc.splitTextToSize(paragraph || ' ',doc.internal.pageSize.getWidth()-96)) {
+                            if(y>doc.internal.pageSize.getHeight()-48){doc.addPage();y=48;}
+                            doc.text(line,48,y);y+=15;
+                        }
+                    }
+                    doc.save(filename);
+                },
+
+                downloadDoctorReview() {
+                    try { this.exportPlainSummaryPdf(this.doctorReviewHandoffText(),'PulsePlot_Doctor_Handoff.pdf');this.doctorExportStatus='Handoff PDF download started.'; }
+                    catch(_error){this.doctorExportStatus='PDF unavailable. Try copying the handoff or refresh the page.';}
+                },
+
+                appointmentPlans: [],
+                activeAppointmentId: '',
+                appointmentBringItems: [
+                    {id:'medicines',label:'Medication and supplement list'},
+                    {id:'results',label:'Relevant test results or records'},
+                    {id:'questions',label:'My priority questions'},
+                    {id:'summary',label:'My symptom / appointment summary'}
+                ],
+
+                normalizeAppointmentDraft(raw) {
+                    const draft=this.normalizeAppointmentBaseDraft(raw);
+                    const text=(value,limit)=>typeof value==='string'?value.slice(0,limit):'';
+                    raw=raw && typeof raw==='object'?raw:{};
+                    draft.rangeStart=this.dateOrdinal(raw.rangeStart)!==null?raw.rangeStart:'';
+                    draft.rangeEnd=this.dateOrdinal(raw.rangeEnd)!==null?raw.rangeEnd:'';
+                    draft.followUpDate=this.dateOrdinal(raw.followUpDate)!==null?raw.followUpDate:'';
+                    draft.visitNotes=text(raw.visitNotes,2000);draft.nextSteps=text(raw.nextSteps,2000);
+                    draft.status=raw.status==='completed'?'completed':'planning';
+                    draft.checklist=Object.fromEntries(this.appointmentBringItems.map(item=>[item.id,raw.checklist?.[item.id]===true]));
+                    draft.concerns=draft.concerns.map((item,index)=>({...item,
+                        onset:text(raw.concerns?.[index]?.onset,150),pattern:text(raw.concerns?.[index]?.pattern,250),
+                        factors:text(raw.concerns?.[index]?.factors,300)}));
+                    return draft;
+                },
+
+                loadAppointmentDraft() {
+                    this.appointmentDraft=this.emptyAppointmentDraft();this.appointmentPlans=[];this.activeAppointmentId='';
+                    this.appointmentOwnerId=this.user?.id || '';this.appointmentMessage='';
+                    this.appointmentSaveStatus='Visit plans stay on this browser.';
+                    const key=this.appointmentStorageKey();if(!key)return;
+                    try {
+                        const stored=localStorage.getItem(key);const raw=stored?JSON.parse(stored):null;
+                        if(raw?.version===2 && Array.isArray(raw.plans)) {
+                            const seen=new Set();
+                            this.appointmentPlans=raw.plans.filter(plan=>plan && typeof plan.id==='string' && plan.draft && !seen.has(plan.id) && seen.add(plan.id)).slice(0,50)
+                                .map(plan=>({id:plan.id,updatedAt:typeof plan.updatedAt==='string'?plan.updatedAt:'',draft:this.normalizeAppointmentDraft(plan.draft)}));
+                            this.activeAppointmentId=this.appointmentPlans.some(plan=>plan.id===raw.activeId)?raw.activeId:(this.appointmentPlans[0]?.id || '');
+                        } else if(raw && typeof raw==='object' && !Array.isArray(raw)) {
+                            const id=this.createChatId();this.appointmentPlans=[{id,updatedAt:'',draft:this.normalizeAppointmentDraft(raw)}];this.activeAppointmentId=id;
+                        }
+                        if(this.appointmentPlans.length) {
+                            this.appointmentDraft=this.normalizeAppointmentDraft(this.appointmentPlans.find(plan=>plan.id===this.activeAppointmentId).draft);
+                            this.appointmentSaveStatus='Saved visit plan restored. Earlier drafts are preserved.';
+                        } else {
+                            this.activeAppointmentId=this.createChatId();
+                            this.appointmentPlans=[{id:this.activeAppointmentId,updatedAt:'',draft:this.emptyAppointmentDraft()}];
+                        }
+                    } catch(_error) {
+                        this.activeAppointmentId=this.createChatId();this.appointmentPlans=[{id:this.activeAppointmentId,updatedAt:'',draft:this.emptyAppointmentDraft()}];
+                        this.appointmentSaveStatus='Saved plans could not be read. Editing will replace the unreadable saved data; copy any recoverable data first.';
+                    }
+                },
+
+                saveAppointmentDraft() {
+                    const key=this.appointmentStorageKey();if(!key || this.appointmentOwnerId!==this.user.id || this.sampleDataActive)return false;
+                    const item={id:this.activeAppointmentId,updatedAt:new Date().toISOString(),draft:JSON.parse(JSON.stringify(this.appointmentDraft))};
+                    const index=this.appointmentPlans.findIndex(plan=>plan.id===item.id);
+                    if(index<0)this.appointmentPlans.push(item);else this.appointmentPlans.splice(index,1,item);
+                    try {
+                        localStorage.setItem(key,JSON.stringify({version:2,activeId:this.activeAppointmentId,plans:this.appointmentPlans}));
+                        this.appointmentSaveStatus='Visit plan saved on this browser.';return true;
+                    } catch(_error) {
+                        this.appointmentSaveStatus='Could not save locally. Keep this window open and copy or download your plan.';return false;
+                    }
+                },
+
+                selectAppointmentPlan(id) {
+                    if(id===this.activeAppointmentId)return;
+                    // Persist or retain the previous draft in memory before switching.
+                    this.saveAppointmentDraft();
+                    const plan=this.appointmentPlans.find(item=>item.id===id);if(!plan)return;
+                    this.activeAppointmentId=id;this.appointmentDraft=this.normalizeAppointmentDraft(plan.draft);
+                    this.appointmentDateFilter='';this.appointmentMessage='';this.goAppointmentStep(1);this.saveAppointmentDraft();
+                },
+
+                appointmentPlanLabel(plan) {
+                    const draft=plan.id===this.activeAppointmentId?this.appointmentDraft:plan.draft;
+                    return (draft.date?this.formatDisplayDate(draft.date):'Undated visit')+' · '+(draft.clinician || draft.concerns.find(item=>item.text)?.text || 'Visit plan')+(draft.status==='completed'?' · After visit':'');
+                },
+
+                newAppointmentPlan() {
+                    if(this.appointmentPlans.length>=50){this.appointmentMessage='You have 50 plans. Delete an old plan before adding another.';return;}
+                    // Do not replace a draft that cannot be saved.
+                    if(!this.saveAppointmentDraft())return;
+                    this.activeAppointmentId=this.createChatId();this.appointmentDraft=this.emptyAppointmentDraft();
+                    this.appointmentPlans.push({id:this.activeAppointmentId,updatedAt:'',draft:this.emptyAppointmentDraft()});
+                    this.appointmentDateFilter='';this.appointmentMessage='';this.goAppointmentStep(1);this.saveAppointmentDraft();
+                },
+
+                deleteAppointmentPlan() {
+                    if(!window.confirm('Delete this visit plan? Other visit plans and your calendar will stay as they are.'))return;
+                    this.appointmentPlans=this.appointmentPlans.filter(plan=>plan.id!==this.activeAppointmentId);
+                    if(this.appointmentPlans.length){this.activeAppointmentId=this.appointmentPlans[0].id;this.appointmentDraft=this.normalizeAppointmentDraft(this.appointmentPlans[0].draft);}
+                    else {this.activeAppointmentId=this.createChatId();this.appointmentDraft=this.emptyAppointmentDraft();}
+                    this.goAppointmentStep(1);this.saveAppointmentDraft();
+                },
+
+                moveAppointmentConcern(index,direction) {
+                    const target=index+direction;if(target<0 || target>=this.appointmentDraft.concerns.length)return;
+                    const items=[...this.appointmentDraft.concerns];[items[index],items[target]]=[items[target],items[index]];this.appointmentDraft.concerns=items;this.saveAppointmentDraft();
+                },
+
+                addSymptomConcern(name) {
+                    if(this.appointmentDraft.concerns.some(item=>item.text.toLowerCase()===name.toLowerCase()))return;
+                    const blank=this.appointmentDraft.concerns.find(item=>!item.text.trim() && !item.impact.trim() && !item.onset.trim() && !item.pattern.trim() && !item.factors.trim());
+                    if(!blank){this.appointmentMessage='Your three priorities already contain details. Edit one to add this symptom.';return;}
+                    blank.text=name;this.saveAppointmentDraft();
+                },
+
+                appointmentScopeEntries() { return this.entriesInRange(this.appointmentDraft.rangeStart,this.appointmentDraft.rangeEnd); },
+                appointmentScopeSymptoms() { return this.symptomCountsFor(this.appointmentScopeEntries(),5); },
+
+                appointmentRangeMessage() {
+                    return this.appointmentDraft.rangeStart && this.appointmentDraft.rangeEnd && this.appointmentDraft.rangeStart>this.appointmentDraft.rangeEnd?'Start date must be on or before end date. The range currently has no entries.':'';
+                },
+
+                appointmentReadiness() {
+                    return [
+                        {label:'At least one priority written',done:this.appointmentDraft.concerns.some(item=>item.text.trim())},
+                        {label:'Visit goal written',done:!!this.appointmentDraft.goal.trim()},
+                        {label:'Important dates selected',done:this.appointmentDraft.dates.some(date=>Object.prototype.hasOwnProperty.call(this.logs,date))},
+                        {label:'At least one question written',done:this.appointmentDraft.questions.some(item=>item.text.trim())}
+                    ];
+                },
+
+                moveAppointmentQuestion(index,direction) {
+                    const target=index+direction;if(target<0 || target>=this.appointmentDraft.questions.length)return;
+                    const items=[...this.appointmentDraft.questions];[items[index],items[target]]=[items[target],items[index]];this.appointmentDraft.questions=items;this.saveAppointmentDraft();
+                },
+
+                appointmentSummaryText() {
+                    const base=this.appointmentBaseSummaryText();if(!base)return '';
+                    const draft=this.appointmentDraft;
+                    const details=draft.concerns.filter(item=>item.text || item.onset || item.pattern || item.factors).map((item,index)=>[
+                        (index+1)+'. '+(item.text || 'Unnamed concern'),
+                        'Started: '+(item.onset || 'Not entered'),
+                        'Frequency / episode length: '+(item.pattern || 'Not entered'),
+                        'What seems to help or worsen it (patient observation): '+(item.factors || 'Not entered')].join('\n'));
+                    return base+'\n\nCONCERN DETAILS\n'+(details.join('\n\n') || 'Not entered')+
+                        '\n\nTHINGS TO BRING\n'+this.appointmentBringItems.map(item=>(draft.checklist[item.id]?'[Ready] ':'[To prepare] ')+item.label).join('\n')+
+                        '\n\nAFTER-VISIT NOTES (patient-entered, not verified clinician orders)\n'+(draft.visitNotes || 'Not entered')+
+                        '\n\nAGREED NEXT STEPS TO CONFIRM\n'+(draft.nextSteps || 'Not entered')+
+                        '\nFollow-up date: '+(draft.followUpDate?this.formatDisplayDate(draft.followUpDate):'Not set');
+                },
+
                 async init() {
                     this.$watch('user', () => {
                         if ((this.user?.id || '') !== this.appointmentOwnerId) {
                             this.closeAppointmentPrep();
+                            this.resetDoctorFilters();
                             this.loadAppointmentDraft();
                         }
                     });
@@ -2678,7 +2958,7 @@
                 },
 
                 doctorTimelineEntries() {
-                    const entries = this.doctorAllTimelineEntries();
+                    const entries = this.doctorReviewEntries();
                     if (this.doctorTimelineFilter === 'high') {
                         return entries.filter(entry => entry.severity >= 7);
                     }
@@ -2775,7 +3055,7 @@
                     const parsedDate = new Date(entry.dateStr + 'T12:00:00');
                     if (!Number.isNaN(parsedDate.getTime())) {
                         this.calendarDate = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), 1);
-                        this.buildCalendarDays();
+                        this.generateCalendarDays({preferredDateStr:entry.dateStr});
                     }
                     const day = this.days.find(candidate => candidate.dateStr === entry.dateStr) || {
                         dateStr: entry.dateStr,
