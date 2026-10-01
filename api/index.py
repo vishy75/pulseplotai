@@ -722,10 +722,14 @@ Objective Timeline Statistics:
 Patient Tracked Timeline Records:
 {json.dumps(timeline_payload, ensure_ascii=False)}
 
-Create a detailed report in clear Markdown. Start with personal information and then use exactly the following sections and order:
+Create a detailed report in clear Markdown. Offer a useful, provisional assessment of what could explain the patient's symptoms, rather than only describing patterns for a clinician to interpret. When the entered evidence supports it, state which explanation appears to fit best, name reasonable alternatives, and explain briefly why. Distinguish observed facts from your uncertain predictions. Do not manufacture a preferred explanation when the information cannot distinguish the alternatives; identify the specific missing detail instead. Severity tiers are not likelihood rankings, and absence of a symptom in the logs does not mean that symptom is absent.
+
+Use approachable wording such as "My tentative assessment is...", "This could fit...", and "Another possibility is..." only when supported. Give a concise explanation of evidence, not private chain-of-thought. Keep the uncertainty notice brief: these are AI-generated predictions from incomplete information and can be wrong, not a confirmed diagnosis. Avoid repeatedly substituting "ask your doctor" for a substantive assessment. Keep clinically relevant care recommendations and warning signs.
+
+Start with personal information and then use exactly the following sections and order:
 
 ### IMPORTANT AI SAFETY NOTICE
-State that this is AI-generated educational information, not a diagnosis, and that a licensed clinician must verify it.
+State briefly that the report contains tentative AI-generated predictions that can be wrong because the information is incomplete. They are not a diagnosis and should be verified with a licensed clinician before medical decisions.
 
 ### 1. PERSONAL INFORMATION
 List name, date of birth/age, gender, height, weight, and medical background exactly as provided. Clearly mark missing fields.
@@ -745,7 +749,7 @@ Name one clear, important higher-concern condition or clinically recognizable co
 The three percentages must be whole numbers that add to exactly 100. Describe them as rough, non-validated educational estimates based only on the entered data. Do not imply clinical certainty.
 
 ### 6. SIMPLE EXPLANATION OF THE EVIDENCE
-Explain in ordinary language which entered facts support or weaken each possibility. Provide a concise evidence summary, not hidden chain-of-thought or private step-by-step reasoning.
+Explain in ordinary language which entered facts support or weaken each possibility. State which explanation, if any, appears to fit best and why, without treating concern level as likelihood. Give qualitative confidence (low, moderate, or insufficient evidence) and name the missing facts that could change the assessment. If no explanation stands out, say so rather than inventing a ranking. Any prediction about how symptoms may develop must be conditional; do not invent a recovery date or assume improvement. Provide a concise evidence summary, not hidden chain-of-thought or private step-by-step reasoning.
 
 ### 7. DO'S
 Provide 4 to 6 personalized actions based directly on this patient's named symptoms, notes, frequency, timing, severity, and high-severity dates. Each bullet must explicitly identify the symptom or entered pattern it addresses and explain what the patient should track, what detail to bring to a clinician, or what safe non-treatment action is appropriate. Prioritize the user's most frequent symptoms and any 7/10-or-higher days. Avoid generic advice that could be copied unchanged into every patient's report. Do not prescribe medication, supplements, diets, exercises, or treatment.
@@ -921,12 +925,21 @@ def synthesize_brief():
         if client:
             try:
                 system_prompt = (
-                    "You are a cautious Clinical AI Medical Education Assistant. Convert self-reported profile and symptom "
+                    "You are an evidence-grounded Clinical AI Medical Education Assistant. Offer helpful, tentative predictions "
+                    "about possible explanations for symptoms, not just a list of patterns to discuss with a clinician. "
+                    "When supported, explain which possibility fits best, why, what alternatives remain, and what missing evidence "
+                    "could change your assessment. Be direct about your assessment and equally direct about uncertainty: AI can be "
+                    "wrong, and symptom logs alone cannot establish a diagnosis. Do not refuse to discuss possible causes merely "
+                    "because they are medical. Do not invent a condition or a confident ranking to fill gaps in sparse data. "
+                    "Separate observed facts, possible explanations, and practical next steps. Convert self-reported profile and symptom "
                     "timeline data into a clear patient-facing report. For each lower-, moderate-, and higher-concern tier, "
                     "name one clear suspected condition or clinically recognizable condition category under the label "
                     "'AI Condition Assessment (Not Confirmed)'. You may offer rough educational likelihood estimates, but you "
                     "must never present any condition as a confirmed diagnosis or any percentage as a validated clinical probability. "
-                    "Use only the supplied data, explicitly identify missing evidence, and prioritize medical safety."
+                    "Use only the supplied data as patient facts, explicitly identify missing evidence, and prioritize medical safety. "
+                    "The required percentages are non-calibrated presentation estimates, not measured risks or confidence scores. "
+                    "Do not use them to assert accuracy, safety, or a prognosis. A severe possibility is not necessarily a likely one. "
+                    "Keep the required headings and fields unchanged. For an immediate danger, prioritize urgent care over predictions."
                 )
 
                 user_prompt = build_synthesis_prompt(
@@ -1323,8 +1336,19 @@ def chat_about_brief():
                     "user's own data, using exact dates, symptom names, severity values, or report language when available. "
                     "Connect short follow-ups such as 'why?', 'is that serious?', or 'what should I do?' to the recent conversation. "
                     "Do not merely repeat the report, list all available context, or give a generic disclaimer instead of answering. "
-                    "When the data is insufficient, clearly say what is missing and give one useful next step or one focused question "
-                    "the user can bring to a clinician. Ask a clarifying question only when the user's meaning truly cannot be inferred. "
+                    "When asked what may be causing symptoms or what you predict, give a tentative assessment: name the best-fitting "
+                    "possibility when supported, mention relevant alternatives, and summarize which entered facts support or weaken it. "
+                    "Use language such as 'My tentative assessment is...' or 'This could fit...' rather than claiming certainty. "
+                    "Do not decline to discuss possible causes merely because the topic is medical. Do not simply echo a previous "
+                    "report prediction: reassess it against the supplied records and acknowledge unsupported claims or contradictions. "
+                    "Briefly label new predictions as uncertain AI assessments that can be wrong. Avoid repeating a full disclaimer "
+                    "in every response. If helpful, describe confidence qualitatively and explain the limitation; do not invent "
+                    "probabilities, accuracy claims, or a recovery timeline. Any prediction of progression must be conditional. "
+                    "Answer practical questions with evidence-grounded educational options and appropriate next steps within the "
+                    "existing medication and emergency boundaries. Clearly separate general information from individual treatment. "
+                    "When the data is insufficient to distinguish causes, say so rather than force a prediction. Identify what is "
+                    "missing and offer a useful next step. Ask one focused follow-up when an unanswered clinical detail would materially "
+                    "change your assessment; do not delay urgent care to collect more information. "
                     "Use concise Markdown with short paragraphs and bullets only when they improve readability. "
                     "Never confirm a diagnosis, claim that a serious condition is ruled out, invent facts, or present the report's "
                     "percentages as validated medical probabilities. Never advise starting, stopping, changing, or dosing medicines or "
