@@ -497,6 +497,114 @@ html[data-theme="dark"] #pp-health-report { --r-bg:#202a38;--r-card:#293545;--r-
 @media(max-width:760px) { #pp-health-report { padding:0; }#pp-health-report .pp-report-backdrop { border:0;border-radius:0; }#pp-health-report .pp-report-header { padding:16px;gap:12px; }#pp-health-report .pp-report-header>div:last-child { width:100%; }#pp-health-report .pp-report-header button { flex:1;font-size:10px;padding:9px 12px; }#pp-health-report .pp-report-header h2 { font-size:17px; }#pp-health-report .pp-report-wordmark { font-size:11px; }#pp-health-report .pp-report-main { padding:12px 16px 26px; }#pp-health-report .pp-report-intro { margin-bottom:22px; }#pp-health-report .pp-report-intro h1 { letter-spacing:-1px; }#pp-health-report .pp-report-grid { grid-template-columns:1fr; }#pp-health-report .pp-report-article { padding:24px 20px; border-radius:22px; }#pp-health-report .pp-report-sidebar { position:static; }#pp-health-report .pp-report-prose { font-size:14px!important; }#pp-health-report .pp-report-prose h2 { font-size:22px!important; }#pp-health-report .pp-report-prose h3 { font-size:18px!important; }#pp-health-report .pp-report-profile { order:1; }#pp-health-report .pp-report-guide { order:2; } }
 @media(prefers-reduced-motion:reduce) { #pp-health-report,#pp-health-report * { animation:none!important;transition:none!important;scroll-behavior:auto!important; } }
 </style>
+<style id="pp-interactive-brief-design">
+/* Interactive health brief. These styles are limited to the report and its preview. */
+.pp-brief-view { --brief-card:#ffffff;--brief-ink:#334550;--brief-muted:#61717d;--brief-line:#e4e5eb;--brief-accent:#79648f;--brief-soft:#f3eff7;--brief-sage:#edf4f0;--brief-amber:#fbf4e8;--brief-rose:#f8ecef;--brief-sage-ink:#426f60;--brief-amber-ink:#876334;--brief-rose-ink:#985168;color:var(--brief-ink); }
+html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf1;--brief-muted:#b3bfcc;--brief-line:#ffffff1c;--brief-accent:#d0bce4;--brief-soft:#38384c;--brief-sage:#2c403e;--brief-amber:#423b33;--brief-rose:#443442;--brief-sage-ink:#a8d2bf;--brief-amber-ink:#efd3a5;--brief-rose-ink:#f0b2c5; }
+.pp-brief-view-switch { display:inline-flex;align-items:center;gap:4px;padding:5px;border:1px solid var(--brief-line);border-radius:999px;background:var(--brief-soft);max-width:100%; }
+.pp-brief-view-switch button { display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 17px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--brief-muted);font:600 12px/1.4 'Plus Jakarta Sans',sans-serif;cursor:pointer;white-space:nowrap; }
+.pp-brief-view-switch button[aria-pressed="true"] { background:var(--brief-card);border-color:var(--brief-line);color:var(--brief-accent);box-shadow:0 2px 6px #4d425b0b; }
+.pp-brief-view-switch button svg { width:16px;height:16px;flex-shrink:0; }
+.pp-brief-view .pp-brief-toolbar { display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:0 0 22px; }
+.pp-brief-toolbar-copy { margin:0;color:var(--brief-muted);font-size:12px;line-height:1.7; }
+.pp-brief-view .pp-brief-quiet-btn { display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;border:1px solid var(--brief-line);border-radius:999px;padding:8px 13px;background:var(--brief-card);color:var(--brief-accent);font-size:11px;font-weight:600;line-height:1.5;cursor:pointer; }
+.pp-brief-quiet-btn svg { width:15px;height:15px; }
+.pp-brief-section-grid { display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px;align-items:start; }
+.pp-brief-section { grid-column:span 6;min-width:0;border:1px solid var(--brief-line);border-radius:22px;background:var(--brief-card);overflow:hidden;scroll-margin-top:18px;transition:border-color .2s,box-shadow .2s; }
+.pp-brief-section[data-kind="profile"],.pp-brief-section[data-kind="logs"] { grid-column:span 3; }
+.pp-brief-section[data-kind="lower"],.pp-brief-section[data-kind="moderate"],.pp-brief-section[data-kind="higher"] { grid-column:span 2; }
+.pp-brief-section[data-kind="do"],.pp-brief-section[data-kind="dont"] { grid-column:span 3; }
+.pp-brief-section[data-tone="sage"] { --section-soft:var(--brief-sage);--section-accent:var(--brief-sage-ink); }
+.pp-brief-section[data-tone="amber"] { --section-soft:var(--brief-amber);--section-accent:var(--brief-amber-ink); }
+.pp-brief-section[data-tone="rose"] { --section-soft:var(--brief-rose);--section-accent:var(--brief-rose-ink); }
+.pp-brief-section[data-tone="lavender"] { --section-soft:var(--brief-soft);--section-accent:var(--brief-accent); }
+.pp-brief-view .pp-brief-section-heading { margin:0!important;font:inherit!important;border:0!important;padding:0!important;letter-spacing:0!important; }
+.pp-brief-view .pp-brief-section-toggle { display:flex;align-items:flex-start;gap:12px;width:100%;padding:20px 20px 15px;text-align:left;border:0;background:transparent;color:var(--brief-ink);cursor:pointer;transform:none!important;min-width:0; }
+.pp-brief-view .pp-brief-section-toggle:hover { background:var(--section-soft);box-shadow:none!important; }
+.pp-brief-view .pp-brief-section-toggle:disabled { cursor:default;opacity:1; }
+.pp-brief-view .pp-brief-section-toggle:disabled:hover { background:transparent; }
+.pp-brief-section-icon { display:grid;place-items:center;width:37px;height:37px;flex-shrink:0;border-radius:13px;background:var(--section-soft);color:var(--section-accent); }
+.pp-brief-section-icon svg { width:20px;height:20px; }
+.pp-brief-section-labels { display:flex;flex-direction:column;gap:6px;flex:1;min-width:0;padding-top:1px; }
+.pp-brief-section-kicker { display:block;font-size:8px;line-height:1.5;letter-spacing:.11em;text-transform:uppercase;font-weight:700;color:var(--section-accent); }
+.pp-brief-section-title { display:block;font-size:16px;font-weight:650;letter-spacing:-.35px;line-height:1.45;overflow-wrap:anywhere; }
+.pp-brief-chevron { width:16px;height:16px;flex-shrink:0;color:var(--brief-muted);margin-top:11px;transition:transform .2s; }
+.pp-brief-section-toggle[aria-expanded="true"] .pp-brief-chevron { transform:rotate(180deg); }
+.pp-brief-section-summary { padding:0 20px 16px; }
+.pp-brief-condition { font-size:13px;font-weight:600;line-height:1.75;margin:0 0 9px;color:var(--brief-ink);overflow-wrap:anywhere; }
+.pp-brief-estimate { display:inline-block;padding:5px 9px;border-radius:8px;background:var(--section-soft);color:var(--section-accent);font-size:10px;font-weight:600;line-height:1.5; }
+.pp-brief-preview-copy { font-size:12px;line-height:1.8;color:var(--brief-muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;margin:0;overflow-wrap:anywhere; }
+.pp-brief-section-content { padding:0 20px 20px; }
+.pp-brief-original-heading { color:var(--brief-muted);font-size:9px;line-height:1.7;font-weight:600;letter-spacing:.02em;border-top:1px solid var(--brief-line);padding-top:14px;margin:0 0 12px;overflow-wrap:anywhere; }
+.pp-brief-body { font-size:13px;line-height:1.9;overflow-wrap:anywhere;color:var(--brief-ink); }
+.pp-brief-body>* { margin:0; }
+.pp-brief-body>*+* { margin-top:13px; }
+.pp-brief-body strong { font-weight:650;color:inherit; }
+.pp-brief-body ul,.pp-brief-body ol { padding-left:19px;list-style-position:outside; }
+.pp-brief-body ul { list-style-type:disc; }
+.pp-brief-body ol { list-style-type:decimal; }
+.pp-brief-body li { padding:3px 0 3px 3px; }
+.pp-brief-body li+li { margin-top:7px; }
+.pp-brief-body li::marker { color:var(--section-accent); }
+.pp-brief-view .pp-brief-body h4 { font-size:12px;font-weight:700;letter-spacing:0;line-height:1.7;color:var(--section-accent);margin-top:18px; }
+.pp-brief-body a { color:var(--brief-accent);text-decoration:underline;text-decoration-color:#a898bb70;text-underline-offset:3px; }
+.pp-brief-body code { font-family:'JetBrains Mono',monospace;font-size:.9em; }
+.pp-brief-body pre { white-space:pre-wrap;overflow-wrap:anywhere;padding:13px;background:var(--brief-soft);border-radius:12px; }
+.pp-brief-body blockquote { border-left:3px solid var(--section-accent);padding:4px 0 4px 14px;color:var(--brief-muted); }
+.pp-brief-body hr { border:0;border-top:1px solid var(--brief-line);margin:18px 0; }
+.pp-brief-table-wrap { overflow-x:auto;border:1px solid var(--brief-line);border-radius:12px; }
+.pp-brief-table-wrap table { border-collapse:collapse;width:100%;font-size:12px; }
+.pp-brief-table-wrap th,.pp-brief-table-wrap td { padding:10px 12px;text-align:left;vertical-align:top;min-width:100px;border-bottom:1px solid var(--brief-line); }
+.pp-brief-table-wrap th { background:var(--section-soft);font-weight:650; }
+.pp-brief-table-wrap tr:last-child td { border-bottom:0; }
+.pp-brief-section-footer { display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:17px;padding-top:13px;border-top:1px solid var(--brief-line); }
+.pp-brief-view .pp-brief-ask { display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;color:var(--brief-accent);font:600 11px/1.6 'Plus Jakarta Sans',sans-serif;min-height:32px;padding:5px 0;cursor:pointer; }
+.pp-brief-ask svg { width:16px;height:16px; }
+.pp-brief-estimate-note { margin:0 0 17px;font-size:11px;line-height:1.85;color:var(--brief-muted);padding:13px 16px;border:1px solid var(--brief-line);border-radius:14px;background:var(--brief-soft); }
+#pp-health-report .pp-brief-navigation { background:var(--r-card);padding:22px;border:1px solid var(--r-line);border-radius:24px; }
+#pp-health-report .pp-brief-navigation h3 { margin:0 0 14px;font-size:9px;letter-spacing:.13em;color:var(--r-accent);font-weight:700; }
+.pp-brief-navigation nav { display:flex;flex-direction:column;gap:3px; }
+#pp-health-report .pp-brief-navigation button { display:flex;align-items:center;gap:10px;min-height:39px;width:100%;border:0;border-radius:10px;padding:8px;text-align:left;font-size:11px;line-height:1.6;background:transparent;color:var(--r-ink); }
+#pp-health-report .pp-brief-navigation button:hover { background:var(--r-soft);box-shadow:none;transform:none; }
+.pp-brief-navigation button>span:first-child { width:22px;height:22px;display:grid;place-items:center;color:var(--r-accent);flex-shrink:0; }
+.pp-brief-navigation svg { width:16px;height:16px; }
+#pp-health-report .pp-brief-reading-mode { font-size:11px;color:var(--r-muted);line-height:1.7;margin:0; }
+#pp-health-report .pp-report-reading { min-width:0; }
+#pp-health-report .pp-brief-toolbar { padding-bottom:20px; }
+#pp-health-report .pp-brief-top-controls { display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px; }
+#pp-health-report .pp-report-article { margin-top:0; }
+#pp-health-report .pp-brief-section[data-kind="safety"] .pp-brief-section-toggle { padding-bottom:13px; }
+#pp-health-report .pp-brief-section[data-kind="safety"] .pp-brief-section-title { font-size:15px; }
+#pp-health-report .pp-brief-section[data-kind="safety"] .pp-brief-body { font-size:12px; }
+#pp-health-report .pp-brief-section[data-kind="safety"] { background:var(--brief-sage); }
+.pp-brief-view :focus-visible { outline:3px solid var(--brief-accent)!important;outline-offset:3px; }
+/* The calendar preview uses the same content and display preference. */
+#health-summary .pp-brief-view { margin:0; }
+#health-summary .pp-brief-top-controls { margin:0 0 14px; }
+#health-summary .pp-brief-view-switch { display:flex;width:100%; }
+#health-summary .pp-brief-view-switch button { flex:1;min-height:36px;font-size:11px;padding:7px 10px; }
+#health-summary .pp-brief-toolbar { padding-bottom:12px;gap:8px; }
+#health-summary .pp-brief-toolbar-copy { font-size:10px; }
+#health-summary .pp-brief-quiet-btn { min-height:31px;font-size:10px;padding:5px 9px; }
+#health-summary .pp-brief-section-grid { grid-template-columns:minmax(0,1fr);gap:10px; }
+#health-summary .pp-brief-section { grid-column:1!important;border-radius:17px; }
+#health-summary .pp-brief-section-toggle { padding:14px 14px 11px;gap:10px; }
+#health-summary .pp-brief-section-icon { width:31px;height:31px;border-radius:10px; }
+#health-summary .pp-brief-section-icon svg { width:17px;height:17px; }
+#health-summary .pp-brief-section-title { font-size:13px;line-height:1.5;letter-spacing:-.2px; }
+#health-summary .pp-brief-section-kicker { font-size:7px; }
+#health-summary .pp-brief-section-summary { padding:0 14px 13px; }
+#health-summary .pp-brief-section-content { padding:0 14px 15px; }
+#health-summary .pp-brief-condition { font-size:12px; }
+#health-summary .pp-brief-body { font-size:12px;line-height:1.85; }
+#health-summary .pp-brief-original-heading { font-size:8px; }
+#health-summary .pp-brief-estimate-note { font-size:10px;padding:10px 12px;margin:0 0 12px; }
+#health-summary .pp-brief-preview { padding-right:7px; }
+@media(max-width:1200px) { #pp-health-report .pp-brief-section[data-kind="lower"],#pp-health-report .pp-brief-section[data-kind="moderate"],#pp-health-report .pp-brief-section[data-kind="higher"] { grid-column:span 6; } }
+@media(max-width:760px) { #pp-health-report .pp-brief-section-grid { gap:12px; }#pp-health-report .pp-brief-section { grid-column:span 6!important;border-radius:18px; }#pp-health-report .pp-brief-section-toggle { padding:17px 16px 13px; }#pp-health-report .pp-brief-section-summary { padding:0 16px 15px; }#pp-health-report .pp-brief-section-content { padding:0 16px 18px; }#pp-health-report .pp-brief-section-title { font-size:15px; }#pp-health-report .pp-brief-body { font-size:13px; }#pp-health-report .pp-brief-top-controls { align-items:flex-start;gap:10px; }#pp-health-report .pp-brief-reading-mode { font-size:10px; }#pp-health-report .pp-brief-view-switch { width:100%; }#pp-health-report .pp-brief-view-switch button { flex:1; }#pp-health-report .pp-brief-navigation { order:0; } }
+@media(prefers-reduced-motion:reduce) { .pp-brief-view * { transition:none!important;animation:none!important;scroll-behavior:auto!important; } }
+
+</style>
 </head>
 <body class="pp-design font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
@@ -712,6 +820,60 @@ html[data-theme="dark"] #pp-health-report { --r-bg:#202a38;--r-card:#293545;--r-
                             <strong>Reminder:</strong> Verify this AI-generated report with a licensed clinician before acting on it.
                         </div>
 
+                        <div class="pp-brief-top-controls pp-brief-view">
+                            <div class="pp-brief-view-switch" role="group" aria-label="Health summary display format">
+                                <button type="button" @click="summaryViewMode = 'interactive'" :aria-pressed="summaryViewMode === 'interactive'" aria-controls="full-brief-interactive">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+                                    Interactive
+                                </button>
+                                <button type="button" @click="summaryViewMode = 'raw'" :aria-pressed="summaryViewMode === 'raw'" aria-controls="full-brief-raw">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M5 5h14M5 10h14M5 15h14M5 20h9"/></svg>
+                                    Raw text
+                                </button>
+                            </div>
+                            <p class="pp-brief-reading-mode" x-text="summaryViewMode === 'interactive' ? 'Explore your report, one section at a time.' : 'Your original report in its full text layout.'"></p>
+                        </div>
+                        <section id="full-brief-interactive" x-show="summaryViewMode === 'interactive'" class="pp-brief-view" aria-label="Interactive health summary">
+                            <div class="pp-brief-toolbar">
+                                <p class="pp-brief-toolbar-copy">Tap a section to explore the details.</p>
+                                <button type="button" class="pp-brief-quiet-btn" @click="setSummaryExpansion(!summaryAllExpanded())" :aria-label="summaryAllExpanded() ? 'Collapse report details' : 'Expand all report details'">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                                    <span x-text="summaryAllExpanded() ? 'Collapse details' : 'Expand all'"></span>
+                                </button>
+                            </div>
+                            <div class="pp-brief-section-grid">
+                                <template x-for="section in summarySections" :key="briefResult + section.id">
+                                    <article class="pp-brief-section" :id="'full-' + section.id" :data-kind="section.kind" :data-tone="section.tone">
+                                        <h2 class="pp-brief-section-heading">
+                                            <button type="button" class="pp-brief-section-toggle" :id="'full-heading-' + section.id" @click="toggleSummarySection(section)" :aria-expanded="summarySectionOpen(section)" :aria-controls="'full-content-' + section.id">
+                                                <span class="pp-brief-section-icon" x-html="summaryIcon(section.kind)"></span>
+                                                <span class="pp-brief-section-labels">
+                                                    <span class="pp-brief-section-kicker" x-text="section.kind === 'safety' ? 'Please read' : ['lower', 'moderate', 'higher'].includes(section.kind) ? 'AI possibility · not confirmed' : section.kind === 'questions' ? 'For your next conversation' : 'From your generated report'"></span>
+                                                    <span class="pp-brief-section-title" x-text="section.title"></span>
+                                                </span>
+                                                <svg class="pp-brief-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                                            </button>
+                                        </h2>
+                                        <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summarySectionOpen(section)">
+                                            <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
+                                            <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
+                                            <p x-show="!summarySectionOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
+                                        </div>
+                                        <div class="pp-brief-section-content" :id="'full-content-' + section.id" x-show="summarySectionOpen(section)" :aria-labelledby="'full-heading-' + section.id">
+                                            <p class="pp-brief-original-heading" x-show="section.originalHeading" x-text="section.originalHeading"></p>
+                                            <div class="pp-brief-body" x-html="section.html"></div>
+                                            <div class="pp-brief-section-footer" x-show="section.kind !== 'safety'">
+                                                <button type="button" class="pp-brief-ask" @click="askAboutSummarySection(section)" :aria-label="'Ask the existing AI chat about ' + section.title">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a8 8 0 0 1-8 8H7l-4 3v-7a8 8 0 0 1 8-12h2a8 8 0 0 1 8 8Z"/><path d="M8 10h8m-8 4h5"/></svg>
+                                                    Ask about this
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </template>
+                            </div>
+                        </section>
+                        <div id="full-brief-raw" x-show="summaryViewMode === 'raw'" aria-label="Original raw text health summary">
                         <article class="pp-report-article rounded-3xl border p-5 sm:p-7 lg:p-10 shadow-2xl"
                                  :class="doctorMode ? 'bg-white border-slate-200 shadow-slate-200/70' : 'bg-slate-900/88 border-white/10 shadow-black/30'">
                             <div class="pp-report-document-label"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h5"/></svg><span>AI Clinical Health Summary</span></div>
@@ -719,7 +881,18 @@ html[data-theme="dark"] #pp-health-report { --r-bg:#202a38;--r-card:#293545;--r-
                                  :class="doctorMode ? 'text-slate-800' : 'text-slate-200'"
                                  x-html="renderMarkdown(briefResult)"></div>
                         </article>
+                        </div>
                         </div><aside class="pp-report-sidebar" aria-label="Report details and actions">
+                            <section class="pp-brief-navigation" x-show="summaryViewMode === 'interactive'" aria-label="Jump to a report section">
+                                <h3>IN THIS BRIEF</h3>
+                                <nav aria-label="Health summary sections">
+                                    <template x-for="section in summarySections" :key="briefResult + section.id">
+                                        <button type="button" @click="focusSummarySection(section)">
+                                            <span x-html="summaryIcon(section.kind)"></span><span x-text="section.title"></span>
+                                        </button>
+                                    </template>
+                                </nav>
+                            </section>
                             <section class="pp-report-profile">
                                 <p class="pp-report-eyebrow">PREPARED FOR</p>
                                 <div class="pp-report-person"><span class="pp-report-avatar" x-text="profile.firstName ? profile.firstName.charAt(0).toUpperCase() : 'P'"></span><div><h3 x-text="profile.firstName ? profile.firstName + (profile.lastName ? ' ' + profile.lastName : '') : 'Your health profile'"></h3><p>Personal health summary</p></div></div>
@@ -1894,14 +2067,71 @@ html[data-theme="dark"] #pp-health-report { --r-bg:#202a38;--r-card:#293545;--r-
                             <div class="pp-loading-lines" aria-hidden="true"><span></span><span></span><span></span></div>
                         </div>
 
-                        <div x-show="briefResult && !loading" class="pp-brief-preview space-y-3 overflow-y-auto pr-1 text-left w-full custom-scrollbar">
+                        <div x-show="briefResult && !loading" class="pp-brief-view">
+                            <div class="pp-brief-top-controls pp-brief-view">
+                            <div class="pp-brief-view-switch" role="group" aria-label="Health summary display format">
+                                <button type="button" @click="summaryViewMode = 'interactive'" :aria-pressed="summaryViewMode === 'interactive'" aria-controls="preview-brief-interactive">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+                                    Interactive
+                                </button>
+                                <button type="button" @click="summaryViewMode = 'raw'" :aria-pressed="summaryViewMode === 'raw'" aria-controls="preview-brief-raw">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M5 5h14M5 10h14M5 15h14M5 20h9"/></svg>
+                                    Raw text
+                                </button>
+                            </div>
+                            
+                        </div>
+                            <div class="pp-brief-preview space-y-3 overflow-y-auto pr-1 text-left w-full custom-scrollbar">
                             <div class="rounded-xl border px-3 py-2 text-[10px] leading-relaxed"
                                  :class="doctorMode ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-amber-500/10 border-amber-500/20 text-amber-200'">
                                 <strong>Reminder:</strong> Verify this AI-generated report with a licensed clinician before acting on it.
                             </div>
+                            <section id="preview-brief-interactive" x-show="summaryViewMode === 'interactive'" class="pp-brief-view" aria-label="Interactive health summary">
+                            <div class="pp-brief-toolbar">
+                                <p class="pp-brief-toolbar-copy">Tap a section to explore the details.</p>
+                                <button type="button" class="pp-brief-quiet-btn" @click="setSummaryExpansion(!summaryAllExpanded())" :aria-label="summaryAllExpanded() ? 'Collapse report details' : 'Expand all report details'">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                                    <span x-text="summaryAllExpanded() ? 'Collapse details' : 'Expand all'"></span>
+                                </button>
+                            </div>
+                            <div class="pp-brief-section-grid">
+                                <template x-for="section in summarySections" :key="briefResult + section.id">
+                                    <article class="pp-brief-section" :id="'preview-' + section.id" :data-kind="section.kind" :data-tone="section.tone">
+                                        <h2 class="pp-brief-section-heading">
+                                            <button type="button" class="pp-brief-section-toggle" :id="'preview-heading-' + section.id" @click="toggleSummarySection(section)" :aria-expanded="summarySectionOpen(section)" :aria-controls="'preview-content-' + section.id">
+                                                <span class="pp-brief-section-icon" x-html="summaryIcon(section.kind)"></span>
+                                                <span class="pp-brief-section-labels">
+                                                    <span class="pp-brief-section-kicker" x-text="section.kind === 'safety' ? 'Please read' : ['lower', 'moderate', 'higher'].includes(section.kind) ? 'AI possibility · not confirmed' : section.kind === 'questions' ? 'For your next conversation' : 'From your generated report'"></span>
+                                                    <span class="pp-brief-section-title" x-text="section.title"></span>
+                                                </span>
+                                                <svg class="pp-brief-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                                            </button>
+                                        </h2>
+                                        <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summarySectionOpen(section)">
+                                            <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
+                                            <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
+                                            <p x-show="!summarySectionOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
+                                        </div>
+                                        <div class="pp-brief-section-content" :id="'preview-content-' + section.id" x-show="summarySectionOpen(section)" :aria-labelledby="'preview-heading-' + section.id">
+                                            <p class="pp-brief-original-heading" x-show="section.originalHeading" x-text="section.originalHeading"></p>
+                                            <div class="pp-brief-body" x-html="section.html"></div>
+                                            <div class="pp-brief-section-footer" x-show="section.kind !== 'safety'">
+                                                <button type="button" class="pp-brief-ask" @click="askAboutSummarySection(section)" :aria-label="'Ask the existing AI chat about ' + section.title">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a8 8 0 0 1-8 8H7l-4 3v-7a8 8 0 0 1 8-12h2a8 8 0 0 1 8 8Z"/><path d="M8 10h8m-8 4h5"/></svg>
+                                                    Ask about this
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </template>
+                            </div>
+                        </section>
+                                <div id="preview-brief-raw" x-show="summaryViewMode === 'raw'" aria-label="Original raw text health summary">
                             <div class="text-[11.5px] leading-relaxed font-sans space-y-2 transition-colors duration-200" 
                                  :class="doctorMode ? 'text-slate-800' : 'text-slate-300'" 
                                  x-html="renderMarkdown(briefResult)"></div>
+                                </div>
+                            </div>
                         </div>
 
                         <div x-show="Object.keys(logs).length > 0 && !loading && !briefResult" class="my-auto text-center space-y-2 p-4">
@@ -2007,6 +2237,231 @@ html[data-theme="dark"] #pp-health-report { --r-bg:#202a38;--r-card:#293545;--r-
     </div><!-- /pp-shell -->
 
     <script>
+        // Read-only presentation of the generated brief. Existing report, chat,
+        // persistence, API, and export methods continue to use briefResult.
+        function createHealthBriefPresentation() {
+            let cachedText = null;
+            let cachedSections = [];
+
+            const escapeText = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
+            const plainText = value => String(value ?? '')
+                .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+                .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+                .replace(/\*\*|__|`/g, '')
+                .replace(/^\s*(?:[-*+]\s+|\d+[.)]\s+|>\s?)/gm, '')
+                .replace(/\s+/g, ' ').trim();
+            const icons = {
+                safety: '<path d="m12 3 9 17H3L12 3Z"/><path d="M12 9v4m0 3h.01"/>',
+                profile: '<circle cx="12" cy="8" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/>',
+                logs: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+                lower: '<path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6l-8-3Z"/><path d="m8 12 3 3 5-6"/>',
+                moderate: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+                higher: '<path d="m12 3 9 17H3L12 3Z"/><path d="M12 9v4m0 3h.01"/>',
+                evidence: '<circle cx="10" cy="10" r="6"/><path d="m15 15 6 6M7 10h6m-3-3v6"/>',
+                do: '<rect x="4" y="4" width="16" height="17" rx="3"/><path d="M9 3h6m-7 9 2 2 5-5m-7 9h8"/>',
+                dont: '<circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>',
+                questions: '<path d="M21 11a8 8 0 0 1-8 8H7l-4 3v-7a8 8 0 0 1 8-12h2a8 8 0 0 1 8 8Z"/><path d="M10 8a2 2 0 1 1 3 2c-.7.4-1 1-1 2m0 3h.01"/>',
+                sources: '<path d="M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-3H4V4Zm16 0h-4a3 3 0 0 0-3 3v14a4 4 0 0 1 4-3h3V4Z"/>',
+                detail: '<path d="M14 3H5v18h14V8l-5-5Zm0 0v5h5M8 12h8m-8 4h5"/>'
+            };
+            const describe = heading => {
+                const normalized = plainText(heading).toLowerCase().replace(/[’‘]/g, "'");
+                let kind = 'detail';
+                if (/safety notice|important.*(?:safety|notice)|disclaimer/.test(normalized)) kind = 'safety';
+                else if (/personal information|patient (?:information|profile)|your (?:health )?profile/.test(normalized)) kind = 'profile';
+                else if (/what your logs show|timeline (?:overview|summary)|tracking (?:overview|summary)|symptom overview/.test(normalized)) kind = 'logs';
+                else if (/minor\s*\/|lower[- ]concern|low[- ]concern/.test(normalized)) kind = 'lower';
+                else if (/medium\s*\/|moderate[- ]concern|medium[- ]concern/.test(normalized)) kind = 'moderate';
+                else if (/major\s*\/|higher[- ]concern|high[- ]concern|warning signs|red flags/.test(normalized)) kind = 'higher';
+                else if (/explanation of the evidence|evidence (?:summary|explanation)|tentative assessment/.test(normalized)) kind = 'evidence';
+                else if (/\bdon'?ts\b|what (?:not to do|to avoid)|things to avoid/.test(normalized)) kind = 'dont';
+                else if (/\bdo'?s\b|next steps|what to do|recommended actions/.test(normalized)) kind = 'do';
+                else if (/questions|ask your (?:clinician|doctor)/.test(normalized)) kind = 'questions';
+                else if (/sources|references|research/.test(normalized)) kind = 'sources';
+                const labels = {
+                    safety: 'Important information', profile: 'Your health profile', logs: 'What your logs show',
+                    lower: 'Lower-concern possibility', moderate: 'Moderate-concern possibility', higher: 'Higher-concern possibility',
+                    evidence: 'Understanding the evidence', do: 'What you can do', dont: 'What to avoid',
+                    questions: 'Questions for your clinician', sources: 'Research & sources'
+                };
+                const tones = { safety: 'sage', logs: 'sage', lower: 'sage', moderate: 'amber', higher: 'rose', do: 'sage', dont: 'rose' };
+                return { kind, title: labels[kind] || plainText(heading).replace(/^\d+[.)]\s*/, ''), tone: tones[kind] || 'lavender' };
+            };
+            const inline = value => {
+                const escaped = escapeText(value);
+                return escaped
+                    .replace(/`([^`]+)`/g, '<code>$1</code>')
+                    .replace(/\*\*([^\n]+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/__([^\n]+?)__/g, '<strong>$1</strong>')
+                    .replace(/(^|\s)\*([^*\n]+)\*(?=\s|[.,!?;:]|$)/g, '$1<em>$2</em>')
+                    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1<span class="pp-brief-external" aria-hidden="true"> ↗</span></a>');
+            };
+            const renderBody = body => {
+                const lines = String(body ?? '').replace(/\r\n?/g, '\n').split('\n');
+                const html = [];
+                let paragraph = [];
+                let listItems = [];
+                let listType = '';
+                let listStart = 1;
+                const flushParagraph = () => {
+                    if (paragraph.length) html.push('<p>' + inline(paragraph.join(' ')) + '</p>');
+                    paragraph = [];
+                };
+                const flushList = () => {
+                    if (listItems.length) html.push('<' + listType + (listType === 'ol' ? ' start="' + listStart + '"' : '') + '>' + listItems.map(item => '<li>' + item + '</li>').join('') + '</' + listType + '>');
+                    listItems = []; listType = '';
+                };
+                const tableCells = line => line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
+                const separator = line => /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+                for (let index = 0; index < lines.length; index++) {
+                    const line = lines[index];
+                    if (!line.trim()) { flushParagraph(); flushList(); continue; }
+                    const fence = line.match(/^\s*(`{3,}|~{3,})/);
+                    if (fence) {
+                        flushParagraph(); flushList();
+                        const code = [];
+                        while (++index < lines.length && !lines[index].trim().startsWith(fence[1])) code.push(lines[index]);
+                        html.push('<pre><code>' + escapeText(code.join('\n')) + '</code></pre>');
+                        continue;
+                    }
+                    const heading = line.match(/^\s{0,3}#{1,6}\s+(.+?)(?:\s+#+)?\s*$/);
+                    if (heading) { flushParagraph(); flushList(); html.push('<h4>' + inline(heading[1]) + '</h4>'); continue; }
+                    if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)) { flushParagraph(); flushList(); html.push('<hr>'); continue; }
+                    if (line.includes('|') && index + 1 < lines.length && separator(lines[index + 1])) {
+                        flushParagraph(); flushList();
+                        const headers = tableCells(line);
+                        index++;
+                        const rows = [];
+                        while (index + 1 < lines.length && lines[index + 1].trim() && lines[index + 1].includes('|')) rows.push(tableCells(lines[++index]));
+                        const columns = Math.max(headers.length, ...rows.map(row => row.length));
+                        const cells = (row, tag) => Array.from({length:columns}, (_, column) => '<' + tag + (tag === 'th' ? ' scope="col"' : '') + '>' + inline(row[column] || '') + '</' + tag + '>').join('');
+                        html.push('<div class="pp-brief-table-wrap" tabindex="0" role="region" aria-label="Report table"><table><thead><tr>' + cells(headers, 'th') + '</tr></thead><tbody>' + rows.map(row => '<tr>' + cells(row, 'td') + '</tr>').join('') + '</tbody></table></div>');
+                        continue;
+                    }
+                    if (/^\s*>/.test(line)) {
+                        flushParagraph(); flushList();
+                        const quote = [line.replace(/^\s*>\s?/, '')];
+                        while (index + 1 < lines.length && /^\s*>/.test(lines[index + 1])) quote.push(lines[++index].replace(/^\s*>\s?/, ''));
+                        html.push('<blockquote>' + inline(quote.join(' ')) + '</blockquote>');
+                        continue;
+                    }
+                    const bullet = line.match(/^\s*[-*+]\s+(.+)$/);
+                    const numbered = line.match(/^\s*(\d+)[.)]\s+(.+)$/);
+                    if (bullet || numbered) {
+                        flushParagraph();
+                        const type = numbered ? 'ol' : 'ul';
+                        if (listType && listType !== type) flushList();
+                        if (!listItems.length) listStart = numbered ? Number(numbered[1]) : 1;
+                        listType = type;
+                        listItems.push(inline(numbered ? numbered[2] : bullet[1]));
+                    } else if (listItems.length && /^\s{2,}\S/.test(line)) {
+                        listItems[listItems.length - 1] += '<br>' + inline(line.trim());
+                    } else {
+                        flushList(); paragraph.push(line.trim());
+                    }
+                }
+                flushParagraph(); flushList();
+                return html.join('');
+            };
+            const parseSections = value => {
+                const text = String(value ?? '');
+                if (text === cachedText) return cachedSections;
+                const lines = text.replace(/\r\n?/g, '\n').split('\n');
+                let fence = '';
+                const headings = [];
+                lines.forEach((line, index) => {
+                    const fenced = line.match(/^\s*(`{3,}|~{3,})/);
+                    if (fenced) { fence = fence ? '' : fenced[1]; return; }
+                    if (fence) return;
+                    const match = line.match(/^\s{0,3}(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/);
+                    if (match) headings.push({ index, level: match[1].length, heading: match[2], meta: describe(match[2]) });
+                });
+                const known = headings.filter(item => item.meta.kind !== 'detail');
+                const depths = {};
+                (known.length ? known : headings).forEach(item => { depths[item.level] = (depths[item.level] || 0) + 1; });
+                const sectionLevel = Number(Object.keys(depths).sort((a, b) => depths[b] - depths[a] || Number(a) - Number(b))[0] || 6);
+                const starts = headings.filter(item => item.level <= sectionLevel);
+                const sections = [];
+                const append = (heading, body, original = '') => {
+                    if (!heading && !body.trim()) return;
+                    const meta = describe(heading || 'Your health summary');
+                    const assessment = body.match(/^\s*[-*+]?\s*\*\*AI Condition Assessment \(Not Confirmed\)\*\*\s*:\s*(.+)$/im);
+                    const estimate = heading.match(/(?:—|–|-|:)\s*(\d+(?:\.\d+)?\s*%)\s*$/);
+                    sections.push({
+                        id: 'brief-section-' + sections.length,
+                        ...meta,
+                        originalHeading: original || heading,
+                        body,
+                        html: renderBody(body),
+                        preview: plainText(body),
+                        assessment: assessment ? plainText(assessment[1]) : '',
+                        estimate: estimate ? estimate[1] : ''
+                    });
+                };
+                if (!starts.length) append('', text);
+                else {
+                    const preamble = lines.slice(0, starts[0].index).join('\n');
+                    if (preamble.trim()) append('Report introduction', preamble);
+                    starts.forEach((start, index) => append(start.heading, lines.slice(start.index + 1, starts[index + 1]?.index ?? lines.length).join('\n'), start.heading));
+                }
+                // Put recorded patterns first in the interactive layout. The
+                // original full-text view retains the report's exact order.
+                const overview = sections.filter(section => ['logs', 'profile'].includes(section.kind));
+                overview.sort((a, b) => Number(a.kind === 'profile') - Number(b.kind === 'profile'));
+                const reading = sections.filter(section => !['logs', 'profile', 'safety'].includes(section.kind));
+                const notices = sections.filter(section => section.kind === 'safety');
+                cachedText = text;
+                cachedSections = [...overview, ...reading, ...notices];
+                return cachedSections;
+            };
+            return {
+                summaryViewMode: 'interactive',
+                summaryExpansionReport: '',
+                summaryExpandedSections: {},
+                getSummarySections() { return parseSections(this.briefResult); },
+                summaryIcon(kind) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (icons[kind] || icons.detail) + '</svg>'; },
+                summarySectionOpen(section) {
+                    if (this.summaryExpansionReport === this.briefResult && Object.prototype.hasOwnProperty.call(this.summaryExpandedSections, section.id)) return this.summaryExpandedSections[section.id];
+                    return ['logs', 'higher', 'evidence', 'do', 'dont', 'questions', 'detail'].includes(section.kind);
+                },
+                prepareSummaryExpansion() {
+                    if (this.summaryExpansionReport !== this.briefResult) {
+                        this.summaryExpandedSections = {};
+                        this.summaryExpansionReport = this.briefResult;
+                    }
+                },
+                toggleSummarySection(section) {
+                    const open = this.summarySectionOpen(section);
+                    this.prepareSummaryExpansion();
+                    this.summaryExpandedSections = { ...this.summaryExpandedSections, [section.id]: !open };
+                },
+                summaryAllExpanded() { return this.summarySections.length > 0 && this.summarySections.every(section => this.summarySectionOpen(section)); },
+                setSummaryExpansion(open) {
+                    this.prepareSummaryExpansion();
+                    this.summaryExpandedSections = Object.fromEntries(this.summarySections.map(section => [section.id, open]));
+                },
+                focusSummarySection(section) {
+                    this.summaryViewMode = 'interactive';
+                    this.prepareSummaryExpansion();
+                    this.summaryExpandedSections = { ...this.summaryExpandedSections, [section.id]: true };
+                    this.$nextTick(() => {
+                        const card = document.getElementById('full-' + section.id);
+                        if (!card) return;
+                        card.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+                        const button = card.querySelector('.pp-brief-section-toggle');
+                        if (button && !button.disabled) button.focus({ preventScroll: true });
+                    });
+                },
+                askAboutSummarySection(section) {
+                    this.openChatFromBrief();
+                    this.chatQuestion = 'Can you explain the "' + section.title + '" section of my health report in simpler terms?';
+                    this.$nextTick(() => document.querySelector('#health-chat .pp-chat-composer textarea')?.focus());
+                }
+            };
+        }
+
         document.addEventListener('alpine:init', () => {
             const SUPABASE_URL = window.SUPABASE_URL || "https://your-supabase-project.supabase.co";
             const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "your-anon-key";
@@ -2021,6 +2476,8 @@ html[data-theme="dark"] #pp-health-report { --r-bg:#202a38;--r-card:#293545;--r-
             }
 
             Alpine.data('pulseApp', () => ({
+                ...createHealthBriefPresentation(),
+                get summarySections() { return this.getSummarySections(); },
                 user: null,
                 session: null,
                 authTab: 'login',
