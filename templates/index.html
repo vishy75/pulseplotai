@@ -605,6 +605,77 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
 @media(prefers-reduced-motion:reduce) { .pp-brief-view * { transition:none!important;animation:none!important;scroll-behavior:auto!important; } }
 
 </style>
+<<<<<<< HEAD
+
+<style id="pp-summary-workspace-refresh">
+/* Scoped presentation refresh: no dashboard, chat, or data-layer overrides. */
+#pp-health-report .pp-report-grid { grid-template-columns:248px minmax(0,1fr);gap:32px; }
+#pp-health-report .pp-report-reading { grid-column:2;grid-row:1; }
+#pp-health-report .pp-report-sidebar { grid-column:1;grid-row:1;position:static;gap:16px; }
+#pp-health-report .pp-report-content { max-width:1280px; }
+#pp-health-report .pp-report-intro { padding:12px 0 22px;margin-bottom:22px;border-bottom:1px solid var(--r-line); }
+#pp-health-report .pp-report-intro h1 { font-size:clamp(28px,3vw,40px); }
+#pp-health-report .pp-brief-section-grid { grid-template-columns:minmax(0,1fr);gap:16px; }
+#pp-health-report .pp-brief-section { grid-column:1!important;border-radius:20px;box-shadow:0 3px 14px #18253304; }
+#pp-health-report .pp-brief-section-toggle { padding:22px 24px 18px;align-items:center; }
+#pp-health-report .pp-brief-section-icon { width:42px;height:42px;border-radius:14px; }
+#pp-health-report .pp-brief-section-title { font-size:18px;letter-spacing:-.4px; }
+#pp-health-report .pp-brief-section-kicker { font-size:9px;letter-spacing:.08em; }
+#pp-health-report .pp-brief-section-content { padding:0 24px 24px; }
+#pp-health-report .pp-brief-section-summary { padding:0 24px 18px; }
+#pp-health-report .pp-brief-body { font-size:14px;line-height:1.85;max-width:80ch; }
+#pp-health-report .pp-brief-chevron { margin:0; }
+#pp-health-report .pp-brief-navigation { padding:18px;border-radius:18px; }
+#pp-health-report .pp-brief-navigation button { min-height:44px;font-size:12px;padding:10px; }
+#pp-health-report .pp-brief-navigation button[aria-current="true"] { background:var(--r-soft);color:var(--r-accent);font-weight:700; }
+#pp-health-report .pp-report-profile,#pp-health-report .pp-report-actions,#pp-health-report .pp-report-guide { border-radius:18px;padding:20px; }
+#pp-health-report .pp-report-guide h3,#pp-health-report .pp-report-actions h3 { font-size:17px; }
+.pp-summary-explorer { border:1px solid var(--brief-line);border-radius:20px;background:var(--brief-card);padding:18px;margin:0 0 18px; }
+.pp-summary-explorer-heading { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px; }
+.pp-summary-explorer-heading strong { font-size:14px;font-weight:650; }
+.pp-summary-explorer-heading span { color:var(--brief-muted);font-size:11px; }
+.pp-summary-search { display:flex;align-items:center;gap:10px;background:var(--brief-soft);border:1px solid var(--brief-line);border-radius:12px;padding:0 12px; }
+.pp-summary-search svg { width:18px;height:18px;flex-shrink:0;color:var(--brief-muted); }
+.pp-brief-view .pp-summary-search input { width:100%;min-width:0;min-height:44px;background:transparent!important;border:0!important;box-shadow:none!important;color:var(--brief-ink)!important;font:inherit;font-size:13px;padding:10px 0; }
+.pp-summary-search input::placeholder { color:var(--brief-muted);opacity:1; }
+.pp-brief-view .pp-summary-search button { border:0;background:transparent;color:var(--brief-accent);font-size:12px;min-height:44px;padding:0 6px; }
+.pp-summary-filters { display:flex;flex-wrap:wrap;gap:7px;margin-top:14px; }
+.pp-brief-view .pp-summary-filters button { display:flex;align-items:center;gap:7px;border:1px solid var(--brief-line);border-radius:10px;background:var(--brief-card);color:var(--brief-muted);min-height:40px;padding:8px 12px;font-size:12px;cursor:pointer; }
+.pp-brief-view .pp-summary-filters button[aria-pressed="true"] { background:var(--brief-soft);border-color:var(--brief-accent);color:var(--brief-accent);font-weight:700; }
+.pp-summary-filters small { font-size:10px;opacity:.8; }
+.pp-summary-results { display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--brief-muted);line-height:1.7; }
+.pp-summary-results button { color:var(--brief-accent);text-decoration:underline;text-underline-offset:3px; }
+.pp-summary-empty { padding:24px;border:1px dashed var(--brief-line);border-radius:16px;text-align:center;color:var(--brief-muted);font-size:13px;margin-bottom:16px; }
+.pp-summary-empty strong { display:block;color:var(--brief-ink);margin-bottom:6px; }
+#health-summary .pp-summary-explorer { padding:12px;border-radius:14px; }
+#health-summary .pp-summary-explorer-heading { align-items:flex-start; }
+#health-summary .pp-summary-explorer-heading strong { font-size:12px; }
+#health-summary .pp-summary-filters { gap:5px; }
+#health-summary .pp-summary-filters button { font-size:10px;padding:6px 8px;min-height:36px; }
+#health-summary .pp-summary-search input { font-size:12px; }
+#health-summary .pp-summary-results { font-size:10px; }
+@media(max-width:1000px) {
+ #pp-health-report .pp-report-grid { grid-template-columns:minmax(0,1fr);gap:22px; }
+ #pp-health-report .pp-report-reading { grid-column:1;grid-row:1; }
+ #pp-health-report .pp-report-sidebar { grid-column:1;grid-row:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start; }
+ #pp-health-report .pp-brief-navigation { grid-column:1/-1; }
+ #pp-health-report .pp-brief-navigation nav { display:grid;grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:600px) {
+ #pp-health-report .pp-report-sidebar { display:flex; }
+ #pp-health-report .pp-brief-section-toggle { padding:17px 16px;gap:10px; }
+ #pp-health-report .pp-brief-section-content { padding:0 16px 20px; }
+ #pp-health-report .pp-brief-section-summary { padding:0 16px 16px; }
+ #pp-health-report .pp-brief-section-title { font-size:16px; }
+ #pp-health-report .pp-brief-body { font-size:13px; }
+ .pp-summary-explorer { padding:14px;border-radius:16px; }
+ .pp-summary-filters { gap:6px; }
+ .pp-brief-view .pp-summary-filters button { padding:7px 9px;font-size:11px; }
+ #pp-health-report .pp-brief-navigation nav { grid-template-columns:1fr; }
+}
+</style>
+=======
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
 </head>
 <body class="pp-design font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
@@ -834,6 +905,29 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                             <p class="pp-brief-reading-mode" x-text="summaryViewMode === 'interactive' ? 'Explore your report, one section at a time.' : 'Your original report in its full text layout.'"></p>
                         </div>
                         <section id="full-brief-interactive" x-show="summaryViewMode === 'interactive'" class="pp-brief-view" aria-label="Interactive health summary">
+<<<<<<< HEAD
+                            <div class="pp-summary-explorer" x-effect="if (summaryFilterReport !== briefResult) resetSummaryFilters()">
+                                <div class="pp-summary-explorer-heading"><strong>Explore your summary</strong><span x-text="summarySections.length + ' sections'"></span></div>
+                                <label class="pp-summary-search">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+                                    <input type="search" x-model="summarySearch" @input="summaryFilterReport = briefResult" placeholder="Find a symptom, topic, or question…" aria-label="Search health summary sections" autocomplete="off">
+                                    <button type="button" x-show="summarySearch" @click="summarySearch = ''; $el.parentElement.querySelector('input').focus()">Clear</button>
+                                </label>
+                                <div class="pp-summary-filters" role="group" aria-label="Filter summary by topic">
+                                    <template x-for="group in summaryGroups" :key="group.id">
+                                        <button type="button" @click="selectSummaryGroup(group.id)" :aria-pressed="activeSummaryGroup() === group.id"><span x-text="group.label"></span><small x-text="summaryGroupCount(group.id)"></small></button>
+                                    </template>
+                                </div>
+                                <div class="pp-summary-results">
+                                    <span role="status" aria-live="polite" x-text="summaryVisibleCount() + ' of ' + summarySections.length + ' sections shown'"></span>
+                                    <button type="button" x-show="activeSummaryGroup() !== 'all' || activeSummarySearch()" @click="resetSummaryFilters()">Show all sections</button>
+                                </div>
+                                <p class="pp-summary-results" x-show="activeSummaryGroup() !== 'all' || activeSummarySearch()">Important information stays visible in every view.</p>
+                            </div>
+                            <div class="pp-summary-empty" x-show="!summaryHasMatches()"><strong>No matching sections</strong>Try another word or choose “Show all sections”.</div>
+
+=======
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                             <div class="pp-brief-toolbar">
                                 <p class="pp-brief-toolbar-copy">Tap a section to explore the details.</p>
                                 <button type="button" class="pp-brief-quiet-btn" @click="setSummaryExpansion(!summaryAllExpanded())" :aria-label="summaryAllExpanded() ? 'Collapse report details' : 'Expand all report details'">
@@ -843,9 +937,15 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                             </div>
                             <div class="pp-brief-section-grid">
                                 <template x-for="section in summarySections" :key="briefResult + section.id">
+<<<<<<< HEAD
+                                    <article class="pp-brief-section" :id="'full-' + section.id" x-show="summarySectionVisible(section)" :data-kind="section.kind" :data-tone="section.tone">
+                                        <h2 class="pp-brief-section-heading">
+                                            <button type="button" class="pp-brief-section-toggle" :id="'full-heading-' + section.id" @click="toggleSummaryDisplay(section)" :aria-expanded="summaryDisplayOpen(section)" :aria-controls="'full-content-' + section.id">
+=======
                                     <article class="pp-brief-section" :id="'full-' + section.id" :data-kind="section.kind" :data-tone="section.tone">
                                         <h2 class="pp-brief-section-heading">
                                             <button type="button" class="pp-brief-section-toggle" :id="'full-heading-' + section.id" @click="toggleSummarySection(section)" :aria-expanded="summarySectionOpen(section)" :aria-controls="'full-content-' + section.id">
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                                 <span class="pp-brief-section-icon" x-html="summaryIcon(section.kind)"></span>
                                                 <span class="pp-brief-section-labels">
                                                     <span class="pp-brief-section-kicker" x-text="section.kind === 'safety' ? 'Please read' : ['lower', 'moderate', 'higher'].includes(section.kind) ? 'AI possibility · not confirmed' : section.kind === 'questions' ? 'For your next conversation' : 'From your generated report'"></span>
@@ -854,12 +954,21 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                                 <svg class="pp-brief-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
                                             </button>
                                         </h2>
+<<<<<<< HEAD
+                                        <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summaryDisplayOpen(section)">
+                                            <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
+                                            <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
+                                            <p x-show="!summaryDisplayOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
+                                        </div>
+                                        <div class="pp-brief-section-content" :id="'full-content-' + section.id" x-show="summaryDisplayOpen(section)" :aria-labelledby="'full-heading-' + section.id">
+=======
                                         <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summarySectionOpen(section)">
                                             <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
                                             <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
                                             <p x-show="!summarySectionOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
                                         </div>
                                         <div class="pp-brief-section-content" :id="'full-content-' + section.id" x-show="summarySectionOpen(section)" :aria-labelledby="'full-heading-' + section.id">
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                             <p class="pp-brief-original-heading" x-show="section.originalHeading" x-text="section.originalHeading"></p>
                                             <div class="pp-brief-body" x-html="section.html"></div>
                                             <div class="pp-brief-section-footer" x-show="section.kind !== 'safety'">
@@ -887,7 +996,11 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                 <h3>IN THIS BRIEF</h3>
                                 <nav aria-label="Health summary sections">
                                     <template x-for="section in summarySections" :key="briefResult + section.id">
+<<<<<<< HEAD
+                                        <button type="button" @click="focusSummarySection(section)" :aria-current="summaryActiveSection === section.id ? 'true' : null">
+=======
                                         <button type="button" @click="focusSummarySection(section)">
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                             <span x-html="summaryIcon(section.kind)"></span><span x-text="section.title"></span>
                                         </button>
                                     </template>
@@ -2087,6 +2200,29 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                 <strong>Reminder:</strong> Verify this AI-generated report with a licensed clinician before acting on it.
                             </div>
                             <section id="preview-brief-interactive" x-show="summaryViewMode === 'interactive'" class="pp-brief-view" aria-label="Interactive health summary">
+<<<<<<< HEAD
+                            <div class="pp-summary-explorer" x-effect="if (summaryFilterReport !== briefResult) resetSummaryFilters()">
+                                <div class="pp-summary-explorer-heading"><strong>Explore your summary</strong><span x-text="summarySections.length + ' sections'"></span></div>
+                                <label class="pp-summary-search">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+                                    <input type="search" x-model="summarySearch" @input="summaryFilterReport = briefResult" placeholder="Find a symptom, topic, or question…" aria-label="Search health summary sections" autocomplete="off">
+                                    <button type="button" x-show="summarySearch" @click="summarySearch = ''; $el.parentElement.querySelector('input').focus()">Clear</button>
+                                </label>
+                                <div class="pp-summary-filters" role="group" aria-label="Filter summary by topic">
+                                    <template x-for="group in summaryGroups" :key="group.id">
+                                        <button type="button" @click="selectSummaryGroup(group.id)" :aria-pressed="activeSummaryGroup() === group.id"><span x-text="group.label"></span><small x-text="summaryGroupCount(group.id)"></small></button>
+                                    </template>
+                                </div>
+                                <div class="pp-summary-results">
+                                    <span role="status" aria-live="polite" x-text="summaryVisibleCount() + ' of ' + summarySections.length + ' sections shown'"></span>
+                                    <button type="button" x-show="activeSummaryGroup() !== 'all' || activeSummarySearch()" @click="resetSummaryFilters()">Show all sections</button>
+                                </div>
+                                <p class="pp-summary-results" x-show="activeSummaryGroup() !== 'all' || activeSummarySearch()">Important information stays visible in every view.</p>
+                            </div>
+                            <div class="pp-summary-empty" x-show="!summaryHasMatches()"><strong>No matching sections</strong>Try another word or choose “Show all sections”.</div>
+
+=======
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                             <div class="pp-brief-toolbar">
                                 <p class="pp-brief-toolbar-copy">Tap a section to explore the details.</p>
                                 <button type="button" class="pp-brief-quiet-btn" @click="setSummaryExpansion(!summaryAllExpanded())" :aria-label="summaryAllExpanded() ? 'Collapse report details' : 'Expand all report details'">
@@ -2096,9 +2232,15 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                             </div>
                             <div class="pp-brief-section-grid">
                                 <template x-for="section in summarySections" :key="briefResult + section.id">
+<<<<<<< HEAD
+                                    <article class="pp-brief-section" :id="'preview-' + section.id" x-show="summarySectionVisible(section)" :data-kind="section.kind" :data-tone="section.tone">
+                                        <h2 class="pp-brief-section-heading">
+                                            <button type="button" class="pp-brief-section-toggle" :id="'preview-heading-' + section.id" @click="toggleSummaryDisplay(section)" :aria-expanded="summaryDisplayOpen(section)" :aria-controls="'preview-content-' + section.id">
+=======
                                     <article class="pp-brief-section" :id="'preview-' + section.id" :data-kind="section.kind" :data-tone="section.tone">
                                         <h2 class="pp-brief-section-heading">
                                             <button type="button" class="pp-brief-section-toggle" :id="'preview-heading-' + section.id" @click="toggleSummarySection(section)" :aria-expanded="summarySectionOpen(section)" :aria-controls="'preview-content-' + section.id">
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                                 <span class="pp-brief-section-icon" x-html="summaryIcon(section.kind)"></span>
                                                 <span class="pp-brief-section-labels">
                                                     <span class="pp-brief-section-kicker" x-text="section.kind === 'safety' ? 'Please read' : ['lower', 'moderate', 'higher'].includes(section.kind) ? 'AI possibility · not confirmed' : section.kind === 'questions' ? 'For your next conversation' : 'From your generated report'"></span>
@@ -2107,12 +2249,21 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                                 <svg class="pp-brief-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
                                             </button>
                                         </h2>
+<<<<<<< HEAD
+                                        <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summaryDisplayOpen(section)">
+                                            <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
+                                            <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
+                                            <p x-show="!summaryDisplayOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
+                                        </div>
+                                        <div class="pp-brief-section-content" :id="'preview-content-' + section.id" x-show="summaryDisplayOpen(section)" :aria-labelledby="'preview-heading-' + section.id">
+=======
                                         <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summarySectionOpen(section)">
                                             <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
                                             <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
                                             <p x-show="!summarySectionOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
                                         </div>
                                         <div class="pp-brief-section-content" :id="'preview-content-' + section.id" x-show="summarySectionOpen(section)" :aria-labelledby="'preview-heading-' + section.id">
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                             <p class="pp-brief-original-heading" x-show="section.originalHeading" x-text="section.originalHeading"></p>
                                             <div class="pp-brief-body" x-html="section.html"></div>
                                             <div class="pp-brief-section-footer" x-show="section.kind !== 'safety'">
@@ -2418,6 +2569,61 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
             };
             return {
                 summaryViewMode: 'interactive',
+<<<<<<< HEAD
+                // View-only exploration state; report text and saved records are untouched.
+                summarySearch: '',
+                summaryGroup: 'all',
+                summaryFilterReport: '',
+                summaryActiveSection: '',
+                summaryGroups: [
+                    {id:'all',label:'Everything'}, {id:'overview',label:'Overview'},
+                    {id:'possibilities',label:'Possibilities'}, {id:'actions',label:'Next steps'},
+                    {id:'sources',label:'Evidence & sources'}
+                ],
+                activeSummaryGroup() { return this.summaryFilterReport === this.briefResult ? this.summaryGroup : 'all'; },
+                activeSummarySearch() { return this.summaryFilterReport === this.briefResult ? this.summarySearch.trim().toLowerCase() : ''; },
+                summaryKindGroup(kind) {
+                    if (['lower','moderate','higher'].includes(kind)) return 'possibilities';
+                    if (['do','dont','questions'].includes(kind)) return 'actions';
+                    if (['evidence','sources'].includes(kind)) return 'sources';
+                    return 'overview';
+                },
+                summaryGroupCount(group) {
+                    return this.summarySections.filter(section => group === 'all' || this.summaryKindGroup(section.kind) === group).length;
+                },
+                selectSummaryGroup(group) {
+                    if (this.summaryFilterReport !== this.briefResult) this.summarySearch = '';
+                    this.summaryFilterReport = this.briefResult;
+                    this.summaryGroup = group;
+                },
+                resetSummaryFilters() {
+                    this.summarySearch = '';
+                    this.summaryGroup = 'all';
+                    this.summaryFilterReport = this.briefResult;
+                },
+                summarySectionMatches(section) {
+                    const group = this.activeSummaryGroup();
+                    const query = this.activeSummarySearch();
+                    return (group === 'all' || this.summaryKindGroup(section.kind) === group) &&
+                        (!query || [section.title, section.originalHeading, section.body].join(' ').toLowerCase().includes(query));
+                },
+                summarySectionVisible(section) { return section.kind === 'safety' || this.summarySectionMatches(section); },
+                summaryVisibleCount() { return this.summarySections.filter(section => this.summarySectionVisible(section)).length; },
+                summaryHasMatches() { return this.summarySections.some(section => this.summarySectionMatches(section)); },
+                summaryDisplayOpen(section) {
+                    return !!this.activeSummarySearch() && this.summarySectionMatches(section) || this.summarySectionOpen(section);
+                },
+                toggleSummaryDisplay(section) {
+                    const wasOpen = this.summaryDisplayOpen(section);
+                    // Clear search before manually collapsing so the button always responds.
+                    if (this.activeSummarySearch()) this.summarySearch = '';
+                    this.prepareSummaryExpansion();
+                    this.summaryExpandedSections = {...this.summaryExpandedSections, [section.id]: !wasOpen};
+                    this.summaryActiveSection = section.id;
+                },
+
+=======
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                 summaryExpansionReport: '',
                 summaryExpandedSections: {},
                 getSummarySections() { return parseSections(this.briefResult); },
@@ -2437,12 +2643,23 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                     this.prepareSummaryExpansion();
                     this.summaryExpandedSections = { ...this.summaryExpandedSections, [section.id]: !open };
                 },
+<<<<<<< HEAD
+                summaryAllExpanded() { return this.summarySections.length > 0 && this.summarySections.every(section => this.summaryDisplayOpen(section)); },
+                setSummaryExpansion(open) {
+                    this.summarySearch = '';
+=======
                 summaryAllExpanded() { return this.summarySections.length > 0 && this.summarySections.every(section => this.summarySectionOpen(section)); },
                 setSummaryExpansion(open) {
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                     this.prepareSummaryExpansion();
                     this.summaryExpandedSections = Object.fromEntries(this.summarySections.map(section => [section.id, open]));
                 },
                 focusSummarySection(section) {
+<<<<<<< HEAD
+                    this.resetSummaryFilters();
+                    this.summaryActiveSection = section.id;
+=======
+>>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                     this.summaryViewMode = 'interactive';
                     this.prepareSummaryExpansion();
                     this.summaryExpandedSections = { ...this.summaryExpandedSections, [section.id]: true };
