@@ -605,7 +605,6 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
 @media(prefers-reduced-motion:reduce) { .pp-brief-view * { transition:none!important;animation:none!important;scroll-behavior:auto!important; } }
 
 </style>
-<<<<<<< HEAD
 
 <style id="pp-summary-workspace-refresh">
 /* Scoped presentation refresh: no dashboard, chat, or data-layer overrides. */
@@ -674,8 +673,6 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
  #pp-health-report .pp-brief-navigation nav { grid-template-columns:1fr; }
 }
 </style>
-=======
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
 </head>
 <body class="pp-design font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
@@ -905,7 +902,6 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                             <p class="pp-brief-reading-mode" x-text="summaryViewMode === 'interactive' ? 'Explore your report, one section at a time.' : 'Your original report in its full text layout.'"></p>
                         </div>
                         <section id="full-brief-interactive" x-show="summaryViewMode === 'interactive'" class="pp-brief-view" aria-label="Interactive health summary">
-<<<<<<< HEAD
                             <div class="pp-summary-explorer" x-effect="if (summaryFilterReport !== briefResult) resetSummaryFilters()">
                                 <div class="pp-summary-explorer-heading"><strong>Explore your summary</strong><span x-text="summarySections.length + ' sections'"></span></div>
                                 <label class="pp-summary-search">
@@ -926,8 +922,6 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                             </div>
                             <div class="pp-summary-empty" x-show="!summaryHasMatches()"><strong>No matching sections</strong>Try another word or choose “Show all sections”.</div>
 
-=======
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                             <div class="pp-brief-toolbar">
                                 <p class="pp-brief-toolbar-copy">Tap a section to explore the details.</p>
                                 <button type="button" class="pp-brief-quiet-btn" @click="setSummaryExpansion(!summaryAllExpanded())" :aria-label="summaryAllExpanded() ? 'Collapse report details' : 'Expand all report details'">
@@ -937,15 +931,9 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                             </div>
                             <div class="pp-brief-section-grid">
                                 <template x-for="section in summarySections" :key="briefResult + section.id">
-<<<<<<< HEAD
                                     <article class="pp-brief-section" :id="'full-' + section.id" x-show="summarySectionVisible(section)" :data-kind="section.kind" :data-tone="section.tone">
                                         <h2 class="pp-brief-section-heading">
                                             <button type="button" class="pp-brief-section-toggle" :id="'full-heading-' + section.id" @click="toggleSummaryDisplay(section)" :aria-expanded="summaryDisplayOpen(section)" :aria-controls="'full-content-' + section.id">
-=======
-                                    <article class="pp-brief-section" :id="'full-' + section.id" :data-kind="section.kind" :data-tone="section.tone">
-                                        <h2 class="pp-brief-section-heading">
-                                            <button type="button" class="pp-brief-section-toggle" :id="'full-heading-' + section.id" @click="toggleSummarySection(section)" :aria-expanded="summarySectionOpen(section)" :aria-controls="'full-content-' + section.id">
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                                 <span class="pp-brief-section-icon" x-html="summaryIcon(section.kind)"></span>
                                                 <span class="pp-brief-section-labels">
                                                     <span class="pp-brief-section-kicker" x-text="section.kind === 'safety' ? 'Please read' : ['lower', 'moderate', 'higher'].includes(section.kind) ? 'AI possibility · not confirmed' : section.kind === 'questions' ? 'For your next conversation' : 'From your generated report'"></span>
@@ -954,21 +942,12 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                                 <svg class="pp-brief-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
                                             </button>
                                         </h2>
-<<<<<<< HEAD
                                         <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summaryDisplayOpen(section)">
                                             <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
                                             <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
                                             <p x-show="!summaryDisplayOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
                                         </div>
                                         <div class="pp-brief-section-content" :id="'full-content-' + section.id" x-show="summaryDisplayOpen(section)" :aria-labelledby="'full-heading-' + section.id">
-=======
-                                        <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summarySectionOpen(section)">
-                                            <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
-                                            <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
-                                            <p x-show="!summarySectionOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
-                                        </div>
-                                        <div class="pp-brief-section-content" :id="'full-content-' + section.id" x-show="summarySectionOpen(section)" :aria-labelledby="'full-heading-' + section.id">
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                             <p class="pp-brief-original-heading" x-show="section.originalHeading" x-text="section.originalHeading"></p>
                                             <div class="pp-brief-body" x-html="section.html"></div>
                                             <div class="pp-brief-section-footer" x-show="section.kind !== 'safety'">
@@ -996,11 +975,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                 <h3>IN THIS BRIEF</h3>
                                 <nav aria-label="Health summary sections">
                                     <template x-for="section in summarySections" :key="briefResult + section.id">
-<<<<<<< HEAD
                                         <button type="button" @click="focusSummarySection(section)" :aria-current="summaryActiveSection === section.id ? 'true' : null">
-=======
-                                        <button type="button" @click="focusSummarySection(section)">
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                             <span x-html="summaryIcon(section.kind)"></span><span x-text="section.title"></span>
                                         </button>
                                     </template>
@@ -2200,7 +2175,6 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                 <strong>Reminder:</strong> Verify this AI-generated report with a licensed clinician before acting on it.
                             </div>
                             <section id="preview-brief-interactive" x-show="summaryViewMode === 'interactive'" class="pp-brief-view" aria-label="Interactive health summary">
-<<<<<<< HEAD
                             <div class="pp-summary-explorer" x-effect="if (summaryFilterReport !== briefResult) resetSummaryFilters()">
                                 <div class="pp-summary-explorer-heading"><strong>Explore your summary</strong><span x-text="summarySections.length + ' sections'"></span></div>
                                 <label class="pp-summary-search">
@@ -2221,8 +2195,6 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                             </div>
                             <div class="pp-summary-empty" x-show="!summaryHasMatches()"><strong>No matching sections</strong>Try another word or choose “Show all sections”.</div>
 
-=======
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                             <div class="pp-brief-toolbar">
                                 <p class="pp-brief-toolbar-copy">Tap a section to explore the details.</p>
                                 <button type="button" class="pp-brief-quiet-btn" @click="setSummaryExpansion(!summaryAllExpanded())" :aria-label="summaryAllExpanded() ? 'Collapse report details' : 'Expand all report details'">
@@ -2232,15 +2204,9 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                             </div>
                             <div class="pp-brief-section-grid">
                                 <template x-for="section in summarySections" :key="briefResult + section.id">
-<<<<<<< HEAD
                                     <article class="pp-brief-section" :id="'preview-' + section.id" x-show="summarySectionVisible(section)" :data-kind="section.kind" :data-tone="section.tone">
                                         <h2 class="pp-brief-section-heading">
                                             <button type="button" class="pp-brief-section-toggle" :id="'preview-heading-' + section.id" @click="toggleSummaryDisplay(section)" :aria-expanded="summaryDisplayOpen(section)" :aria-controls="'preview-content-' + section.id">
-=======
-                                    <article class="pp-brief-section" :id="'preview-' + section.id" :data-kind="section.kind" :data-tone="section.tone">
-                                        <h2 class="pp-brief-section-heading">
-                                            <button type="button" class="pp-brief-section-toggle" :id="'preview-heading-' + section.id" @click="toggleSummarySection(section)" :aria-expanded="summarySectionOpen(section)" :aria-controls="'preview-content-' + section.id">
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                                 <span class="pp-brief-section-icon" x-html="summaryIcon(section.kind)"></span>
                                                 <span class="pp-brief-section-labels">
                                                     <span class="pp-brief-section-kicker" x-text="section.kind === 'safety' ? 'Please read' : ['lower', 'moderate', 'higher'].includes(section.kind) ? 'AI possibility · not confirmed' : section.kind === 'questions' ? 'For your next conversation' : 'From your generated report'"></span>
@@ -2249,21 +2215,12 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                                 <svg class="pp-brief-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
                                             </button>
                                         </h2>
-<<<<<<< HEAD
                                         <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summaryDisplayOpen(section)">
                                             <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
                                             <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
                                             <p x-show="!summaryDisplayOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
                                         </div>
                                         <div class="pp-brief-section-content" :id="'preview-content-' + section.id" x-show="summaryDisplayOpen(section)" :aria-labelledby="'preview-heading-' + section.id">
-=======
-                                        <div class="pp-brief-section-summary" x-show="section.assessment || section.estimate || !summarySectionOpen(section)">
-                                            <p x-show="section.assessment" class="pp-brief-condition" x-text="section.assessment"></p>
-                                            <span x-show="section.estimate" class="pp-brief-estimate" x-text="'AI estimate · ' + section.estimate"></span>
-                                            <p x-show="!summarySectionOpen(section) && !section.assessment" class="pp-brief-preview-copy" x-text="section.preview"></p>
-                                        </div>
-                                        <div class="pp-brief-section-content" :id="'preview-content-' + section.id" x-show="summarySectionOpen(section)" :aria-labelledby="'preview-heading-' + section.id">
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                                             <p class="pp-brief-original-heading" x-show="section.originalHeading" x-text="section.originalHeading"></p>
                                             <div class="pp-brief-body" x-html="section.html"></div>
                                             <div class="pp-brief-section-footer" x-show="section.kind !== 'safety'">
@@ -2569,7 +2526,6 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
             };
             return {
                 summaryViewMode: 'interactive',
-<<<<<<< HEAD
                 // View-only exploration state; report text and saved records are untouched.
                 summarySearch: '',
                 summaryGroup: 'all',
@@ -2622,8 +2578,6 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                     this.summaryActiveSection = section.id;
                 },
 
-=======
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                 summaryExpansionReport: '',
                 summaryExpandedSections: {},
                 getSummarySections() { return parseSections(this.briefResult); },
@@ -2643,23 +2597,15 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                     this.prepareSummaryExpansion();
                     this.summaryExpandedSections = { ...this.summaryExpandedSections, [section.id]: !open };
                 },
-<<<<<<< HEAD
                 summaryAllExpanded() { return this.summarySections.length > 0 && this.summarySections.every(section => this.summaryDisplayOpen(section)); },
                 setSummaryExpansion(open) {
                     this.summarySearch = '';
-=======
-                summaryAllExpanded() { return this.summarySections.length > 0 && this.summarySections.every(section => this.summarySectionOpen(section)); },
-                setSummaryExpansion(open) {
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                     this.prepareSummaryExpansion();
                     this.summaryExpandedSections = Object.fromEntries(this.summarySections.map(section => [section.id, open]));
                 },
                 focusSummarySection(section) {
-<<<<<<< HEAD
                     this.resetSummaryFilters();
                     this.summaryActiveSection = section.id;
-=======
->>>>>>> 0455298869a2e003a023427cc7228a2390d7ac65
                     this.summaryViewMode = 'interactive';
                     this.prepareSummaryExpansion();
                     this.summaryExpandedSections = { ...this.summaryExpandedSections, [section.id]: true };
