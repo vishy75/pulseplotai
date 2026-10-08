@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PulsePlot AI</title>
+    <title>PulsePlot AI | Your everyday care companion</title>
+    <meta name="description" content="Track symptoms and medicines, research medication cost options, and understand doctor instructions with educational AI support.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -673,6 +674,33 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
  #pp-health-report .pp-brief-navigation nav { grid-template-columns:1fr; }
 }
 </style>
+<style>
+/* Medication workspace: isolated styles preserve the existing calendar/report UI. */
+.med-workspace { order:4; padding:26px; border:1px solid #d3dce0; border-radius:24px; background:#f9fafb; color:#263942; scroll-margin-top:100px; }
+.med-workspace h2 { font-size:25px; font-weight:600; letter-spacing:-.6px; }
+.med-workspace h3 { font-size:18px; font-weight:600; }
+.med-workspace h4 { font-weight:600; }
+.med-workspace p { line-height:1.7; font-size:13px; margin:8px 0; }
+.med-heading,.med-toolbar,.med-event { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.med-heading>div { flex:1; min-width:220px; }.med-toolbar { justify-content:flex-start; margin:16px 0; }
+.med-workspace .med-eyebrow { font-size:10px; letter-spacing:.12em; font-weight:700; color:#52685e; }
+.med-workspace .med-caption { font-size:12px; color:#586a76; }
+.med-card { padding:20px; margin:14px 0; background:#fff; border:1px solid #dce3e7; border-radius:17px; min-width:0; }
+.med-card summary { cursor:pointer; font-weight:600; font-size:16px; }.med-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:16px 0; }.med-list>.med-card { margin:0; }.med-wide { grid-column:1/-1; }
+.med-grid label { display:flex; flex-direction:column; gap:7px; font-size:12px; font-weight:600; }
+.med-grid input,.med-grid select,.med-grid textarea { width:100%; min-width:0; padding:11px 12px; border:1px solid #b9c9ce; border-radius:10px; background:#fff; color:#233640; font-family:inherit; font-weight:400; font-size:13px; line-height:1.5; }
+.med-grid input:focus,.med-grid textarea:focus,.med-grid select:focus,.med-btn:focus-visible { outline:2px solid #647eac; outline-offset:3px; }
+.med-btn { display:inline-flex; justify-content:center; align-items:center; border:1px solid #bdcdd1; border-radius:12px; padding:10px 14px; font-size:12px; font-weight:600; background:#fff; color:#2c474c; text-decoration:none; min-height:42px; cursor:pointer; }
+.med-btn:hover { background:#edf2f1; }.med-btn.med-primary,.med-btn[aria-pressed="true"] { background:#395f59; color:#fff; border-color:#395f59; }.med-workspace :disabled { opacity:.5; cursor:not-allowed; }
+.med-workspace .med-notice { background:#edf2ef; padding:12px 15px; border-radius:12px; font-size:12px; color:#3e5c50; }
+.med-badge { font-size:11px; background:#edf0f5; color:#4b596c; padding:5px 10px; border-radius:20px; display:inline-block; }
+.med-workspace .med-refill { color:#84602f; font-size:12px; }.med-empty { padding:20px 0; }.med-event { padding:12px 0; border-bottom:1px solid #dce3e7; font-size:13px; }.med-event p { margin:2px 0; }
+.med-research { margin-top:24px; padding-top:24px; border-top:1px solid #cdd8dc; scroll-margin-top:100px; }.med-consent { display:flex; align-items:flex-start; gap:10px; font-size:12px; line-height:1.7; margin:18px 0; }.med-consent input { margin-top:5px; flex-shrink:0; }
+.med-preserve { white-space:pre-wrap; overflow-wrap:anywhere; }.med-answer { font-size:14px; line-height:1.85; margin:18px 0; }.med-results { margin-top:24px; }.med-source-link { text-decoration:underline; font-size:14px; color:#245b85; overflow-wrap:anywhere; }.med-workspace .med-error { color:#a72939; font-weight:600; }
+html[data-theme="dark"] .med-workspace { background:#202d3b; border-color:#425567; color:#e4edf3; }html[data-theme="dark"] .med-card,html[data-theme="dark"] .med-grid input,html[data-theme="dark"] .med-grid select,html[data-theme="dark"] .med-grid textarea { background:#273749; color:#e4edf3; border-color:#4e6375; }html[data-theme="dark"] .med-workspace .med-caption { color:#b5c5d2; }html[data-theme="dark"] .med-workspace .med-eyebrow,html[data-theme="dark"] .med-source-link { color:#b4d9dd; }html[data-theme="dark"] .med-btn { background:#2a3e4c; color:#e8eff4; border-color:#526e7c; }html[data-theme="dark"] .med-btn.med-primary,html[data-theme="dark"] .med-btn[aria-pressed="true"] { background:#86b4a6; color:#102b29; }html[data-theme="dark"] .med-workspace .med-notice { background:#2f4544; color:#d2e5de; }html[data-theme="dark"] .med-badge { background:#3f4d61; color:#e0e8f5; }html[data-theme="dark"] .med-workspace .med-refill { color:#e8c794; }html[data-theme="dark"] .med-workspace .med-error { color:#ffaebb; }
+@media(max-width:700px) { .med-workspace { padding:18px 14px; }.med-grid { grid-template-columns:1fr; }.med-card { padding:15px; }.med-heading>div { min-width:0; }.med-toolbar .med-btn { flex:1; }.med-workspace h2 { font-size:23px; } }
+
+</style>
 </head>
 <body class="pp-design font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
@@ -964,7 +992,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                         <div id="full-brief-raw" x-show="summaryViewMode === 'raw'" aria-label="Original raw text health summary">
                         <article class="pp-report-article rounded-3xl border p-5 sm:p-7 lg:p-10 shadow-2xl"
                                  :class="doctorMode ? 'bg-white border-slate-200 shadow-slate-200/70' : 'bg-slate-900/88 border-white/10 shadow-black/30'">
-                            <div class="pp-report-document-label"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h5"/></svg><span>AI Clinical Health Summary</span></div>
+                            <div class="pp-report-document-label"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h5"/></svg><span>AI Appointment Health Summary</span></div>
                             <div class="pp-report-prose text-xs sm:text-sm lg:text-[15px] leading-relaxed font-sans space-y-3 transition-colors duration-200"
                                  :class="doctorMode ? 'text-slate-800' : 'text-slate-200'"
                                  x-html="renderMarkdown(briefResult)"></div>
@@ -1355,7 +1383,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                               @keydown.enter.prevent="sendChatQuestion()"
                                               :disabled="chatLoading"
                                               rows="2"
-                                              aria-label="Your follow-up question" placeholder="Ask about your health report…"
+                                              aria-label="Your follow-up question" placeholder="Ask about your report, medicines, or doctor’s instructions…"
                                               :class="doctorMode ? 'text-slate-800 placeholder-slate-400' : 'text-slate-100 placeholder-slate-500'"
                                               class="grow min-h-[58px] sm:min-h-[64px] max-h-40 bg-transparent border-0 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm focus:outline-none focus:ring-0 leading-relaxed resize-none"></textarea>
 
@@ -1597,14 +1625,14 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                         <div class="space-y-6">
                             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-sky-500/20 bg-sky-500/10 text-sky-300 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                Track clearly. Prepare confidently.
+                                Track your medicines. Understand your care.
                             </div>
                             <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-[-0.04em] leading-[1.03] text-white">
-                                Your health story,
-                                <span class="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-indigo-400 to-sky-400">organized in one place.</span>
+                                Make sense of your care,
+                                <span class="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-indigo-400 to-sky-400">one step at a time.</span>
                             </h1>
                             <p class="max-w-3xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed text-slate-400">
-                                PulsePlot AI helps you record symptoms, pain levels, and personal notes in a simple calendar timeline. It makes your health history easier to remember and explain, while AI-generated educational guidance helps you prepare for a conversation with your clinician.
+                                PulsePlot AI helps you track symptoms and medicines, research medication cost options, and understand what your doctor tells you. Bring clearer records and better questions to your next appointment, with educational AI support that complements professional care.
                             </p>
                         </div>
 
@@ -1613,29 +1641,29 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                                 <div class="w-11 h-11 rounded-xl bg-sky-500/15 text-sky-400 border border-sky-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 </div>
-                                <h2 class="text-sm font-extrabold text-white">Daily Symptom Calendar</h2>
-                                <p class="mt-2 text-xs leading-relaxed text-slate-400">Log symptoms, pain severity, and notes by date so important details are not forgotten.</p>
+                                <h2 class="text-sm font-extrabold text-white">Symptoms &amp; Medicines</h2>
+                                <p class="mt-2 text-xs leading-relaxed text-slate-400">Keep your symptom calendar, medication list, dose history, and refill dates together.</p>
                             </article>
                             <article class="group rounded-2xl border border-white/10 bg-white/[0.035] hover:bg-white/[0.065] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30">
                                 <div class="w-11 h-11 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1-1H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-3l-1 1-.75-3"/></svg>
                                 </div>
-                                <h2 class="text-sm font-extrabold text-white">AI Health Brief</h2>
-                                <p class="mt-2 text-xs leading-relaxed text-slate-400">Turn your timeline into an educational summary with patterns, precautions, and questions.</p>
+                                <h2 class="text-sm font-extrabold text-white">Explore Medication Costs</h2>
+                                <p class="mt-2 text-xs leading-relaxed text-slate-400">Research advertised prices, generic options, and assistance programs to discuss with a pharmacist.</p>
                             </article>
                             <article class="group rounded-2xl border border-white/10 bg-white/[0.035] hover:bg-white/[0.065] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-rose-500/30">
                                 <div class="w-11 h-11 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.21 0-4 1.567-4 3.5S9.79 15 12 15s4-1.567 4-3.5S14.21 8 12 8zm0 0V5m0 10v4m-7-7H2m20 0h-3"/></svg>
                                 </div>
-                                <h2 class="text-sm font-extrabold text-white">Better-Prepared Visits</h2>
-                                <p class="mt-2 text-xs leading-relaxed text-slate-400">Review your history and bring clearer information and focused questions to appointments.</p>
+                                <h2 class="text-sm font-extrabold text-white">Understand Your Care</h2>
+                                <p class="mt-2 text-xs leading-relaxed text-slate-400">Get plain-language explanations, prepare appointments, and share a clear symptom summary with your doctor.</p>
                             </article>
                         </div>
 
                         <button type="button"
                                 @click="showAuthModal = true; authError = ''; authSuccess = ''; authPasswordVisible = false"
                                 class="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-                            Start Your Health Timeline
+                            Start Your Care Workspace
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                         </button>
                     </div>
@@ -1644,7 +1672,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
 
             <footer class="border-t border-white/10 bg-slate-950/40">
                 <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] sm:text-[11px] text-slate-500">
-                    <span>PulsePlot AI Health Tracker</span>
+                    <span>PulsePlot AI Care Companion</span>
                     <span>Educational AI support—not a medical diagnosis.</span>
                 </div>
             </footer>
@@ -1817,11 +1845,11 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
         </div>
     </header>
 
-<aside class="pp-sidebar" aria-label="Workspace navigation"><div class="pp-nav-label">YOUR WORKSPACE</div><nav><a href="#dashboard" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Overview</span></a><a href="#symptom-calendar" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h3"/></svg><span>Symptom calendar</span></a><a href="#health-summary" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h5"/></svg><span>Health summary</span></a><button type="button" class="pp-nav-link" @click="openAppointmentPrep()" :disabled="sampleDataActive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H6a2 2 0 0 0-2 2v13h16V7a2 2 0 0 0-2-2h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m8 13 3 3 5-6"/></svg><span>Appointment prep</span></button>
+<aside class="pp-sidebar" aria-label="Workspace navigation"><div class="pp-nav-label">YOUR WORKSPACE</div><nav><a href="#dashboard" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Overview</span></a><a href="#symptom-calendar" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h3"/></svg><span>Symptom calendar</span></a><a href="#medications" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="5" transform="rotate(40 12 12)"/><path d="m8 9 8 6"/></svg><span>Medicines &amp; costs</span></a><a href="#health-summary" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h5"/></svg><span>Health summary</span></a><button type="button" class="pp-nav-link" @click="openAppointmentPrep()" :disabled="sampleDataActive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H6a2 2 0 0 0-2 2v13h16V7a2 2 0 0 0-2-2h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m8 13 3 3 5-6"/></svg><span>Appointment prep</span></button>
 <button type="button" class="pp-nav-link" @click="doctorMode = !doctorMode" :aria-pressed="doctorMode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v6a5 5 0 0 0 10 0V3M3 3h4m6 0h4m-7 11v2a5 5 0 0 0 10 0v-3"/><circle cx="20" cy="10" r="2"/></svg><span>Doctor Mode</span><span class="pp-mode-dot" :class="{ 'is-on': doctorMode }"></span></button>
 <button type="button" class="pp-nav-link" @click="showProfileModal = true; profileMenuOpen = false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span>Personal profile</span></button></nav>
-<div class="pp-sidebar-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H6a2 2 0 0 0-2 2v13h16V7a2 2 0 0 0-2-2h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m8 13 3 3 5-6"/></svg><strong>A little clarity,<br>every day.</strong><p>Your observations today.<br>A better conversation tomorrow.</p><a href="#symptom-calendar">Open your calendar <span aria-hidden="true">↗</span></a></div>
-<div class="pp-sidebar-bottom"><span class="pp-small-mark">✦</span> Your health, thoughtfully organized.</div></aside>
+<div class="pp-sidebar-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H6a2 2 0 0 0-2 2v13h16V7a2 2 0 0 0-2-2h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m8 13 3 3 5-6"/></svg><strong>A little clarity,<br>every day.</strong><p>Your medicines. Your questions.<br>A clearer next step.</p><a href="#symptom-calendar">Open your calendar <span aria-hidden="true">↗</span></a></div>
+<div class="pp-sidebar-bottom"><span class="pp-small-mark">✦</span> Care feels clearer when it is organized.</div></aside>
     <main id="workspace" x-show="user" class="pp-workspace p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto flex flex-col gap-6 grow z-10">
         
         <section id="visit-plan" class="pp-visit rounded-2xl border p-5 flex flex-col sm:flex-row gap-4 sm:items-center justify-between" :class="doctorMode ? 'bg-sky-50 border-sky-200 text-slate-900' : 'bg-sky-950/40 border-sky-500/25 text-slate-100'">
@@ -1836,14 +1864,14 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                     <div class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider"
                          :class="doctorMode ? 'bg-sky-100 text-sky-800' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'">
                         <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
-                        Personal Health Workspace
+                        Personal Care Workspace
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
                         Welcome<span x-text="profile.firstName ? ', ' + profile.firstName : ''"></span>!
-                        <span class="block text-base sm:text-lg font-semibold text-sky-400 mt-1">Easy Symptom Tracking & AI Health Summaries</span>
+                        <span class="block text-base sm:text-lg font-semibold text-sky-400 mt-1">Your medicines, symptoms, and care questions—in one place</span>
                     </h2>
                     <p class="text-xs sm:text-sm leading-relaxed" :class="doctorMode ? 'text-slate-600' : 'text-slate-400'">
-                        Click any day on the calendar to log how you feel, record pain levels, and add voice or text notes. Generate a clear summary to share with your doctor.
+                        Track how you feel, keep your medication routine organized, and explore cost options. Use AI to understand your care and prepare a clearer conversation with your doctor.
                     </p>
                 </div>
 
@@ -1874,6 +1902,93 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                     <p class="text-xl font-mono font-bold text-sky-400" x-text="selectedDay ? selectedDay.formattedDate : 'None'"></p>
                 </div>
             </div>
+        </section>
+
+        <section id="medications" class="med-workspace" aria-labelledby="medications-title">
+            <div class="med-heading"><div><p class="med-eyebrow">YOUR EVERYDAY CARE COMPANION</p><h2 id="medications-title">Medicines &amp; costs</h2><p>Keep your medication routine in view. Explore cost options and understand the care you have been given.</p></div><a class="med-btn" href="#care-research">Research options ↗</a></div>
+            <p class="med-notice" x-show="sampleDataActive">Restore your own calendar data to edit medicines or run care research.</p>
+            <div class="med-toolbar"><button class="med-btn med-primary" type="button" @click="editMedication()" :disabled="!medicationCanWrite()">+ Add medication</button><button class="med-btn" type="button" @click="addMedicationsToAppointment()" :disabled="!medicationCanWrite() || !medications.length">Add list to visit plan</button><button class="med-btn" type="button" @click="exportMedicationBackup()" :disabled="!medicationCanWrite()">Export records</button><button class="med-btn" type="button" @click="persistMedications()" :disabled="!medicationCanWrite()">Save again</button></div>
+            <p class="med-caption" role="status" x-text="medicationStatus"></p>
+            <form class="med-card" x-show="medicationEditorOpen" x-cloak @submit.prevent="saveMedication()">
+                <h3 x-text="medicationDraft.id ? 'Edit medication record' : 'Add a medication or supplement'"></h3>
+                <p class="med-caption">Copy your existing label or care plan. Saving a record does not create or change a prescription.</p>
+                <fieldset :disabled="!medicationCanWrite()"><div class="med-grid">
+                    <label>Medication name *<input id="medication-name" x-model="medicationDraft.name" required maxlength="120" placeholder="Brand or generic name"></label>
+                    <label>Strength<input x-model="medicationDraft.strength" maxlength="80" placeholder="As written on the label"></label>
+                    <label>Form / release type<input x-model="medicationDraft.form" maxlength="80" placeholder="Tablet, capsule, ER, injection…"></label>
+                    <label>Status<select x-model="medicationDraft.status"><option value="active">Active</option><option value="paused">Paused (patient record)</option><option value="stopped">Stopped (patient record)</option></select></label>
+                    <label class="med-wide">Your prescribed instructions<input x-model="medicationDraft.instructions" maxlength="400" placeholder="Dose and schedule from your clinician or label"></label>
+                    <label>Purpose / condition, if known<input x-model="medicationDraft.purpose" maxlength="160"></label>
+                    <label>Prescriber<input x-model="medicationDraft.prescriber" maxlength="120"></label>
+                    <label>Pharmacy<input x-model="medicationDraft.pharmacy" maxlength="120"></label>
+                    <label>Start date<input type="date" x-model="medicationDraft.startDate"></label>
+                    <label>Refill date<input type="date" x-model="medicationDraft.refillDate"></label>
+                    <label class="med-wide">Notes / observations<textarea x-model="medicationDraft.notes" maxlength="600" rows="2" placeholder="Questions, possible side effects, or cost concerns"></textarea></label>
+                </div><div class="med-toolbar"><button class="med-btn med-primary" type="submit">Save medication</button><button class="med-btn" type="button" @click="medicationEditorOpen=false; medicationDraft=emptyMedication()">Cancel</button></div></fieldset>
+            </form>
+            <p class="med-empty" x-show="!medications.length">No medications recorded yet. Add one to start tracking, or go straight to research below.</p>
+            <div class="med-grid med-list"><template x-for="item in medications" :key="item.id"><article class="med-card">
+                <div class="med-heading"><h3 x-text="item.name"></h3><span class="med-badge" x-text="item.status"></span></div>
+                <p x-text="[item.strength,item.form].filter(Boolean).join(' · ') || 'Strength / form not entered'"></p>
+                <p class="med-preserve" x-text="item.instructions || 'Instructions not entered'"></p>
+                <p class="med-caption" x-text="item.purpose ? 'Purpose entered: '+item.purpose : 'Purpose not entered'"></p>
+                <p class="med-caption" x-show="item.pharmacy || item.prescriber" x-text="[item.pharmacy,item.prescriber].filter(Boolean).join(' · ')"></p>
+                <p class="med-caption" x-show="item.startDate" x-text="'Start date: '+formatDisplayDate(item.startDate)"></p>
+                <p class="med-refill" x-show="medicationRefillLabel(item)" x-text="medicationRefillLabel(item)"></p>
+                <p class="med-preserve med-caption" x-show="item.notes" x-text="item.notes"></p>
+                <div class="med-toolbar"><button class="med-btn" type="button" @click="editMedication(item)" :disabled="!medicationCanWrite()">Edit</button><button class="med-btn" type="button" @click="useMedicationForResearch(item)" :disabled="careBusy || sampleDataActive">Explore costs</button><button class="med-btn" type="button" @click="deleteMedication(item)" :disabled="!medicationCanWrite()">Delete</button></div>
+            </article></template></div>
+            <details class="med-card" :open="medications.length > 0"><summary>Daily dose log</summary>
+                <p class="med-caption">Record what happened, including multiple doses per day. An empty date means no entry, not a missed dose. This log does not send reminders or advise what to do after a missed dose.</p>
+                <div class="med-grid">
+                    <label>Medicine<select x-model="medicationLogId"><option value="">Choose a medication</option><template x-for="item in medications" :key="item.id"><option :value="item.id" x-text="item.name+' · '+item.status"></option></template></select></label>
+                    <label>Date<input type="date" x-model="medicationLogDate" :max="formatDateKey(new Date())"></label>
+                    <label>Time (optional with a dose label)<input type="time" x-model="medicationLogTime"></label>
+                    <label>Dose label<input x-model="medicationLogSlot" maxlength="100" placeholder="Morning, evening, dose 2…"></label>
+                </div>
+                <div class="med-toolbar"><button class="med-btn med-primary" type="button" @click="recordMedicationDose('taken')" :disabled="!medicationCanWrite()">Log taken</button><button class="med-btn" type="button" @click="recordMedicationDose('missed')" :disabled="!medicationCanWrite()">Log missed</button><button class="med-btn" type="button" @click="recordMedicationDose('skipped')" :disabled="!medicationCanWrite()">Log skipped</button></div>
+                <p class="med-caption" x-show="!medicationEventsForDate().length">No doses recorded for this date.</p>
+                <template x-for="event in medicationEventsForDate()" :key="event.id"><div class="med-event"><div><strong x-text="medicationEventName(event)"></strong><p x-text="[event.time,event.slot,event.status].filter(Boolean).join(' · ')"></p></div><button class="med-btn" type="button" @click="removeMedicationEvent(event.id)" :disabled="!medicationCanWrite()" :aria-label="'Remove dose entry for '+medicationEventName(event)">Remove entry</button></div></template>
+            </details>
+            <section id="care-research" class="med-research" aria-labelledby="care-research-title">
+                <p class="med-eyebrow">CLEARER INFORMATION. MORE INFORMED QUESTIONS.</p><h3 id="care-research-title">Explore costs. Understand your care.</h3>
+                <div class="med-toolbar" role="group" aria-label="Care research mode"><button type="button" class="med-btn" :aria-pressed="careMode==='cost'" @click="careMode='cost'" :disabled="careBusy">Find cost options</button><button type="button" class="med-btn" :aria-pressed="careMode==='explain'" @click="careMode='explain'" :disabled="careBusy">Understand doctor instructions</button></div>
+                <p class="med-caption" x-text="careMode==='cost' ? 'US price research: enter a medicine or condition. Exact strength, form, and quantity help identify comparable listings. Availability and your final price need pharmacy confirmation.' : 'Paste an instruction or ask about a medication’s purpose, monitoring, or a term your doctor used. No symptom report is required.'"></p>
+                <form @submit.prevent="researchMedicationCare()"><fieldset :disabled="careBusy || sampleDataActive"><div class="med-grid">
+                    <label>Medication name<input x-model="careMedication" maxlength="120" placeholder="Type a name or use Explore costs above"></label>
+                    <label>Condition / research topic<input x-model="careCondition" maxlength="160" placeholder="Optional when a medication is entered"></label>
+                    <label>Strength<input x-model="careStrength" maxlength="80" placeholder="For example, the strength on your label"></label>
+                    <label>Form / release type<input x-model="careForm" maxlength="80" placeholder="Tablet, extended release, pen…"></label>
+                    <label x-show="careMode==='cost'">Quantity / days supplied<input x-model="careQuantity" maxlength="80" placeholder="For example, 30 tablets / 30 days"></label>
+                    <label x-show="careMode==='cost'">US ZIP code (optional)<input x-model="careZip" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="ZIP only, no street address"></label>
+                    <label x-show="careMode==='cost'">What you pay for that quantity (US $)<input x-model="careCurrentCost" type="number" min="0" max="999999.99" step="0.01" placeholder="Optional"></label>
+                    <label x-show="careMode==='cost'">Payment / coverage<select x-model="careCoverage"><option value="unknown">Not specified</option><option value="cash">Cash / uninsured</option><option value="commercial">Commercial insurance</option><option value="medicare">Medicare</option><option value="medicaid">Medicaid</option><option value="other">Other coverage</option></select></label>
+                    <label class="med-wide">Your question or doctor’s instruction<textarea rows="3" x-model="careQuestion" maxlength="2000" placeholder="What does this instruction mean? What cost options could I ask my pharmacist about? Do not enter identifying details."></textarea></label>
+                </div>
+                <label class="med-consent"><input type="checkbox" x-model="careConsent" required><span>Send these entered fields to the AI provider, and medication/topic details plus optional ZIP to the search provider. My stored profile and symptom diary are not sent by this tool.</span></label>
+                <button class="med-btn med-primary" type="submit" :disabled="careBusy || sampleDataActive" x-text="careBusy ? 'Researching…' : (careMode==='cost' ? 'Research cost options' : 'Explain my care')"></button></fieldset></form>
+                <p class="med-notice">Educational support, not healthcare delivery. A lower advertised price does not mean a medicine is a safe substitute. Confirm treatment choices with your prescriber and product substitutions with your pharmacist.</p>
+                <p class="med-error" role="alert" x-show="careError" x-text="careError"></p>
+                <p class="med-caption" role="status" x-show="careBusy">Looking for sources and preparing an explanation. This can take up to a minute.</p>
+                <template x-if="careResult"><div class="med-results" aria-live="polite">
+                    <h3>Research results</h3>
+                    <p class="med-caption" x-text="'Searched: '+[careResult.request.medication,careResult.request.strength,careResult.request.form,careResult.request.quantity,careResult.request.condition,careResult.request.zip].filter(Boolean).join(' · ')"></p>
+                    <p class="med-caption" x-show="careResult.request.current_cost" x-text="'Your entered cost: $'+careResult.request.current_cost+' for the quantity entered; not independently verified.'"></p>
+                    <p class="med-caption" x-text="'Medical research: '+careResearchStatus(careResult.medical_status)+' · Cost research: '+careResearchStatus(careResult.cost_status)"></p>
+                    <p class="med-caption" x-show="careResult.retrieved_at" x-text="'Retrieved '+formatDisplayDateTime(careResult.retrieved_at)+'. Retrieval time is not a guarantee that listed prices are current.'"></p>
+                    <p class="med-badge" x-text="careResult.engine==='source-only' ? 'Source-only fallback · AI explanation unavailable' : 'AI explanation · verify against the sources'"></p>
+                    <div class="med-answer med-preserve" x-text="careResult.answer"></div>
+                    <p class="med-notice" x-text="careResult.notice"></p>
+                    <h4 x-show="careResult.sources.length">Source excerpts &amp; advertised prices</h4>
+                    <p class="med-caption" x-show="careResult.sources.length">Prices below appear only in original search excerpts. These can mention another strength, quantity, membership, or an “as low as” offer. Open the source to check the full terms; listings are not ranked by price.</p>
+                    <template x-for="source in careResult.sources" :key="source.id"><article class="med-card">
+                        <p class="med-eyebrow" x-text="source.kind==='cost' ? 'COST / ASSISTANCE SOURCE — NOT A CONFIRMED QUOTE' : 'MEDICAL INFORMATION SOURCE'"></p>
+                        <a class="med-source-link" :href="source.url" target="_blank" rel="noopener noreferrer" x-text="'['+source.id+'] '+source.title"></a>
+                        <p class="med-caption med-preserve" x-text="source.excerpt"></p>
+                    </article></template>
+                    <p class="med-caption" x-show="!careResult.sources.length">No live sources were retrieved. No price comparison or treatment option has been verified.</p>
+                </div></template>
+            </section>
         </section>
 
         <section x-show="doctorMode" x-cloak id="doctor-review" class="dr-panel">
@@ -1950,7 +2065,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                     <div class="flex justify-between items-center border-b pb-4" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
                         <div>
                             <h2 class="text-base font-bold tracking-tight" :class="doctorMode ? 'text-slate-900' : 'text-white'">
-                                Daily Symptom Calendar
+                                Symptoms &amp; Medicines
                             </h2>
                             <p class="text-xs" :class="doctorMode ? 'text-slate-500' : 'text-slate-400'">
                                 Click on any day to record how you feel and add notes.
@@ -2123,7 +2238,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                     <div class="space-y-4 flex flex-col grow overflow-hidden">
                         <div class="flex justify-between items-start gap-4 border-b pb-4" :class="doctorMode ? 'border-slate-200' : 'border-white/10'">
                             <div>
-                                <h3 class="text-base font-bold tracking-tight">AI Clinical Health Summary</h3>
+                                <h3 class="text-base font-bold tracking-tight">AI Appointment Health Summary</h3>
                                 <p class="text-xs" :class="doctorMode ? 'text-slate-500' : 'text-slate-400'">
                                     Personal profile, three concern tiers, evidence explanation, and practical do's and don'ts.
                                 </p>
@@ -2339,7 +2454,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
 
     <footer x-show="user" x-cloak class="pp-footer py-4 border-t text-center text-[11px] text-slate-500 transition-colors duration-300"
             :class="doctorMode ? 'border-slate-200 bg-white/50' : 'border-white/5 bg-slate-950/50'">
-        PulsePlot AI Health Tracker &bull; Designed for simple symptom tracking & doctor consultations
+        PulsePlot AI Care Companion &bull; Track medicines, explore costs & understand your care
     </footer>
 
     </div><!-- /pp-shell -->
@@ -2347,6 +2462,200 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
     <script>
         // Read-only presentation of the generated brief. Existing report, chat,
         // persistence, API, and export methods continue to use briefResult.
+        function createMedicationWorkspace() {
+            return {
+                medicationOwnerId: '', medications: [], medicationEvents: [], medicationStatus: '',
+                medicationStorageBlocked: false, medicationEditorOpen: false, medicationDraft: {},
+                medicationLogDate: '', medicationLogTime: '', medicationLogSlot: '', medicationLogId: '',
+                careMode: 'cost', careMedication: '', careStrength: '', careForm: '', careQuantity: '',
+                careCondition: '', careQuestion: '', careZip: '', careCurrentCost: '', careCoverage: 'unknown',
+                careConsent: false, careBusy: false, careError: '', careResult: null,
+                careRequestSequence: 0, careController: null,
+
+                emptyMedication() {
+                    return {id:'', name:'', strength:'', form:'', instructions:'', purpose:'',
+                        prescriber:'', pharmacy:'', refillDate:'', startDate:'', status:'active', notes:''};
+                },
+                medicationKey() { return this.user?.id ? 'pulseplot_medications_v1_' + this.user.id : ''; },
+                medicationCanWrite() {
+                    return !!this.user && this.medicationOwnerId === this.user.id && !this.sampleDataActive && !this.medicationStorageBlocked;
+                },
+                normalizeMedication(raw) {
+                    if (!raw || typeof raw !== 'object' || Array.isArray(raw) || typeof raw.id !== 'string' || !raw.id || typeof raw.name !== 'string' || !raw.name.trim()) return null;
+                    const clean = this.emptyMedication();
+                    for (const [key, limit] of Object.entries({id:100,name:120,strength:80,form:80,instructions:400,purpose:160,prescriber:120,pharmacy:120,notes:600})) {
+                        clean[key] = typeof raw[key] === 'string' ? raw[key].trim().slice(0,limit) : '';
+                    }
+                    for (const key of ['refillDate','startDate']) clean[key] = this.medicationValidDate(raw[key]) ? raw[key] : '';
+                    clean.status = ['active','paused','stopped'].includes(raw.status) ? raw.status : 'active';
+                    return clean;
+                },
+                medicationValidDate(value) {
+                    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+                    const d = new Date(value + 'T12:00:00');
+                    return !Number.isNaN(d.getTime()) && this.formatDateKey(d) === value;
+                },
+                loadMedications() {
+                    this.careRequestSequence++;
+                    this.careController?.abort(); this.careController = null;
+                    this.careBusy = false; this.careResult = null; this.careError = ''; this.careConsent = false;
+                    for (const key of ['careMedication','careStrength','careForm','careQuantity','careCondition','careQuestion','careZip','careCurrentCost']) this[key] = '';
+                    this.careCoverage = 'unknown';
+                    this.medications = []; this.medicationEvents = []; this.medicationDraft = this.emptyMedication();
+                    this.medicationEditorOpen = false; this.medicationStorageBlocked = false;
+                    this.medicationLogDate = this.formatDateKey(new Date()); this.medicationLogTime = ''; this.medicationLogSlot = ''; this.medicationLogId = '';
+                    this.medicationOwnerId = this.user?.id || '';
+                    this.medicationStatus = 'Medication records stay on this browser, under your account. They do not sync across devices.';
+                    const key = this.medicationKey(); if (!key) return;
+                    try {
+                        const stored = localStorage.getItem(key); if (!stored) return;
+                        const raw = JSON.parse(stored);
+                        if (!raw || raw.version !== 1 || !Array.isArray(raw.medications) || !Array.isArray(raw.events) || raw.medications.length > 100 || raw.events.length > 3000) throw new Error('Invalid saved data');
+                        const items = raw.medications.map(item => this.normalizeMedication(item));
+                        const ids = new Set(items.filter(Boolean).map(item => item.id));
+                        if (items.some(item => !item) || ids.size !== items.length) throw new Error('Invalid medication records');
+                        const eventIds = new Set();
+                        const events = raw.events.map(event => {
+                            if (!event || typeof event.id !== 'string' || !event.id || eventIds.has(event.id) || !ids.has(event.medicationId) ||
+                                !this.medicationValidDate(event.date) || !['taken','missed','skipped'].includes(event.status) ||
+                                typeof event.time !== 'string' || (event.time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(event.time))) throw new Error('Invalid dose record');
+                            eventIds.add(event.id);
+                            return {id:event.id,medicationId:event.medicationId,date:event.date,time:event.time,status:event.status,
+                                slot:typeof event.slot === 'string'?event.slot.slice(0,100):'',
+                                medicationLabel:typeof event.medicationLabel === 'string'?event.medicationLabel.slice(0,220):''};
+                        });
+                        this.medications = items; this.medicationEvents = events;
+                    } catch (_) {
+                        this.medicationStorageBlocked = true;
+                        this.medicationStatus = 'Saved medication data could not be read. Editing is paused to protect it. Restore browser storage access and reload; no saved records have been overwritten.';
+                    }
+                },
+                persistMedications() {
+                    if (!this.medicationCanWrite()) return false;
+                    try {
+                        localStorage.setItem(this.medicationKey(), JSON.stringify({version:1,medications:this.medications,events:this.medicationEvents}));
+                        this.medicationStatus = 'Saved on this browser only. Export a backup before clearing browser data.';
+                        return true;
+                    } catch (_) {
+                        this.medicationStatus = 'Could not save. Changes remain only in this open page. Export a backup now or retry saving.';
+                        return false;
+                    }
+                },
+                editMedication(item = null) {
+                    if (!this.medicationCanWrite()) return;
+                    this.medicationDraft = item ? {...item} : this.emptyMedication();
+                    this.medicationEditorOpen = true;
+                    this.$nextTick(() => document.getElementById('medication-name')?.focus());
+                },
+                saveMedication() {
+                    if (!this.medicationCanWrite()) return;
+                    const draft = this.medicationDraft;
+                    if (!draft.name?.trim()) {this.medicationStatus = 'Enter the medication name.';return;}
+                    for (const field of ['refillDate','startDate']) if (draft[field] && !this.medicationValidDate(draft[field])) {this.medicationStatus = 'Check the medication dates.';return;}
+                    if (!draft.id && this.medications.length >= 100) {this.medicationStatus = 'Maximum 100 medicines. Remove an old record before adding another.';return;}
+                    const item = this.normalizeMedication({...draft,id:draft.id || this.createChatId()});
+                    const index = this.medications.findIndex(med => med.id === item.id);
+                    if (index < 0) this.medications.push(item); else this.medications.splice(index,1,item);
+                    this.medicationDraft.id = item.id;
+                    if (this.persistMedications()) {this.medicationEditorOpen = false;this.medicationDraft = this.emptyMedication();}
+                },
+                deleteMedication(item) {
+                    if (!this.medicationCanWrite() || !window.confirm('Delete ' + item.name + ' and its dose records? To keep its history, edit its status to stopped instead.')) return;
+                    this.medications = this.medications.filter(med => med.id !== item.id);
+                    this.medicationEvents = this.medicationEvents.filter(event => event.medicationId !== item.id);
+                    if (this.medicationDraft.id === item.id) {this.medicationEditorOpen = false;this.medicationDraft = this.emptyMedication();}
+                    if (this.medicationLogId === item.id) this.medicationLogId = '';
+                    this.persistMedications();
+                },
+                recordMedicationDose(status) {
+                    if (!this.medicationCanWrite()) return;
+                    const item = this.medications.find(med => med.id === this.medicationLogId);
+                    if (!item || !this.medicationValidDate(this.medicationLogDate)) {this.medicationStatus = 'Choose a medicine and a valid date.';return;}
+                    if (this.medicationLogDate > this.formatDateKey(new Date())) {this.medicationStatus = 'Log doses today or in the past, not in the future.';return;}
+                    if (!['taken','missed','skipped'].includes(status)) return;
+                    if (!this.medicationLogTime && !this.medicationLogSlot.trim()) {this.medicationStatus = 'Enter a time or dose label (for example, morning) to distinguish doses.';return;}
+                    if (this.medicationLogTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(this.medicationLogTime)) {this.medicationStatus = 'Choose a valid time.';return;}
+                    if (this.medicationEvents.length >= 3000) {this.medicationStatus = 'Dose history is full (3,000 entries). Export it before deleting old entries.';return;}
+                    const event = {id:this.createChatId(),medicationId:item.id,medicationLabel:[item.name,item.strength,item.form].filter(Boolean).join(' · '),
+                        date:this.medicationLogDate,time:this.medicationLogTime,slot:this.medicationLogSlot.trim().slice(0,100),status};
+                    if (this.medicationEvents.some(old => old.medicationId === event.medicationId && old.date === event.date && old.time === event.time && old.slot === event.slot)) {
+                        this.medicationStatus = 'This dose already has an entry. Remove that entry first if you need to correct it.';return;
+                    }
+                    this.medicationEvents.push(event);this.persistMedications();
+                },
+                removeMedicationEvent(id) {
+                    if (!this.medicationCanWrite()) return;
+                    this.medicationEvents = this.medicationEvents.filter(event => event.id !== id);this.persistMedications();
+                },
+                medicationEventsForDate() { return this.medicationEvents.filter(event => event.date === this.medicationLogDate).sort((a,b) => a.time.localeCompare(b.time)); },
+                medicationEventName(event) { return event.medicationLabel || this.medications.find(med => med.id === event.medicationId)?.name || 'Medication'; },
+                medicationRefillLabel(item) {
+                    if (!item.refillDate || item.status !== 'active') return '';
+                    const today = this.formatDateKey(new Date());
+                    return (item.refillDate < today ? 'Refill date passed: ' : 'Refill date: ') + this.formatDisplayDate(item.refillDate);
+                },
+                medicationListText() {
+                    if (!this.user || this.medicationOwnerId !== this.user.id || this.sampleDataActive) return '';
+                    return this.medications.map(item => [item.name,item.strength,item.form,
+                        'Status: '+item.status,'Instructions entered: '+(item.instructions || 'not entered'),
+                        'Purpose entered: '+(item.purpose || 'not entered'),
+                        item.startDate?'Started: '+item.startDate:'',item.notes?'Notes: '+item.notes:''].filter(Boolean).join(' | ')).join('\n');
+                },
+                profileForCareAI() { return {...this.profile,medicationList:this.medicationListText()}; },
+                addMedicationsToAppointment() {
+                    const text = this.medicationListText();if (!text || !this.medicationCanWrite()) return;
+                    this.openAppointmentPrep();
+                    const old = this.appointmentDraft.medications.trim();
+                    const merged = [old,text].filter(Boolean).join('\n\n');
+                    if (merged.length > 2000) {this.appointmentMessage = 'The combined list exceeds the visit field limit. Copy selected medicines from the tracker instead.';return;}
+                    this.appointmentDraft.medications = merged;this.saveAppointmentDraft();
+                    this.appointmentMessage = 'Medication list appended. Review it against your prescription labels.';
+                },
+                exportMedicationBackup() {
+                    if (!this.user || this.medicationOwnerId !== this.user.id || this.sampleDataActive || this.medicationStorageBlocked) return;
+                    const blob = new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),medications:this.medications,events:this.medicationEvents},null,2)],{type:'application/json'});
+                    const url = URL.createObjectURL(blob), link = document.createElement('a');
+                    link.href = url;link.download = 'PulsePlot_Medications_' + this.formatDateKey(new Date()) + '.json';
+                    document.body.appendChild(link);link.click();link.remove();setTimeout(() => URL.revokeObjectURL(url),1000);
+                },
+                useMedicationForResearch(item) {
+                    if (this.careBusy) return;
+                    this.careMedication = item.name;this.careStrength = item.strength;this.careForm = item.form;this.careCondition = item.purpose;
+                    this.careQuantity = '';this.careCurrentCost = '';this.careQuestion = '';this.careResult = null;this.careMode = 'cost';this.careConsent = false;
+                    this.$nextTick(() => document.getElementById('care-research')?.scrollIntoView({behavior:'smooth',block:'start'}));
+                },
+                careResearchStatus(value) {
+                    return ({available:'Sources retrieved',no_results:'No usable sources found',not_configured:'Live search is not configured',
+                        disabled:'Live search is disabled',unavailable:'Live search was unavailable',not_requested:'Not requested'})[value] || 'Unavailable';
+                },
+                async researchMedicationCare() {
+                    if (!this.user || this.sampleDataActive || this.careBusy) return;
+                    this.careError = '';this.careResult = null;
+                    if (!this.careConsent) {this.careError = 'Agree to send the entered details before researching.';return;}
+                    if (!this.session?.access_token) {this.careError = 'Sign in again to use care research.';return;}
+                    const owner = this.user.id, sequence = ++this.careRequestSequence;
+                    const controller = new AbortController();this.careController = controller;this.careBusy = true;
+                    const timer = setTimeout(() => controller.abort(),65000);
+                    try {
+                        const response = await fetch('/api/medication-research', {method:'POST',signal:controller.signal,
+                            headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.session.access_token},
+                            body:JSON.stringify({mode:this.careMode,medication:this.careMedication.trim(),strength:this.careStrength.trim(),
+                                form:this.careForm.trim(),quantity:this.careQuantity.trim(),condition:this.careCondition.trim(),question:this.careQuestion.trim(),
+                                zip:this.careZip.trim(),current_cost:String(this.careCurrentCost).trim(),coverage:this.careCoverage,consent:true})});
+                        const data = await response.json();
+                        if (this.user?.id !== owner || sequence !== this.careRequestSequence) return;
+                        if (!response.ok || data.status !== 'success') throw new Error(data.error || 'Research could not finish. Try again.');
+                        this.careResult = data;
+                    } catch (error) {
+                        if (this.user?.id === owner && sequence === this.careRequestSequence) this.careError = error.name === 'AbortError' ? 'Research timed out. Please try again.' : (error.message || 'Could not connect to care research.');
+                    } finally {
+                        clearTimeout(timer);
+                        if (sequence === this.careRequestSequence) {this.careBusy = false;this.careController = null;}
+                    }
+                },
+            };
+        }
+
         function createHealthBriefPresentation() {
             let cachedText = null;
             let cachedSections = [];
@@ -2640,6 +2949,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
 
             Alpine.data('pulseApp', () => ({
                 ...createHealthBriefPresentation(),
+                ...createMedicationWorkspace(),
                 get summarySections() { return this.getSummarySections(); },
                 user: null,
                 session: null,
@@ -3044,6 +3354,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                         ...plan.concerns.filter(item=>item.text || item.impact).map((item,index)=>(index+1)+'. '+(item.text || 'Unnamed concern')+(item.impact?' — impact: '+item.impact:'')),
                         'Questions: '+(plan.questions.map(item=>item.text.trim()).filter(Boolean).join(' | ') || 'None entered'),
                         'Medication / supplement list: '+(plan.medications || 'Not entered (does not mean none)'));
+                    if (this.medicationListText()) lines.push('', 'MEDICATION TRACKER (patient-entered)', this.medicationListText());
                     lines.push('','Data-only summary from patient entries. Daily severity is an overall log score, not a separate score for each symptom. Patterns do not establish causes or diagnoses.');
                     return lines.join('\n');
                 },
@@ -3219,6 +3530,8 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                 },
 
                 async init() {
+                    this.$watch('user', () => { if ((this.user?.id || '') !== this.medicationOwnerId) this.loadMedications(); });
+                    this.loadMedications();
                     this.$watch('user', () => {
                         if ((this.user?.id || '') !== this.appointmentOwnerId) {
                             this.closeAppointmentPrep();
@@ -3235,6 +3548,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                         const { data: { session } } = await supabaseClient.auth.getSession();
                         this.session = session;
                         this.user = session?.user || null;
+                        if ((this.user?.id || '') !== this.medicationOwnerId) this.loadMedications();
                         if (this.user) this.showAuthModal = false;
 
                         if (this.user) {
@@ -3888,6 +4202,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                     }
                     this.user = null;
                     this.session = null;
+                    this.loadMedications();
                     this.profile = {
                         firstName: '',
                         lastName: '',
@@ -4064,6 +4379,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                         `Recent trend: ${metrics.trendLabel} (recent average ${metrics.recentAverage}/10)`,
                         `Most frequent symptoms: ${topSymptoms.length ? topSymptoms.map(item => `${item.name} (${item.count})`).join(', ') : 'None selected'}`,
                         `Medical background: ${this.profile.medicalNotes || 'None reported'}`,
+                        `Medication tracker (patient-entered): ${this.medicationListText() || 'Not entered'}`,
                         '',
                         'HIGH-SEVERITY ENTRIES:',
                         ...(highEntries.length ? highEntries.map(entry => `${entry.formattedDate}: ${entry.severity}/10; ${entry.symptoms.join(', ') || 'No selected symptoms'}${entry.notes ? `; Note: ${entry.notes}` : ''}`) : ['None recorded']),
@@ -4154,7 +4470,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                 initialAssistantMessage() {
                     return {
                         role: 'assistant',
-                        content: 'Your AI report is ready. Ask me to explain a probability, compare the three concern tiers, summarize the evidence in simpler words, or help prepare questions for your clinician. I cannot confirm a diagnosis or change medication.'
+                        content: 'Your AI report is ready. Ask me to explain your report or a doctor’s instruction, discuss your recorded medicines, or prepare questions for your clinician. Use Medicines & costs for live cost research. I cannot confirm a diagnosis or change treatment.'
                     };
                 },
 
@@ -4266,7 +4582,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                         messages: [this.initialAssistantMessage()],
                         brief: this.briefResult,
                         logs: JSON.parse(JSON.stringify(this.logs || {})),
-                        profile: JSON.parse(JSON.stringify(this.profile || {})),
+                        profile: JSON.parse(JSON.stringify(this.profileForCareAI())),
                         briefGeneratedAt: this.briefGeneratedAt,
                         synthesisEngine: this.synthesisEngine,
                         createdAt: now,
@@ -4408,7 +4724,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                             },
                             body: JSON.stringify({
                                 logs: this.logs,
-                                profile: this.profile
+                                profile: this.profileForCareAI()
                             })
                         });
 
@@ -4580,7 +4896,7 @@ html[data-theme="dark"] .pp-brief-view { --brief-card:#293545;--brief-ink:#e5ecf
                     const patientName = `${this.profile.firstName || ''} ${this.profile.lastName || ''}`.trim() || 'Patient';
                     const generatedDate = this.briefGeneratedAt || this.formatDisplayDateTime(new Date().toISOString());
 
-                    this.addPdfTextBlock(doc, 'PulsePlot AI Clinical Health Summary', {
+                    this.addPdfTextBlock(doc, 'PulsePlot AI Appointment Health Summary', {
                         fontSize: 17,
                         lineHeight: 21,
                         bold: true,
