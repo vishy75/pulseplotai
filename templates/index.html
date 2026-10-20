@@ -701,6 +701,102 @@ html[data-theme="dark"] .med-workspace { background:#202d3b; border-color:#42556
 @media(max-width:700px) { .med-workspace { padding:18px 14px; }.med-grid { grid-template-columns:1fr; }.med-card { padding:15px; }.med-heading>div { min-width:0; }.med-toolbar .med-btn { flex:1; }.med-workspace h2 { font-size:23px; } }
 
 </style>
+<style id="pp-clarity-redesign">
+/* Presentation layer. Original application scripts and Alpine bindings are preserved. */
+:root,html[data-theme="light"] { --pp-ink:#242137;--pp-muted:#605c73;--pp-purple:#6242c1;--pp-line:#dcd7e7;--pp-shadow:0 8px 30px #29203c08;--ui-surface:#fff;--ui-soft:#f5f3fa;--ui-accent:#603bc4;--ui-accent-text:#fff;--ui-border:#ddd8e9; }
+html[data-theme="dark"] { --pp-ink:#f4f1ff;--pp-muted:#bbb5cd;--pp-purple:#c4afff;--pp-line:#393348;--pp-shadow:0 10px 36px #0002;--ui-surface:#1c1927;--ui-soft:#242030;--ui-accent:#bda6ff;--ui-accent-text:#20143d;--ui-border:#42394f; }
+html[data-theme] body.pp-design { padding:24px;background:radial-gradient(ellipse at 5% 0%,#e1d8f2,transparent 55%),#f1eff7!important;color:var(--pp-ink)!important; }
+html[data-theme="dark"] body.pp-design { background:radial-gradient(ellipse at 8% 5%,#39304f,transparent 48%),#14121e!important; }
+body.pp-design :focus-visible { outline:3px solid var(--ui-accent)!important;outline-offset:4px; }
+body.pp-design button:disabled { opacity:.55;transform:none!important; }
+/* Explicit foreground/background pairs prevent old theme utilities from washing out CTAs. */
+html[data-theme] body.pp-design button[class*="bg-gradient"],html[data-theme] body.pp-design button[class~="bg-sky-600"],html[data-theme] body.pp-design button[class~="bg-rose-600"],html[data-theme] body.pp-design .ap-primary,html[data-theme] body.pp-design .ap-step-active,html[data-theme] body.pp-design .dr-primary { background:var(--ui-accent)!important;color:var(--ui-accent-text)!important;border-color:transparent!important;box-shadow:0 5px 16px #57319b18!important; }
+html[data-theme] body.pp-design button[class*="bg-gradient"] *,html[data-theme] body.pp-design button[class~="bg-sky-600"] *,html[data-theme] body.pp-design .ap-primary *,html[data-theme] body.pp-design .dr-primary * { color:inherit!important; }
+html[data-theme] body.pp-design button[class*="bg-gradient"]:hover { filter:brightness(1.08); }
+html[data-theme] body.pp-design .pp-theme-toggle { width:40px;height:40px;min-height:40px;padding:10px;border:1px solid var(--ui-border);background:transparent!important;color:var(--pp-muted)!important;box-shadow:none; border-radius:50%; }
+.pp-theme-toggle [data-pp-theme-label] { position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap; }
+/* Reference-inspired landing page: inset canvas, violet lighting and floating panels. */
+html[data-theme] body.pp-design #pp-landing { isolation:isolate;background:var(--ui-surface)!important;color:var(--pp-ink)!important;border:1px solid var(--ui-border);border-radius:30px;min-height:calc(100vh - 48px);box-shadow:0 32px 100px #25153d14; }
+html[data-theme="dark"] body.pp-design #pp-landing { background:radial-gradient(ellipse at 10% 0%,#30253f 0,transparent 43%),#100e16!important; }
+#pp-landing>div.absolute { display:none; }
+#pp-landing>div.relative { min-height:calc(100vh - 48px); }
+html[data-theme] body.pp-design #pp-landing nav { position:relative;background:transparent!important;border:0!important;backdrop-filter:none; }
+#pp-landing nav>div { max-width:1240px;padding:24px 44px;gap:14px; }
+#pp-landing nav>div>div:first-child { margin-right:auto; }
+#pp-landing nav button:last-child { border-radius:100px;min-height:44px;font-size:12px;padding:12px 20px; }
+#pp-landing nav .pp-brand-mark { width:36px;height:36px;border-radius:12px; }
+#pp-landing nav p:first-child { font-size:18px; }
+#pp-landing nav p:last-child { font-size:9px;letter-spacing:.12em; }
+#pp-home-content>div { padding:58px 40px 60px;max-width:1240px; }
+#pp-landing .pp-home-hero { max-width:none;position:relative; }
+#pp-landing .pp-home-hero>div:first-child { position:relative;z-index:2; }
+#pp-landing .pp-home-hero>div:first-child>div { background:var(--ui-soft)!important;color:var(--pp-purple)!important;border:1px solid var(--ui-border);font-size:10px;letter-spacing:.12em;padding:9px 15px; }
+#pp-landing .pp-home-hero h1 { max-width:850px;margin:24px auto 0;font-size:clamp(38px,5.2vw,72px);line-height:1.08;letter-spacing:-.055em;font-weight:600;color:var(--pp-ink)!important; }
+html[data-theme] body.pp-design #pp-landing h1 .text-transparent { color:var(--pp-purple)!important; }
+#pp-landing .pp-home-hero>div:first-child>p { max-width:650px;font-size:15px;line-height:1.8;color:var(--pp-muted)!important;margin:22px auto 0; }
+#pp-landing .pp-home-actions { display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:22px;margin-top:28px;position:relative;z-index:2; }
+#pp-landing .pp-home-actions button { border-radius:100px;min-height:50px;padding:14px 26px;font-size:13px;font-weight:700; }
+#pp-landing .pp-explore-link { color:var(--pp-ink);font-size:13px;font-weight:600;text-decoration:none;display:flex;gap:10px;align-items:center;min-height:44px; }
+#pp-landing .pp-explore-link:hover { text-decoration:underline;text-underline-offset:5px; }
+#pp-landing .pp-home-note { color:var(--pp-muted);font-size:11px;margin:15px 0 0; }
+#pp-landing .pp-orbit-stage { height:205px;position:relative;overflow:hidden;margin:8px auto -5px;max-width:900px;pointer-events:none;mask-image:linear-gradient(#000 65%,transparent); }
+.pp-orbit { position:absolute;width:620px;height:440px;left:50%;top:38px;transform:translateX(-50%) rotate(-12deg);border-radius:48% 52% 42% 58% / 50% 36% 64% 50%;background:radial-gradient(ellipse at 40% 5%,#d6c4ff 0, #9770f0 3%,#5c329e 8%,#262032 17%,#121018 34%,#312243 61%,#9b76f1 68%,#252033 73%);box-shadow:inset 0 6px 18px #ddcdff,0 -8px 40px #7d4edc3d;animation:pp-breathe 12s ease-in-out infinite alternate; }
+.pp-orbit-label { position:absolute;top:100px;left:50%;transform:translateX(-50%);padding:13px 20px;border:1px solid #ffffff40;border-radius:100px;background:#1b172dcc;backdrop-filter:blur(16px);color:#eee8ff;font-size:12px;white-space:nowrap;display:flex;align-items:center;gap:10px; }
+.pp-orbit-dot { width:7px;height:7px;background:#c7afff;border-radius:50%; }
+@keyframes pp-breathe { to { transform:translateX(-50%) rotate(2deg) scale(1.04); } }
+#pp-landing .pp-features-heading { position:relative;margin:0 0 24px; }
+.pp-features-heading>span { font-size:9px;letter-spacing:.17em;font-weight:700;color:var(--pp-purple); }
+#pp-landing .pp-features-heading h2 { font-size:28px;font-weight:600;letter-spacing:-1px;margin:10px 0; }
+.pp-features-heading p { font-size:13px;color:var(--pp-muted); }
+#pp-landing .pp-feature-grid { gap:18px;align-items:start;margin-top:0;scroll-margin-top:24px; }
+html[data-theme] body.pp-design #pp-landing .pp-feature-grid article { background:var(--ui-soft)!important;border:1px solid var(--ui-border)!important;border-radius:22px;padding:26px;text-align:left;box-shadow:0 8px 25px #24163405;transition:transform .2s,border-color .2s,box-shadow .2s; }
+html[data-theme] body.pp-design #pp-landing .pp-feature-grid article:hover { transform:translateY(-4px);border-color:var(--pp-purple)!important;box-shadow:0 14px 35px #462a7012; }
+#pp-landing .pp-feature-grid article>div:first-child { color:var(--pp-purple)!important;background:var(--ui-surface)!important;border-color:var(--ui-border)!important;border-radius:14px;width:44px;height:44px; }
+#pp-landing .pp-feature-grid article h2 { font-size:17px;line-height:1.4;font-weight:700;letter-spacing:-.45px;color:var(--pp-ink)!important; }
+#pp-landing .pp-feature-grid article>p { font-size:13px;line-height:1.8;min-height:70px;color:var(--pp-muted)!important; }
+.pp-feature-details { margin-top:20px;border-top:1px solid var(--ui-border); }
+.pp-feature-details summary { display:flex;justify-content:space-between;align-items:center;gap:10px;padding:17px 0 0;min-height:44px;font-size:12px;font-weight:700;color:var(--pp-purple);cursor:pointer;list-style:none; }
+.pp-feature-details summary::-webkit-details-marker { display:none; }
+.pp-feature-details summary>span { font-size:21px;font-weight:400;transition:transform .2s; }
+.pp-feature-details[open] summary>span { transform:rotate(45deg); }
+.pp-feature-walkthrough { padding-top:20px; }
+.pp-feature-walkthrough .pp-demo-label { font-size:8px;line-height:1.7;letter-spacing:.1em;color:var(--pp-muted); }
+.pp-feature-walkthrough h3 { font-size:15px;line-height:1.5;margin:10px 0 20px;color:var(--pp-ink);font-weight:600; }
+.pp-feature-walkthrough ol { list-style:none;padding:0;margin:0;display:grid;gap:20px; }
+.pp-feature-walkthrough li { display:flex;gap:12px; }
+.pp-feature-walkthrough li>span { color:var(--pp-purple);font-size:11px;font-weight:700;padding-top:3px; }
+.pp-feature-walkthrough strong { font-size:12px;color:var(--pp-ink); }
+.pp-feature-walkthrough li p { color:var(--pp-muted);font-size:12px;line-height:1.7;margin-top:4px; }
+.pp-demo-card { border:1px solid var(--ui-border);background:var(--ui-surface);border-radius:12px;padding:12px;margin-top:20px; }
+.pp-sample-row { display:grid;gap:6px;padding:8px 0; }.pp-sample-row+ .pp-sample-row { border-top:1px solid var(--ui-border); }
+.pp-sample-row span { font-size:10px;color:var(--pp-muted); }.pp-sample-row b { font-size:11px;font-weight:600;color:var(--pp-ink); }
+html[data-theme] body.pp-design #pp-landing footer { background:transparent!important;border-color:var(--ui-border)!important;color:var(--pp-muted); }
+#pp-landing footer>div { padding:22px 40px;font-size:11px;color:var(--pp-muted)!important; }
+/* Workspace surfaces: consistent hierarchy without changing its existing layout bindings. */
+html[data-theme] body.pp-design .pp-shell { background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:26px;box-shadow:var(--pp-shadow);padding:22px; }
+html[data-theme] body.pp-design .glass-panel-dark,html[data-theme] body.pp-design .glass-panel-light { background:var(--ui-surface)!important;border-color:var(--ui-border)!important;box-shadow:var(--pp-shadow); }
+html[data-theme] body.pp-design .pp-nav-link { color:var(--pp-muted);border-radius:12px;font-size:12px; }
+html[data-theme] body.pp-design .pp-nav-link:first-child,html[data-theme] body.pp-design .pp-nav-link:hover { background:var(--ui-soft);border-color:var(--ui-border);color:var(--pp-purple); }
+html[data-theme] body.pp-design .pp-sidebar-note,html[data-theme] body.pp-design .pp-metrics>div { background:var(--ui-soft);border-color:var(--ui-border);border-radius:16px;box-shadow:none; }
+html[data-theme] body.pp-design .pp-sidebar-note p,html[data-theme] body.pp-design .pp-sidebar-bottom,html[data-theme] body.pp-design .pp-nav-label { color:var(--pp-muted); }
+html[data-theme] body.pp-design .pp-welcome h2 { font-size:34px!important;font-weight:600!important; }
+html[data-theme] body.pp-design .pp-welcome h2>span.block,html[data-theme] body.pp-design .pp-welcome p { color:var(--pp-muted)!important;font-size:13px!important; }
+html[data-theme] body.pp-design .pp-visit { background:var(--ui-soft)!important;border-color:var(--ui-border)!important;border-radius:20px!important;box-shadow:none; }
+html[data-theme] body.pp-design .pp-visit>button { background:var(--ui-accent)!important;color:var(--ui-accent-text)!important;border-radius:12px!important; }
+html[data-theme] body.pp-design .pp-visit-copy>p:last-child,html[data-theme] body.pp-design .pp-eyebrow { color:var(--pp-muted)!important; }
+html[data-theme] body.pp-design .pp-summary { background:var(--ui-soft);border:1px solid var(--ui-border);border-radius:20px;box-shadow:none; }
+html[data-theme] body.pp-design .pp-summary>div:first-child { background:transparent!important; }
+html[data-theme] body.pp-design #symptom-calendar { border-radius:20px!important; }
+html[data-theme] body.pp-design input:not([type="range"]):not([type="checkbox"]),html[data-theme] body.pp-design select,html[data-theme] body.pp-design textarea { background:var(--ui-surface)!important;color:var(--pp-ink)!important;border-color:var(--ui-border)!important; }
+html[data-theme] body.pp-design input::placeholder,html[data-theme] body.pp-design textarea::placeholder { color:var(--pp-muted)!important; }
+html[data-theme] body.pp-design [x-show="!user && showAuthModal"]>div,html[data-theme] body.pp-design [x-show="user && showProfileModal"]>div { background:var(--ui-surface)!important;border-color:var(--ui-border)!important;box-shadow:0 30px 100px #0004!important; }
+html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data-theme] body.pp-design button[\@click="signInWithGoogle()"] { background:var(--ui-soft)!important;color:var(--pp-ink)!important;border:1px solid var(--ui-border); }
+@media(min-width:1400px) { #pp-landing { width:min(1500px,100%);margin:0 auto; } }
+@media(max-width:760px) { html[data-theme] body.pp-design { padding:10px; }html[data-theme] body.pp-design #pp-landing { border-radius:22px; }#pp-landing nav>div { padding:20px;gap:10px;flex-wrap:wrap; }#pp-home-content>div { padding:35px 22px; }#pp-landing .pp-home-hero h1 { font-size:44px; }#pp-landing .pp-home-hero>div:first-child>p { font-size:14px; }#pp-landing .pp-feature-grid { grid-template-columns:1fr; }#pp-landing .pp-feature-grid article>p { min-height:0; }#pp-landing .pp-orbit-stage { height:170px; }#pp-landing .pp-features-heading h2 { font-size:25px; }#pp-landing footer>div { padding:20px; }html[data-theme] body.pp-design .pp-shell { padding:14px; } }
+@media(max-width:440px) { #pp-landing nav>div { padding:16px 14px;gap:8px; }#pp-landing nav p:first-child { font-size:15px; }#pp-landing nav p:last-child { display:none; }#pp-landing nav .pp-brand-mark { display:none; }#pp-landing nav button:last-child { font-size:10px;padding:10px 12px; }#pp-landing .pp-home-hero h1 { font-size:36px; }#pp-landing .pp-home-hero>div:first-child>div { font-size:8px;letter-spacing:.05em; }#pp-landing .pp-home-actions { gap:8px;flex-direction:column; }#pp-landing .pp-feature-grid article { padding:22px; } }
+@media(prefers-reduced-motion:reduce) { .pp-orbit { animation:none!important; }html { scroll-behavior:auto!important; } }
+
+</style>
 </head>
 <body class="pp-design font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
@@ -1589,14 +1685,14 @@ html[data-theme="dark"] .med-workspace { background:#202d3b; border-color:#42556
         </div>
     </div>
 
-    <section x-show="!user" x-cloak class="relative z-20 min-h-screen overflow-hidden bg-[#090d16] text-slate-100">
+    <section x-show="!user" x-cloak id="pp-landing" class="relative z-20 min-h-screen overflow-hidden bg-[#090d16] text-slate-100">
         <div class="absolute inset-0 bg-grid-pattern opacity-70 pointer-events-none"></div>
         <div class="absolute -top-44 -left-36 w-[30rem] h-[30rem] rounded-full bg-rose-600/20 blur-3xl pointer-events-none"></div>
         <div class="absolute top-1/4 -right-48 w-[34rem] h-[34rem] rounded-full bg-indigo-600/20 blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-56 left-1/3 w-[32rem] h-[32rem] rounded-full bg-sky-500/10 blur-3xl pointer-events-none"></div>
 
         <div class="relative min-h-screen flex flex-col">
-            <nav class="sticky top-0 z-30 border-b border-white/10 bg-[#090d16]/75 backdrop-blur-2xl">
+            <nav aria-label="Main navigation" class="sticky top-0 z-30 border-b border-white/10 bg-[#090d16]/75 backdrop-blur-2xl">
                 <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-4 flex items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <div class="pp-brand-mark relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-indigo-600 text-white shadow-lg shadow-rose-500/20">
@@ -1619,9 +1715,9 @@ html[data-theme="dark"] .med-workspace { background:#202d3b; border-color:#42556
                 </div>
             </nav>
 
-            <main class="grow flex items-center">
+            <main id="pp-home-content" class="grow flex items-center">
                 <div class="max-w-7xl w-full mx-auto px-5 sm:px-8 lg:px-10 py-12 sm:py-16 lg:py-20">
-                    <div class="max-w-4xl mx-auto text-center space-y-9">
+                    <div class="pp-home-hero max-w-4xl mx-auto text-center space-y-9">
                         <div class="space-y-6">
                             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-sky-500/20 bg-sky-500/10 text-sky-300 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -1636,36 +1732,36 @@ html[data-theme="dark"] .med-workspace { background:#202d3b; border-color:#42556
                             </p>
                         </div>
 
-                        <div class="grid sm:grid-cols-3 gap-4 text-left">
+<div class="pp-home-actions">                        <button type="button"
+                                @click="showAuthModal = true; authError = ''; authSuccess = ''; authPasswordVisible = false"
+                                class="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+                            Start Your Care Workspace
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                        </button><a class="pp-explore-link" href="#pp-feature-examples">Explore the features <span aria-hidden="true">↗</span></a></div><p class="pp-home-note">Your records. Your questions. A more prepared you.</p><div class="pp-orbit-stage" aria-hidden="true"><div class="pp-orbit"></div><div class="pp-orbit-label"><span class="pp-orbit-dot"></span> A little more clarity. Every day.</div></div><div class="pp-features-heading"><span>DESIGNED AROUND YOUR EVERYDAY</span><h2>Small steps. A clearer picture.</h2><p>Explore an example before you create an account.</p></div>                        <div id="pp-feature-examples" class="pp-feature-grid grid sm:grid-cols-3 gap-4 text-left">
                             <article class="group rounded-2xl border border-white/10 bg-white/[0.035] hover:bg-white/[0.065] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/30">
                                 <div class="w-11 h-11 rounded-xl bg-sky-500/15 text-sky-400 border border-sky-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 </div>
-                                <h2 class="text-sm font-extrabold text-white">Symptoms &amp; Medicines</h2>
+                                <h2 class="text-sm font-extrabold text-white">Track Your Medicines</h2>
                                 <p class="mt-2 text-xs leading-relaxed text-slate-400">Keep your symptom calendar, medication list, dose history, and refill dates together.</p>
-                            </article>
+                            <details class="pp-feature-details"><summary>See a daily workflow <span aria-hidden="true">+</span></summary><div class="pp-feature-walkthrough"><p class="pp-demo-label">ILLUSTRATIVE EXAMPLE · NOT YOUR DATA</p><h3>A record you can bring to your visit.</h3><ol><li><span>01</span><div><strong>Add your medicine</strong><p>Keep its name, schedule, and refill date together.</p></div></li><li><span>02</span><div><strong>Record your day</strong><p>Log a dose and note symptoms in your calendar.</p></div></li><li><span>03</span><div><strong>Prepare your visit</strong><p>Bring your medication list into appointment preparation.</p></div></li></ol><div class="pp-demo-card"><div class="pp-sample-row"><span>Example medicine</span><b>Morning dose · Logged</b></div><div class="pp-sample-row"><span>Today’s symptom note</span><b>Fatigue · 3 / 10</b></div></div></div></details></article>
                             <article class="group rounded-2xl border border-white/10 bg-white/[0.035] hover:bg-white/[0.065] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30">
                                 <div class="w-11 h-11 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1-1H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-3l-1 1-.75-3"/></svg>
                                 </div>
                                 <h2 class="text-sm font-extrabold text-white">Explore Medication Costs</h2>
                                 <p class="mt-2 text-xs leading-relaxed text-slate-400">Research advertised prices, generic options, and assistance programs to discuss with a pharmacist.</p>
-                            </article>
+                            <details class="pp-feature-details"><summary>Explore a cost research example <span aria-hidden="true">+</span></summary><div class="pp-feature-walkthrough"><p class="pp-demo-label">ILLUSTRATIVE EXAMPLE · NOT YOUR DATA</p><h3>Better questions for your pharmacist.</h3><ol><li><span>01</span><div><strong>Enter your medication</strong><p>Add strength, form, quantity, and location.</p></div></li><li><span>02</span><div><strong>Explore cost options</strong><p>Research advertised prices and assistance programs.</p></div></li><li><span>03</span><div><strong>Verify your options</strong><p>Ask your pharmacist about eligibility and final costs.</p></div></li></ol><div class="pp-demo-card"><div class="pp-sample-row"><span>Research checklist</span><b>Generic options</b></div><div class="pp-sample-row"><span>Ask your pharmacist</span><b>Assistance eligibility</b></div></div></div></details></article>
                             <article class="group rounded-2xl border border-white/10 bg-white/[0.035] hover:bg-white/[0.065] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-rose-500/30">
                                 <div class="w-11 h-11 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.21 0-4 1.567-4 3.5S9.79 15 12 15s4-1.567 4-3.5S14.21 8 12 8zm0 0V5m0 10v4m-7-7H2m20 0h-3"/></svg>
                                 </div>
                                 <h2 class="text-sm font-extrabold text-white">Understand Your Care</h2>
                                 <p class="mt-2 text-xs leading-relaxed text-slate-400">Get plain-language explanations, prepare appointments, and share a clear symptom summary with your doctor.</p>
-                            </article>
+                            <details class="pp-feature-details"><summary>Preview appointment preparation <span aria-hidden="true">+</span></summary><div class="pp-feature-walkthrough"><p class="pp-demo-label">ILLUSTRATIVE EXAMPLE · NOT YOUR DATA</p><h3>Make room for what matters to you.</h3><ol><li><span>01</span><div><strong>Collect your concerns</strong><p>Note what changed and how it affects your day.</p></div></li><li><span>02</span><div><strong>Prepare your questions</strong><p>Organize topics you want to discuss.</p></div></li><li><span>03</span><div><strong>Bring a clear summary</strong><p>Review your records and export your visit notes.</p></div></li></ol><div class="pp-demo-card"><div class="pp-sample-row"><span>Example question</span><b>Which changes should I track?</b></div><div class="pp-sample-row"><span>Visit priorities</span><b>Symptoms · Medicines · Questions</b></div></div></div></details></article>
                         </div>
 
-                        <button type="button"
-                                @click="showAuthModal = true; authError = ''; authSuccess = ''; authPasswordVisible = false"
-                                class="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-                            Start Your Care Workspace
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                        </button>
+
                     </div>
                 </div>
             </main>
