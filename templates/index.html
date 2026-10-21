@@ -263,7 +263,7 @@ body.pp-design { font-family:'Plus Jakarta Sans',sans-serif; color:var(--pp-ink)
 .pp-design [x-show="profileMenuOpen"],.pp-design [x-show="showRegionMenu"] { background:#f5f5f8!important;box-shadow:0 18px 44px #35404f25!important; }
 .pp-design [x-show="!user"] { background:transparent!important; }.pp-design [x-show="!user"]>div>nav,.pp-design [x-show="!user"] footer { background:#ffffff50!important; }.pp-design [x-show="!user"]>div.absolute { opacity:.14; }
 .pp-design [x-show="!user"] h1 { font-weight:500;letter-spacing:-.06em; }.pp-design [x-show="!user"] h2 { color:var(--pp-ink)!important; }
-.pp-design [x-show="!user && showAuthModal"]>div,.pp-design [x-show="user && showProfileModal"]>div { background:#edf0f3!important;border:1.5px solid white!important;border-radius:28px!important; }
+.pp-design [x-show="!user && showAuthModal"]>div,.pp-design [x-show="user && accountRole && showProfileModal"]>div { background:#edf0f3!important;border:1.5px solid white!important;border-radius:28px!important; }
 .pp-design .ap-dialog,.pp-design .ap-dialog.ap-light { --ap-bg:#eff0f4;--ap-card:#ffffffb3;--ap-line:#d0d3db;--ap-text:#142c35;--ap-muted:#56676e;--ap-accent:#76628f; background:linear-gradient(135deg,#f4f6f6,#ece7f1);border:1.5px solid white;border-radius:28px;box-shadow:0 30px 100px #26334140; }
 .pp-design .ap-dialog::backdrop { background:#34425366;backdrop-filter:blur(12px); }.pp-design .ap-title { font-weight:600;letter-spacing:-.6px; }.pp-design .ap-header { padding:24px; }.pp-design .ap-primary,.pp-design .ap-step-active { background:#80708f;color:white;border-color:#80708f; }.pp-design .ap-btn { border-radius:13px; }.pp-design .ap-card { border-radius:19px; }.pp-design .ap-steps .ap-btn:not(.ap-step-active) { background:#ffffff65; }
 .pp-design .dr-panel { background:#f6f7f9b8;border:1px solid white;border-radius:27px;box-shadow:var(--pp-shadow); }.pp-design .dr-heading { background:linear-gradient(110deg,#e2ebe6aa,#eee7f1aa); }.pp-design .dr-card { background:#ffffff70;border-color:#fff;border-radius:19px; }.pp-design .dr-heading h2 { font-weight:500;letter-spacing:-.7px; }.pp-design .dr-primary { background:#7f708e;border-color:#7f708e; }.pp-design .dr-kicker { color:#77648c!important; }.pp-design .dr-track div { background:#8b79a0; }.pp-design .dr-selected { background:#e8e0ef; }
@@ -337,7 +337,7 @@ html[data-theme="dark"] .pp-design .pp-visit { background:linear-gradient(120deg
 html[data-theme="dark"] .pp-design .pp-summary { background:linear-gradient(150deg,#ffffff07,#5b426826);border-color:#ffffff24;box-shadow:inset 0 1px 0 #ffffff12; }html[data-theme="dark"] .pp-design .pp-summary>div:first-child { background:transparent!important; }html[data-theme="dark"] .pp-design .pp-summary .my-auto,html[data-theme="dark"] .pp-design .pp-brief-loading { background:#ffffff04!important;border-color:#ffffff1c; }html[data-theme="dark"] .pp-design .pp-summary .my-auto>div:first-child { background:#c8b4dd12!important;border-color:#c8b4dd40!important; }html[data-theme="dark"] .pp-brief-loading p { color:#b4c2ce; }html[data-theme="dark"] .pp-loading-spinner { border-top-color:#ccb3e5!important;border-right-color:#96c6b3!important; }
 html[data-theme="dark"] .pp-design input:not([type="range"]):not([type="checkbox"]),html[data-theme="dark"] .pp-design select,html[data-theme="dark"] .pp-design textarea { background:#182332c9!important;color:#e4edf2!important;border-color:#586378!important; }html[data-theme="dark"] .pp-design input::placeholder,html[data-theme="dark"] .pp-design textarea::placeholder { color:#96a6b7!important; }
 html[data-theme="dark"] .pp-design .pp-theme-toggle { background:#ffffff0b;color:#dbcbea;border-color:#9e8daf70; }html[data-theme="dark"] .pp-design [x-show="profileMenuOpen"],html[data-theme="dark"] .pp-design [x-show="showRegionMenu"] { background:#283243!important; }
-html[data-theme="dark"] .pp-design [x-show="!user"] { background:transparent!important; }html[data-theme="dark"] .pp-design [x-show="!user"]>div>nav,html[data-theme="dark"] .pp-design [x-show="!user"] footer { background:#ffffff05!important; }html[data-theme="dark"] .pp-design [x-show="!user && showAuthModal"]>div,html[data-theme="dark"] .pp-design [x-show="user && showProfileModal"]>div { background:#253142!important;border-color:#ffffff26!important; }
+html[data-theme="dark"] .pp-design [x-show="!user"] { background:transparent!important; }html[data-theme="dark"] .pp-design [x-show="!user"]>div>nav,html[data-theme="dark"] .pp-design [x-show="!user"] footer { background:#ffffff05!important; }html[data-theme="dark"] .pp-design [x-show="!user && showAuthModal"]>div,html[data-theme="dark"] .pp-design [x-show="user && accountRole && showProfileModal"]>div { background:#253142!important;border-color:#ffffff26!important; }
 html[data-theme="dark"] .pp-design .ap-dialog,html[data-theme="dark"] .pp-design .ap-dialog.ap-light { --ap-bg:#202b3b;--ap-card:#2d394b;--ap-line:#566074;--ap-text:#e4edf2;--ap-muted:#b1c0ce;--ap-accent:#c4afe0;background:linear-gradient(135deg,#263445,#302c40);border-color:#ffffff30; }html[data-theme="dark"] .pp-design .ap-steps .ap-btn:not(.ap-step-active) { background:#ffffff05; }html[data-theme="dark"] .pp-design .ap-card { background:#ffffff04; }html[data-theme="dark"] .pp-design .ap-primary,html[data-theme="dark"] .pp-design .ap-step-active { background:#806793;color:white; }
 html[data-theme="dark"] .pp-design .dr-panel { background:#253244d9;color:#e4edf2;border-color:#ffffff25; }html[data-theme="dark"] .pp-design .dr-heading { background:linear-gradient(110deg,#37473f80,#4c3d5480);border-color:#ffffff20; }html[data-theme="dark"] .pp-design .dr-heading p,html[data-theme="dark"] .pp-design .dr-caption { color:#b3c0ce; }html[data-theme="dark"] .pp-design .dr-card { background:#ffffff05;border-color:#ffffff18; }html[data-theme="dark"] .pp-design .dr-btn { background:#344155;color:#e4edf2;border-color:#667086; }html[data-theme="dark"] .pp-design .dr-primary { background:#806793; }html[data-theme="dark"] .pp-design .dr-selected { background:#b79dcc14;border-color:#b79dcc55; }html[data-theme="dark"] .pp-design .dr-kicker { color:#cbb6df!important; }html[data-theme="dark"] .pp-design .dr-track { background:#ffffff13; }html[data-theme="dark"] .pp-design .dr-notice { background:#cba36318;color:#efd3a1;border-color:#cba36355; }
 html[data-theme="dark"] .pp-design .dr-dot:focus-visible,html[data-theme="dark"] .pp-design .dr-dot[aria-pressed="true"] { outline-color:#dbcbea; }
@@ -789,7 +789,7 @@ html[data-theme] body.pp-design .pp-summary>div:first-child { background:transpa
 html[data-theme] body.pp-design #symptom-calendar { border-radius:20px!important; }
 html[data-theme] body.pp-design input:not([type="range"]):not([type="checkbox"]),html[data-theme] body.pp-design select,html[data-theme] body.pp-design textarea { background:var(--ui-surface)!important;color:var(--pp-ink)!important;border-color:var(--ui-border)!important; }
 html[data-theme] body.pp-design input::placeholder,html[data-theme] body.pp-design textarea::placeholder { color:var(--pp-muted)!important; }
-html[data-theme] body.pp-design [x-show="!user && showAuthModal"]>div,html[data-theme] body.pp-design [x-show="user && showProfileModal"]>div { background:var(--ui-surface)!important;border-color:var(--ui-border)!important;box-shadow:0 30px 100px #0004!important; }
+html[data-theme] body.pp-design [x-show="!user && showAuthModal"]>div,html[data-theme] body.pp-design [x-show="user && accountRole && showProfileModal"]>div { background:var(--ui-surface)!important;border-color:var(--ui-border)!important;box-shadow:0 30px 100px #0004!important; }
 html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data-theme] body.pp-design button[\@click="signInWithGoogle()"] { background:var(--ui-soft)!important;color:var(--pp-ink)!important;border:1px solid var(--ui-border); }
 @media(min-width:1400px) { #pp-landing { width:min(1500px,100%);margin:0 auto; } }
 @media(max-width:760px) { html[data-theme] body.pp-design { padding:10px; }html[data-theme] body.pp-design #pp-landing { border-radius:22px; }#pp-landing nav>div { padding:20px;gap:10px;flex-wrap:wrap; }#pp-home-content>div { padding:35px 22px; }#pp-landing .pp-home-hero h1 { font-size:44px; }#pp-landing .pp-home-hero>div:first-child>p { font-size:14px; }#pp-landing .pp-feature-grid { grid-template-columns:1fr; }#pp-landing .pp-feature-grid article>p { min-height:0; }#pp-landing .pp-orbit-stage { height:170px; }#pp-landing .pp-features-heading h2 { font-size:25px; }#pp-landing footer>div { padding:20px; }html[data-theme] body.pp-design .pp-shell { padding:14px; } }
@@ -1580,7 +1580,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
         </div>
     </div>
 
-    <div x-show="user && showProfileModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-lg overflow-y-auto">
+    <div x-show="user && accountRole && showProfileModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-lg overflow-y-auto">
         <div class="w-full max-w-2xl glass-panel-dark glow-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative my-auto border border-white/15">
             
             <div class="flex items-start justify-between border-b border-white/10 pb-4">
@@ -1682,7 +1682,6 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     </button>
                 </div>
             </form>
-            <div class="mt-4 text-center"><button type="button" @click="showAuthModal = false; showGuestDisclaimer = true" :disabled="!authReady" class="px-5 py-3 rounded-xl border border-sky-400 text-sky-400 text-sm font-bold disabled:opacity-50">Try Guest Mode</button></div>
         </div>
     </div>
 
@@ -1799,6 +1798,12 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 <h2 class="text-2xl font-extrabold tracking-tight text-white" x-text="authTab === 'login' ? 'Welcome back' : 'Create your account'"></h2>
                 <p class="text-xs text-slate-400" x-text="authTab === 'login' ? 'Sign in to continue your personal health timeline.' : 'Start securely tracking your symptoms and health history.'"></p>
             </div>
+            <fieldset x-show="authTab === 'signup'" class="mb-4 space-y-2">
+                <legend class="text-sm font-bold mb-2">Account type</legend>
+                <label class="inline-flex items-center gap-2 mr-4"><input type="radio" name="signup-role" value="patient" x-model="signupAccountType">Patient</label>
+                <label class="inline-flex items-center gap-2"><input type="radio" name="signup-role" value="doctor" x-model="signupAccountType">Doctor</label>
+                <p class="text-xs text-slate-400">Patients track their care. Doctors use clinical review and medicine research. Your choice is saved to your account.</p>
+            </fieldset>
             <button @click="signInWithGoogle()" :disabled="authLoading" class="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3 px-4 rounded-xl text-xs transition duration-200 cursor-pointer flex items-center justify-center gap-3 shadow-md hover:scale-[1.01] active:scale-[0.99]">
                 <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
                 <span>Continue with Google</span>
@@ -1821,6 +1826,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 <div x-show="authSuccess" x-cloak class="p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs" x-text="authSuccess"></div>
                 <button type="submit" :disabled="authLoading" class="w-full bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 disabled:opacity-60 text-white font-bold py-3 rounded-xl text-xs transition duration-200 cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2"><span x-show="authLoading" class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span><span x-text="authTab === 'login' ? 'Sign In to Workspace' : 'Create Account'"></span></button>
             </form>
+            <div class="mt-4 text-center"><button type="button" @click="showAuthModal = false; showGuestDisclaimer = true" :disabled="!authReady" class="px-5 py-3 rounded-xl border border-sky-400 text-sky-400 text-sm font-bold disabled:opacity-50">Try Guest Mode</button></div>
         </div>
     </div>
 
@@ -1833,7 +1839,23 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
         </div>
     </div>
 
-    <div class="pp-shell" x-show="user" x-cloak>
+    <section x-show="user && !isGuest && !accountRole" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950 text-white p-6" aria-live="polite">
+        <div class="max-w-md w-full rounded-2xl border border-slate-600 bg-slate-900 p-6 space-y-4">
+            <h2 class="text-xl font-bold" x-text="roleNeedsChoice ? 'Choose your account type' : 'Opening your workspace'"></h2>
+            <p x-show="roleLoading">Loading your account…</p>
+            <div x-show="roleNeedsChoice" class="space-y-4">
+                <p>Choose once to finish setting up your account.</p>
+                <label class="block"><input type="radio" name="oauth-role" x-model="signupAccountType" value="patient"> Patient — symptom tracking, medicines, summaries and visit preparation</label>
+                <label class="block"><input type="radio" name="oauth-role" x-model="signupAccountType" value="doctor"> Doctor — clinical review, handoffs and medicine price research</label>
+                <button type="button" @click="chooseAccountRole()" :disabled="roleLoading" class="px-4 py-2 rounded-xl bg-sky-600">Save account type</button>
+            </div>
+            <p x-show="roleError" x-text="roleError" role="alert" class="text-rose-300"></p>
+            <button x-show="roleError" type="button" @click="loadAccountRole()" :disabled="roleLoading" class="underline">Retry</button>
+            <button type="button" @click="handleSignOut()" class="underline">Sign out</button>
+        </div>
+    </section>
+
+    <div class="pp-shell" x-show="user && accountRole" x-cloak>
     <div x-show="isGuest" class="px-5 py-3 bg-sky-950 text-white text-sm flex flex-wrap items-center justify-center gap-3" role="status">
         <span>Guest preview · Data disappears when you leave or refresh.</span>
         <button type="button" @click="exitGuestMode(true)" class="underline font-bold">Exit preview &amp; sign up / sign in</button>
@@ -1956,14 +1978,14 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
         </div>
     </header>
 
-<aside class="pp-sidebar" aria-label="Workspace navigation"><div class="pp-nav-label">YOUR WORKSPACE</div><nav><a href="#dashboard" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Overview</span></a><a href="#symptom-calendar" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h3"/></svg><span>Symptom calendar</span></a><a href="#medications" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="5" transform="rotate(40 12 12)"/><path d="m8 9 8 6"/></svg><span>Medicines &amp; costs</span></a><a href="#health-summary" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h5"/></svg><span>Health summary</span></a><button type="button" class="pp-nav-link" @click="openAppointmentPrep()" :disabled="sampleDataActive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H6a2 2 0 0 0-2 2v13h16V7a2 2 0 0 0-2-2h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m8 13 3 3 5-6"/></svg><span>Appointment prep</span></button>
-<button type="button" class="pp-nav-link" @click="doctorMode = !doctorMode" :aria-pressed="doctorMode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v6a5 5 0 0 0 10 0V3M3 3h4m6 0h4m-7 11v2a5 5 0 0 0 10 0v-3"/><circle cx="20" cy="10" r="2"/></svg><span>Doctor Mode</span><span class="pp-mode-dot" :class="{ 'is-on': doctorMode }"></span></button>
+<aside class="pp-sidebar" aria-label="Workspace navigation"><div class="pp-nav-label">YOUR WORKSPACE</div><nav><a x-show="doctorMode" href="#doctor-review" class="pp-nav-link"><span>Clinical review</span></a><a x-show="doctorMode" href="#care-research" class="pp-nav-link"><span>Medicine price research</span></a><a href="#dashboard" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Overview</span></a><a href="#symptom-calendar" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5h3"/></svg><span>Symptom calendar</span></a><a href="#medications" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="5" transform="rotate(40 12 12)"/><path d="m8 9 8 6"/></svg><span>Medicines</span></a><a href="#health-summary" class="pp-nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h5"/></svg><span>Health summary</span></a><button type="button" class="pp-nav-link" @click="openAppointmentPrep()" :disabled="sampleDataActive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H6a2 2 0 0 0-2 2v13h16V7a2 2 0 0 0-2-2h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m8 13 3 3 5-6"/></svg><span>Appointment prep</span></button>
+
 <button type="button" class="pp-nav-link" @click="showProfileModal = true; profileMenuOpen = false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span>Personal profile</span></button></nav>
 <div class="pp-sidebar-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5H6a2 2 0 0 0-2 2v13h16V7a2 2 0 0 0-2-2h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m8 13 3 3 5-6"/></svg><strong>A little clarity,<br>every day.</strong><p>Your medicines. Your questions.<br>A clearer next step.</p><a href="#symptom-calendar">Open your calendar <span aria-hidden="true">↗</span></a></div>
 <div class="pp-sidebar-bottom"><span class="pp-small-mark">✦</span> Care feels clearer when it is organized.</div></aside>
     <main id="workspace" x-show="user" class="pp-workspace p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto flex flex-col gap-6 grow z-10">
         
-        <section id="visit-plan" class="pp-visit rounded-2xl border p-5 flex flex-col sm:flex-row gap-4 sm:items-center justify-between" :class="doctorMode ? 'bg-sky-50 border-sky-200 text-slate-900' : 'bg-sky-950/40 border-sky-500/25 text-slate-100'">
+        <section x-show="!doctorMode" id="visit-plan" class="pp-visit rounded-2xl border p-5 flex flex-col sm:flex-row gap-4 sm:items-center justify-between" :class="doctorMode ? 'bg-sky-50 border-sky-200 text-slate-900' : 'bg-sky-950/40 border-sky-500/25 text-slate-100'">
             <div class="pp-hero-art" aria-hidden="true"><svg viewBox="0 0 220 170" fill="none"><defs><linearGradient id="pp-leaf" x2="1" y2="1"><stop stop-color="#a0b8b0"/><stop offset="1" stop-color="#718d84"/></linearGradient></defs><circle cx="116" cy="85" r="72" fill="#fff" fill-opacity=".35"/><path d="M148 155C151 119 164 88 193 63C194 104 179 130 148 155Z" fill="url(#pp-leaf)"/><path d="M147 153C120 129 116 108 118 83C147 100 157 124 147 153Z" fill="#b4c6bc"/><g transform="rotate(-9 95 85)"><rect x="39" y="27" width="113" height="123" rx="22" fill="#fff" fill-opacity=".8" stroke="white" stroke-width="2"/><rect x="57" y="45" width="42" height="8" rx="4" fill="#b5a7c9"/><path d="M57 73h77M57 86h48" stroke="#ccd3d5" stroke-width="5" stroke-linecap="round"/><path d="M58 119h17l7-14 10 27 10-19h30" stroke="#7e998e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g><circle cx="158" cy="37" r="23" fill="#d2c5e2" stroke="white" stroke-width="2"/><path d="M150 37h16m-8-8v16" stroke="#625574" stroke-width="3" stroke-linecap="round"/></svg></div><div class="pp-visit-copy"><p class="pp-eyebrow">YOUR NEXT CHAPTER</p><h2 class="font-bold text-base">Make your next appointment count</h2><p class="text-sm mt-1 opacity-75" x-text="sampleDataActive ? 'Restore your data to prepare an appointment using your own entries.' : 'Bring your priorities, important dates, and questions together.'"></p></div>
             <button type="button" @click="openAppointmentPrep()" :disabled="sampleDataActive" class="shrink-0 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold px-5 py-3">Prepare for appointment</button>
         </section>
@@ -1975,27 +1997,19 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     <div class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider"
                          :class="doctorMode ? 'bg-sky-100 text-sky-800' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'">
                         <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
-                        Personal Care Workspace
+                        <span x-text="doctorMode ? 'Doctor Workspace' : 'Patient Workspace'"></span>
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
                         Welcome<span x-text="profile.firstName ? ', ' + profile.firstName : ''"></span>!
                         <span class="block text-base sm:text-lg font-semibold text-sky-400 mt-1">Your medicines, symptoms, and care questions—in one place</span>
                     </h2>
                     <p class="text-xs sm:text-sm leading-relaxed" :class="doctorMode ? 'text-slate-600' : 'text-slate-400'">
-                        Track how you feel, keep your medication routine organized, and explore cost options. Use AI to understand your care and prepare a clearer conversation with your doctor.
+                        Track symptoms and keep medication records organized. Use AI to understand your care and prepare a clearer conversation with your doctor.
                     </p>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
-                    <button @click="doctorMode = !doctorMode" 
-                            :class="doctorMode ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-lg shadow-sky-600/30' : 'bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white shadow-lg shadow-indigo-500/20'"
-                            class="px-5 py-3 rounded-xl text-xs font-bold tracking-wide border border-white/20 transition-all duration-300 cursor-pointer flex items-center justify-center gap-2.5 hover:scale-[1.03] active:scale-[0.97]">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                        </svg>
-                        <span x-text="doctorMode ? '↩️ Switch to Simple Patient Mode' : '🔬 Switch to Quick Doctor Mode'"></span>
-                    </button>
+                    
                 </div>
             </div>
 
@@ -2016,7 +2030,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
         </section>
 
         <section id="medications" class="med-workspace" aria-labelledby="medications-title">
-            <div class="med-heading"><div><p class="med-eyebrow">YOUR EVERYDAY CARE COMPANION</p><h2 id="medications-title">Medicines &amp; costs</h2><p>Keep your medication routine in view. Explore cost options and understand the care you have been given.</p></div><a class="med-btn" href="#care-research">Research options ↗</a></div>
+            <div class="med-heading"><div><p class="med-eyebrow">YOUR EVERYDAY CARE COMPANION</p><h2 id="medications-title">Medicines</h2><p>Keep medication records and dose history in view.</p></div><a x-show="doctorMode" class="med-btn" href="#care-research">Research options ↗</a></div>
             <p class="med-notice" x-show="sampleDataActive">Restore your own calendar data to edit medicines or run care research.</p>
             <div class="med-toolbar"><button class="med-btn med-primary" type="button" @click="editMedication()" :disabled="!medicationCanWrite()">+ Add medication</button><button class="med-btn" type="button" @click="addMedicationsToAppointment()" :disabled="!medicationCanWrite() || !medications.length">Add list to visit plan</button><button class="med-btn" type="button" @click="exportMedicationBackup()" :disabled="!medicationCanWrite()">Export records</button><button class="med-btn" type="button" @click="persistMedications()" :disabled="!medicationCanWrite()">Save again</button></div>
             <p class="med-caption" role="status" x-text="medicationStatus"></p>
@@ -2047,7 +2061,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 <p class="med-caption" x-show="item.startDate" x-text="'Start date: '+formatDisplayDate(item.startDate)"></p>
                 <p class="med-refill" x-show="medicationRefillLabel(item)" x-text="medicationRefillLabel(item)"></p>
                 <p class="med-preserve med-caption" x-show="item.notes" x-text="item.notes"></p>
-                <div class="med-toolbar"><button class="med-btn" type="button" @click="editMedication(item)" :disabled="!medicationCanWrite()">Edit</button><button class="med-btn" type="button" @click="useMedicationForResearch(item)" :disabled="careBusy || sampleDataActive">Explore costs</button><button class="med-btn" type="button" @click="deleteMedication(item)" :disabled="!medicationCanWrite()">Delete</button></div>
+                <div class="med-toolbar"><button class="med-btn" type="button" @click="editMedication(item)" :disabled="!medicationCanWrite()">Edit</button><button class="med-btn" type="button" x-show="doctorMode" @click="useMedicationForResearch(item)" :disabled="careBusy || sampleDataActive">Explore costs</button><button class="med-btn" type="button" @click="deleteMedication(item)" :disabled="!medicationCanWrite()">Delete</button></div>
             </article></template></div>
             <details class="med-card" :open="medications.length > 0"><summary>Daily dose log</summary>
                 <p class="med-caption">Record what happened, including multiple doses per day. An empty date means no entry, not a missed dose. This log does not send reminders or advise what to do after a missed dose.</p>
@@ -2061,7 +2075,10 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 <p class="med-caption" x-show="!medicationEventsForDate().length">No doses recorded for this date.</p>
                 <template x-for="event in medicationEventsForDate()" :key="event.id"><div class="med-event"><div><strong x-text="medicationEventName(event)"></strong><p x-text="[event.time,event.slot,event.status].filter(Boolean).join(' · ')"></p></div><button class="med-btn" type="button" @click="removeMedicationEvent(event.id)" :disabled="!medicationCanWrite()" :aria-label="'Remove dose entry for '+medicationEventName(event)">Remove entry</button></div></template>
             </details>
-            <section id="care-research" class="med-research" aria-labelledby="care-research-title">
+
+        </section>
+
+            <section id="care-research" x-show="doctorMode" x-cloak class="med-workspace med-research" aria-labelledby="care-research-title">
                 <p class="med-eyebrow">CLEARER INFORMATION. MORE INFORMED QUESTIONS.</p><h3 id="care-research-title">Explore costs. Understand your care.</h3>
                 <div class="med-toolbar" role="group" aria-label="Care research mode"><button type="button" class="med-btn" :aria-pressed="careMode==='cost'" @click="careMode='cost'" :disabled="careBusy">Find cost options</button><button type="button" class="med-btn" :aria-pressed="careMode==='explain'" @click="careMode='explain'" :disabled="careBusy">Understand doctor instructions</button></div>
                 <p class="med-caption" x-text="careMode==='cost' ? 'US price research: enter a medicine or condition. Exact strength, form, and quantity help identify comparable listings. Availability and your final price need pharmacy confirmation.' : 'Paste an instruction or ask about a medication’s purpose, monitoring, or a term your doctor used. No symptom report is required.'"></p>
@@ -2100,7 +2117,6 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     <p class="med-caption" x-show="!careResult.sources.length">No live sources were retrieved. No price comparison or treatment option has been verified.</p>
                 </div></template>
             </section>
-        </section>
 
         <section x-show="doctorMode" x-cloak id="doctor-review" class="dr-panel">
             <div class="dr-heading">
@@ -2751,6 +2767,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                         disabled:'Live search is disabled',unavailable:'Live search was unavailable',not_requested:'Not requested'})[value] || 'Unavailable';
                 },
                 async researchMedicationCare() {
+                    if (!this.doctorMode) { this.careError = 'Medicine research requires a doctor account.'; return; }
                     if (!this.user || this.sampleDataActive || this.careBusy) return;
                     this.careError = '';this.careResult = null;
                     if (!this.careConsent) {this.careError = 'Agree to send the entered details before researching.';return;}
@@ -3087,7 +3104,13 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 authSuccess: '',
                 authLoading: false,
 
-                doctorMode: false,
+                accountRole: null,
+                signupAccountType: 'patient',
+                roleLoading: false,
+                roleError: '',
+                roleNeedsChoice: false,
+                roleRequestSequence: 0,
+                get doctorMode() { return !this.isGuest && this.accountRole === 'doctor'; },
                 doctorTimelineFilter: 'all',
                 doctorCopyStatus: '',
                 activeDoctorModal: null,
@@ -3679,6 +3702,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                         if (this.user) this.showAuthModal = false;
 
                         if (this.user) {
+                            await this.loadAccountRole();
                             this.loadUserProfile();
                             await this.loadUserLogs();
                         }
@@ -3694,10 +3718,14 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                             if (this.user) this.showAuthModal = false;
 
                             if (this.user) {
+                                await this.loadAccountRole();
                                 this.loadUserProfile();
                                 await this.loadUserLogs();
                                 this.loadChatConversations();
                             } else {
+                                this.accountRole = null;
+                                this.roleNeedsChoice = false;
+                                this.roleRequestSequence++;
                                 this.profile = {
                                     firstName: '',
                                     lastName: '',
@@ -4259,6 +4287,43 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     }
                 },
 
+                async loadAccountRole() {
+                    if (this.isGuest) { this.accountRole = 'patient'; return; }
+                    if (!this.session?.access_token || !this.user) return;
+                    const owner = this.user.id, sequence = ++this.roleRequestSequence;
+                    this.accountRole = null; this.roleLoading = true; this.roleError = ''; this.roleNeedsChoice = false;
+                    try {
+                        const response = await fetch('/api/account-role', {headers:this.apiHeaders(), cache:'no-store'});
+                        const data = await response.json();
+                        if (this.user?.id !== owner || sequence !== this.roleRequestSequence) return;
+                        if (!response.ok) throw new Error(data.error || 'Unable to load account type.');
+                        if (data.account_type !== null && !['patient','doctor'].includes(data.account_type)) throw new Error('Invalid account type.');
+                        this.accountRole = data.account_type;
+                        this.roleNeedsChoice = data.account_type === null;
+                        const preference = new URLSearchParams(window.location.search).get('signup_role');
+                        if (this.roleNeedsChoice && ['patient','doctor'].includes(preference)) this.signupAccountType = preference;
+                    } catch (error) {
+                        if (this.user?.id === owner && sequence === this.roleRequestSequence) this.roleError = error.message || 'Unable to load account type.';
+                    } finally {
+                        if (sequence === this.roleRequestSequence) this.roleLoading = false;
+                    }
+                },
+                async chooseAccountRole() {
+                    if (!this.roleNeedsChoice || this.roleLoading || this.isGuest) return;
+                    const owner = this.user?.id, sequence = ++this.roleRequestSequence;
+                    this.roleLoading = true; this.roleError = '';
+                    try {
+                        const response = await fetch('/api/account-role', {method:'POST',headers:this.apiHeaders(),body:JSON.stringify({account_type:this.signupAccountType})});
+                        const data = await response.json();
+                        if (this.user?.id !== owner || sequence !== this.roleRequestSequence) return;
+                        if (!response.ok) throw new Error(data.error || 'Unable to save account type.');
+                        if (!['patient','doctor'].includes(data.account_type)) throw new Error('Invalid account type.');
+                        this.accountRole = data.account_type; this.roleNeedsChoice = false;
+                    } catch (error) {
+                        if (this.user?.id === owner && sequence === this.roleRequestSequence) this.roleError = error.message || 'Unable to save account type.';
+                    } finally { if (sequence === this.roleRequestSequence) this.roleLoading = false; }
+                },
+
                 apiHeaders() {
                     return this.isGuest
                         ? {'Content-Type': 'application/json', 'X-PulsePlot-Guest': '1'}
@@ -4269,6 +4334,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     if (!this.authReady || this.user) return;
                     guestMemory.clear();
                     this.isGuest = true;
+                    this.accountRole = 'patient';
                     this.session = null;
                     this.user = {id: 'preview-' + this.createChatId(), email: 'Guest preview'};
                     this.profile = {firstName:'Guest',lastName:'',birthday:'',dateFormat:'AUTO',regionFormat:'AUTO',height:'',weight:'',gender:'',medicalNotes:'',completedOnboarding:true};
@@ -4308,6 +4374,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                         if (error) throw error;
                         this.user = data.user;
                         this.session = data.session;
+                        await this.loadAccountRole();
                         this.loadUserProfile();
                         await this.loadUserLogs();
                     } catch (err) {
@@ -4327,6 +4394,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     this.authSuccess = '';
                     try {
                         const { data, error } = await supabaseClient.auth.signUp({
+                            options: { data: { account_type: this.signupAccountType } },
                             email: this.authEmail,
                             password: this.authPassword,
                         });
@@ -4336,6 +4404,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                         } else {
                             this.user = data.user;
                             this.session = data.session;
+                            await this.loadAccountRole();
                             this.loadUserProfile();
                             await this.loadUserLogs();
                         }
@@ -4356,7 +4425,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     try {
                         const { error } = await supabaseClient.auth.signInWithOAuth({
                             provider: 'google',
-                            options: { redirectTo: window.location.origin }
+                            options: { redirectTo: window.location.origin + (this.authTab === 'signup' ? '?signup_role=' + this.signupAccountType : '') }
                         });
                         if (error) throw error;
                     } catch (err) {
@@ -4370,6 +4439,9 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     if (supabaseClient) {
                         await supabaseClient.auth.signOut();
                     }
+                    this.roleRequestSequence++;
+                    this.accountRole = null;
+                    this.roleNeedsChoice = false;
                     this.user = null;
                     this.session = null;
                     this.loadMedications();

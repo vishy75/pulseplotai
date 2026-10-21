@@ -10,7 +10,7 @@ from urllib.parse import unquote, urlsplit
 import requests
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, g, jsonify, render_template, request
 from groq import Groq
 from supabase import Client, create_client
 
@@ -1674,6 +1674,8 @@ def search_medication_sources(query, domains, prefix):
 def medication_research_auth():
     """Require a verified session or bounded guest quota before paid work."""
     if is_guest_request():
+        if request.path == '/api/medication-research':
+            return jsonify({'error': 'Medicine research requires a doctor account.'}), 403
         return protect_guest_request()
     if not SUPABASE_URL or not SUPABASE_ANON_KEY:
         return jsonify({'error': 'Account authentication is not configured.'}), 503
@@ -1693,7 +1695,73 @@ def medication_research_auth():
                 return jsonify({'error': 'Sign in again to use care research.'}), 401
     except (requests.RequestException, ValueError):
         return jsonify({'error': 'Account verification is unavailable. Try again.'}), 503
+    g.verified_account_id = user['id']
+    if request.path == '/api/medication-research':
+        role, error = read_account_role()
+        if error is not None:
+            return error
+        if role != 'doctor':
+            return jsonify({'error': 'Medicine research requires a doctor account.'}), 403
     return None
+
+
+def read_account_role():
+    """Read immutable application role using the verified user's RLS context."""
+    try:
+        with requests.get(SUPABASE_URL.rstrip('/') + '/rest/v1/pulseplot_account_roles',
+                          headers={'Authorization': request.headers.get('Authorization', ''),
+                                   'apikey': SUPABASE_ANON_KEY},
+                          params={'select': 'account_type', 'user_id': 'eq.' + g.verified_account_id},
+                          timeout=(3.05, 5), allow_redirects=False) as response:
+            if response.status_code != 200:
+                raise ValueError('Role lookup unavailable')
+            rows = response.json()
+        if not isinstance(rows, list) or len(rows) > 1:
+            raise ValueError('Invalid role response')
+        if not rows:
+            return None, None
+        role = rows[0].get('account_type')
+        if role not in ('patient', 'doctor'):
+            raise ValueError('Invalid role')
+        return role, None
+    except (requests.RequestException, ValueError, TypeError, AttributeError):
+        return None, (jsonify({'error': 'Account type could not be loaded. Check the account_roles.sql setup and try again.'}), 503)
+
+
+@app.route('/api/account-role', methods=['GET', 'POST'])
+def account_role():
+    if is_guest_request():
+        return jsonify({'error': 'Sign in to manage an account type.'}), 401
+    auth_error = medication_research_auth()
+    if auth_error is not None:
+        return auth_error
+    role, error = read_account_role()
+    if error is not None:
+        return error
+    if request.method == 'GET':
+        response = jsonify({'account_type': role})
+        response.headers['Cache-Control'] = 'no-store, private'
+        return response
+    payload = request.get_json(silent=True)
+    chosen = payload.get('account_type') if isinstance(payload, dict) else None
+    if chosen not in ('patient', 'doctor'):
+        return jsonify({'error': 'Choose Patient or Doctor.'}), 400
+    if role is not None:
+        if role != chosen:
+            return jsonify({'error': 'This account already has a saved account type.'}), 409
+        return jsonify({'account_type': role})
+    try:
+        with requests.post(SUPABASE_URL.rstrip('/') + '/rest/v1/rpc/choose_pulseplot_account_role',
+                           headers={'Authorization': request.headers['Authorization'], 'apikey': SUPABASE_ANON_KEY},
+                           json={'chosen_role': chosen}, timeout=(3.05, 5), allow_redirects=False) as response:
+            if response.status_code != 200:
+                return jsonify({'error': 'Account type could not be saved. Reload and try again.'}), 409
+            saved = response.json()
+        if saved not in ('patient', 'doctor'):
+            raise ValueError('Invalid role')
+        return jsonify({'account_type': saved})
+    except (requests.RequestException, ValueError, TypeError):
+        return jsonify({'error': 'Account type could not be saved. Try again.'}), 503
 
 
 def clean_medication_query(value):
