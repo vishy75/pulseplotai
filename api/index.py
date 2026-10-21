@@ -1,4 +1,6 @@
 import json
+import hashlib
+import hmac
 import os
 import re
 from collections import Counter
@@ -295,6 +297,61 @@ def request_too_large(_error):
     return jsonify({'error': 'Request too large. Use a shorter timeline or shorter notes.'}), 413
 
 
+def is_guest_request():
+    # A guest flag grants no account access. Only the bounded public AI path uses it.
+    return request.headers.get('X-PulsePlot-Guest') == '1'
+
+
+def protect_guest_request():
+    """Distributed abuse quota; stores counters only, never guest health content.
+
+    Uses the existing requests dependency and a Redis REST service. Fail closed
+    when it is unavailable instead of exposing unlimited paid public endpoints.
+    """
+    url = os.environ.get('UPSTASH_REDIS_REST_URL', '').rstrip('/')
+    token = os.environ.get('UPSTASH_REDIS_REST_TOKEN', '')
+    secret = os.environ.get('GUEST_RATE_LIMIT_SECRET', '')
+    if not url.startswith('https://') or not token or len(secret) < 32:
+        return jsonify({'error': 'Guest AI is not configured yet. Tracking and exports still work; sign in to use account AI.'}), 503
+    # Vercel overwrites this header; never trust client X-Forwarded-For.
+    address = (request.headers.get('x-vercel-forwarded-for', '').split(',')[0].strip()
+               if os.environ.get('VERCEL') else request.remote_addr) or 'unknown'
+    identity = hmac.new(secret.encode(), address.encode(), hashlib.sha256).hexdigest()
+    # Atomic across serverless workers. TTL bounds retention to one hour.
+    script = """
+local n = redis.call('INCR', KEYS[1])
+if n == 1 then redis.call('EXPIRE', KEYS[1], 3600) end
+local total = redis.call('INCR', KEYS[2])
+if total == 1 then redis.call('EXPIRE', KEYS[2], 3600) end
+if n > 20 or total > 500 then return 0 end
+return 1
+"""
+    try:
+        with requests.post(url, headers={'Authorization': 'Bearer ' + token},
+                           json=['EVAL', script, '2', 'pulseplot:guest:' + identity,
+                                 'pulseplot:guest:global'], timeout=(3.05, 5),
+                           allow_redirects=False) as response:
+            if response.status_code != 200:
+                raise ValueError('Quota unavailable')
+            result = response.json().get('result')
+            if type(result) is not int or result not in (0, 1):
+                raise ValueError('Invalid quota response')
+        if result == 0:
+            response = jsonify({'error': 'Guest AI request limit reached. Try again in an hour or sign in.'})
+            response.headers['Retry-After'] = '3600'
+            return response, 429
+    except (requests.RequestException, ValueError, TypeError, AttributeError):
+        return jsonify({'error': 'Guest AI usage verification is unavailable. Try again later.'}), 503
+    return None
+
+
+@app.after_request
+def prevent_guest_response_storage(response):
+    if is_guest_request():
+        response.headers['Cache-Control'] = 'no-store, private'
+    return response
+
+
 @app.before_request
 def protect_ai_endpoints():
     """Fail closed before paid work; no per-process counters on serverless hosts."""
@@ -332,6 +389,8 @@ def protect_ai_endpoints():
             return jsonify({'error': 'Invalid conversation history.'}), 400
     if len(json.dumps(payload, ensure_ascii=False)) > 60000:
         return jsonify({'error': 'The AI context is too large. Shorten the timeline or notes.'}), 413
+    if is_guest_request():
+        return protect_guest_request()
     auth_error = medication_research_auth()
     if auth_error is not None:
         return auth_error
@@ -1613,7 +1672,9 @@ def search_medication_sources(query, domains, prefix):
 
 
 def medication_research_auth():
-    """Require a verified session before incurring research/model charges."""
+    """Require a verified session or bounded guest quota before paid work."""
+    if is_guest_request():
+        return protect_guest_request()
     if not SUPABASE_URL or not SUPABASE_ANON_KEY:
         return jsonify({'error': 'Account authentication is not configured.'}), 503
     authorization = request.headers.get('Authorization', '')

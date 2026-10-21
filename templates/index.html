@@ -1682,6 +1682,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     </button>
                 </div>
             </form>
+            <div class="mt-4 text-center"><button type="button" @click="showAuthModal = false; showGuestDisclaimer = true" :disabled="!authReady" class="px-5 py-3 rounded-xl border border-sky-400 text-sky-400 text-sm font-bold disabled:opacity-50">Try Guest Mode</button></div>
         </div>
     </div>
 
@@ -1737,7 +1738,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                                 class="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
                             Start Your Care Workspace
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                        </button><a class="pp-explore-link" href="#pp-feature-examples">Explore the features <span aria-hidden="true">↗</span></a></div><p class="pp-home-note">Your records. Your questions. A more prepared you.</p><div class="pp-orbit-stage" aria-hidden="true"><div class="pp-orbit"></div><div class="pp-orbit-label"><span class="pp-orbit-dot"></span> A little more clarity. Every day.</div></div><div class="pp-features-heading"><span>DESIGNED AROUND YOUR EVERYDAY</span><h2>Small steps. A clearer picture.</h2><p>Explore an example before you create an account.</p></div>                        <div id="pp-feature-examples" class="pp-feature-grid grid sm:grid-cols-3 gap-4 text-left">
+                        </button><button type="button" @click="showAuthModal = false; showGuestDisclaimer = true" :disabled="!authReady" class="px-5 py-3 rounded-xl border border-sky-400 text-sky-400 text-sm font-bold disabled:opacity-50">Try Guest Mode</button><a class="pp-explore-link" href="#pp-feature-examples">Explore the features <span aria-hidden="true">↗</span></a></div><p class="pp-home-note">Your records. Your questions. A more prepared you.</p><div class="pp-orbit-stage" aria-hidden="true"><div class="pp-orbit"></div><div class="pp-orbit-label"><span class="pp-orbit-dot"></span> A little more clarity. Every day.</div></div><div class="pp-features-heading"><span>DESIGNED AROUND YOUR EVERYDAY</span><h2>Small steps. A clearer picture.</h2><p>Explore an example before you create an account.</p></div>                        <div id="pp-feature-examples" class="pp-feature-grid grid sm:grid-cols-3 gap-4 text-left">
                             <article class="group rounded-2xl border border-white/10 bg-white/[0.035] hover:bg-white/[0.065] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/30">
                                 <div class="w-11 h-11 rounded-xl bg-sky-500/15 text-sky-400 border border-sky-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -1823,7 +1824,21 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
         </div>
     </div>
 
+    <div x-show="showGuestDisclaimer && !user" x-cloak role="dialog" aria-modal="true" aria-labelledby="guest-title" @keydown.escape.window="showGuestDisclaimer = false" class="fixed inset-0 z-[100] flex items-center justify-center p-5 bg-slate-950/80">
+        <div class="max-w-md rounded-2xl bg-slate-900 text-white border border-slate-600 p-6 space-y-4">
+            <h2 id="guest-title" class="text-xl font-bold">Preview without an account</h2>
+            <p class="text-sm leading-relaxed">Your guest data stays only in this open page. It is not saved to your PulsePlot cloud account and disappears when you refresh, close, or exit guest mode. It will not transfer when you sign up. Download any exports you want to keep.</p>
+            <p class="text-xs leading-relaxed text-slate-300">AI and research features send your submitted information to our server and AI/search providers for processing, subject to their retention policies. Temporary anonymous usage counters help limit abuse; no health records are stored in those counters.</p>
+            <div class="flex gap-3"><button type="button" @click="showGuestDisclaimer = false" class="px-4 py-2 rounded-xl border border-slate-500">Cancel</button><button type="button" @click="startGuestMode()" :disabled="!authReady" class="px-4 py-2 rounded-xl bg-sky-600 text-white font-bold">Continue as Guest</button></div>
+        </div>
+    </div>
+
     <div class="pp-shell" x-show="user" x-cloak>
+    <div x-show="isGuest" class="px-5 py-3 bg-sky-950 text-white text-sm flex flex-wrap items-center justify-center gap-3" role="status">
+        <span>Guest preview · Data disappears when you leave or refresh.</span>
+        <button type="button" @click="exitGuestMode(true)" class="underline font-bold">Exit preview &amp; sign up / sign in</button>
+        <button type="button" @click="exitGuestMode()" class="underline">Exit guest mode</button>
+    </div>
 <header id="dashboard" x-show="user" x-cloak class="pp-topbar sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-300 px-6 py-3.5"
             :class="doctorMode ? 'bg-white/80 border-slate-200 text-slate-900 shadow-sm' : 'bg-[#090d16]/80 border-white/10 text-white'">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -1932,7 +1947,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                                 </svg>
-                                <span>Sign Out</span>
+                                <span x-text="isGuest ? 'Exit Guest Mode' : 'Sign Out'"></span>
                             </button>
                         </div>
                     </div>
@@ -2558,6 +2573,17 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
     <script>
         // Read-only presentation of the generated brief. Existing report, chat,
         // persistence, API, and export methods continue to use briefResult.
+        // Health data in guest mode exists only in this page's memory.
+        const guestMemory = new Map();
+        function workspaceStorage(isGuest) {
+            if (!isGuest) return window.localStorage;
+            return {
+                getItem: key => guestMemory.get(key) ?? null,
+                setItem: (key, value) => guestMemory.set(key, String(value)),
+                removeItem: key => guestMemory.delete(key)
+            };
+        }
+
         function createMedicationWorkspace() {
             return {
                 medicationOwnerId: '', medications: [], medicationEvents: [], medicationStatus: '',
@@ -2601,10 +2627,10 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     this.medicationEditorOpen = false; this.medicationStorageBlocked = false;
                     this.medicationLogDate = this.formatDateKey(new Date()); this.medicationLogTime = ''; this.medicationLogSlot = ''; this.medicationLogId = '';
                     this.medicationOwnerId = this.user?.id || '';
-                    this.medicationStatus = 'Medication records stay on this browser, under your account. They do not sync across devices.';
+                    this.medicationStatus = this.isGuest ? 'Guest preview — medicines disappear when you leave or reload.' : 'Medication records stay on this browser, under your account. They do not sync across devices.';
                     const key = this.medicationKey(); if (!key) return;
                     try {
-                        const stored = localStorage.getItem(key); if (!stored) return;
+                        const stored = workspaceStorage(this.isGuest).getItem(key); if (!stored) return;
                         const raw = JSON.parse(stored);
                         if (!raw || raw.version !== 1 || !Array.isArray(raw.medications) || !Array.isArray(raw.events) || raw.medications.length > 100 || raw.events.length > 3000) throw new Error('Invalid saved data');
                         const items = raw.medications.map(item => this.normalizeMedication(item));
@@ -2629,8 +2655,8 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 persistMedications() {
                     if (!this.medicationCanWrite()) return false;
                     try {
-                        localStorage.setItem(this.medicationKey(), JSON.stringify({version:1,medications:this.medications,events:this.medicationEvents}));
-                        this.medicationStatus = 'Saved on this browser only. Export a backup before clearing browser data.';
+                        workspaceStorage(this.isGuest).setItem(this.medicationKey(), JSON.stringify({version:1,medications:this.medications,events:this.medicationEvents}));
+                        this.medicationStatus = this.isGuest ? 'Guest preview — medicines stay only in this open page.' : 'Saved on this browser only. Export a backup before clearing browser data.';
                         return true;
                     } catch (_) {
                         this.medicationStatus = 'Could not save. Changes remain only in this open page. Export a backup now or retry saving.';
@@ -2728,13 +2754,13 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     if (!this.user || this.sampleDataActive || this.careBusy) return;
                     this.careError = '';this.careResult = null;
                     if (!this.careConsent) {this.careError = 'Agree to send the entered details before researching.';return;}
-                    if (!this.session?.access_token) {this.careError = 'Sign in again to use care research.';return;}
+                    if (!this.isGuest && !this.session?.access_token) {this.careError = 'Sign in again to use care research.';return;}
                     const owner = this.user.id, sequence = ++this.careRequestSequence;
                     const controller = new AbortController();this.careController = controller;this.careBusy = true;
                     const timer = setTimeout(() => controller.abort(),65000);
                     try {
                         const response = await fetch('/api/medication-research', {method:'POST',signal:controller.signal,
-                            headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.session.access_token},
+                            headers:this.apiHeaders(),
                             body:JSON.stringify({mode:this.careMode,medication:this.careMedication.trim(),strength:this.careStrength.trim(),
                                 form:this.careForm.trim(),quantity:this.careQuantity.trim(),condition:this.careCondition.trim(),question:this.careQuestion.trim(),
                                 zip:this.careZip.trim(),current_cost:String(this.careCurrentCost).trim(),coverage:this.careCoverage,consent:true})});
@@ -3047,6 +3073,9 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 ...createHealthBriefPresentation(),
                 ...createMedicationWorkspace(),
                 get summarySections() { return this.getSummarySections(); },
+                isGuest: false,
+                authReady: false,
+                showGuestDisclaimer: false,
                 user: null,
                 session: null,
                 authTab: 'login',
@@ -3508,10 +3537,10 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 loadAppointmentDraft() {
                     this.appointmentDraft=this.emptyAppointmentDraft();this.appointmentPlans=[];this.activeAppointmentId='';
                     this.appointmentOwnerId=this.user?.id || '';this.appointmentMessage='';
-                    this.appointmentSaveStatus='Visit plans stay on this browser.';
+                    this.appointmentSaveStatus=this.isGuest?'Guest preview — visit plans disappear when you leave or reload.':'Visit plans stay on this browser.';
                     const key=this.appointmentStorageKey();if(!key)return;
                     try {
-                        const stored=localStorage.getItem(key);const raw=stored?JSON.parse(stored):null;
+                        const stored=workspaceStorage(this.isGuest).getItem(key);const raw=stored?JSON.parse(stored):null;
                         if(raw?.version===2 && Array.isArray(raw.plans)) {
                             const seen=new Set();
                             this.appointmentPlans=raw.plans.filter(plan=>plan && typeof plan.id==='string' && plan.draft && !seen.has(plan.id) && seen.add(plan.id)).slice(0,50)
@@ -3539,8 +3568,8 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     const index=this.appointmentPlans.findIndex(plan=>plan.id===item.id);
                     if(index<0)this.appointmentPlans.push(item);else this.appointmentPlans.splice(index,1,item);
                     try {
-                        localStorage.setItem(key,JSON.stringify({version:2,activeId:this.activeAppointmentId,plans:this.appointmentPlans}));
-                        this.appointmentSaveStatus='Visit plan saved on this browser.';return true;
+                        workspaceStorage(this.isGuest).setItem(key,JSON.stringify({version:2,activeId:this.activeAppointmentId,plans:this.appointmentPlans}));
+                        this.appointmentSaveStatus=this.isGuest?'Guest preview — visit plan stays only in this open page.':'Visit plan saved on this browser.';return true;
                     } catch(_error) {
                         this.appointmentSaveStatus='Could not save locally. Keep this window open and copy or download your plan.';return false;
                     }
@@ -3626,6 +3655,8 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 },
 
                 async init() {
+                    window.addEventListener('pagehide', () => { if (this.isGuest) guestMemory.clear(); });
+                    window.addEventListener('pageshow', event => { if (event.persisted && this.isGuest) window.location.reload(); });
                     this.$watch('user', () => { if ((this.user?.id || '') !== this.medicationOwnerId) this.loadMedications(); });
                     this.loadMedications();
                     this.$watch('user', () => {
@@ -3654,6 +3685,10 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                         this.loadChatConversations();
 
                         supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+                            if (this.isGuest) {
+                                if (session) this.exitGuestMode();
+                                return;
+                            }
                             this.session = session;
                             this.user = session?.user || null;
                             if (this.user) this.showAuthModal = false;
@@ -3689,13 +3724,15 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                         this.loadChatConversations();
                     }
 
+                    this.authReady = true;
+                    if (new URLSearchParams(window.location.search).get('account') === '1' && !this.user) this.showAuthModal = true;
                     this.initSpeech();
                 },
 
                 loadUserProfile() {
                     if (!this.user) return;
                     try {
-                        const stored = localStorage.getItem('pulseplot_profile_' + this.user.id);
+                        const stored = workspaceStorage(this.isGuest).getItem('pulseplot_profile_' + this.user.id);
                         if (stored) {
                             this.profile = { ...this.profile, ...JSON.parse(stored) };
                             if (!this.profile.dateFormat) this.profile.dateFormat = 'AUTO';
@@ -3719,7 +3756,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     }
                     this.profile.completedOnboarding = true;
                     if (this.user) {
-                        localStorage.setItem('pulseplot_profile_' + this.user.id, JSON.stringify(this.profile));
+                        workspaceStorage(this.isGuest).setItem('pulseplot_profile_' + this.user.id, JSON.stringify(this.profile));
                     }
                     this.showProfileModal = false;
                 },
@@ -3758,7 +3795,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     this.profile.regionFormat = allowed.has(value) ? value : 'AUTO';
                     this.profile.dateFormat = this.dateFormatForRegion(this.activeRegionFormat());
                     if (this.user) {
-                        localStorage.setItem('pulseplot_profile_' + this.user.id, JSON.stringify(this.profile));
+                        workspaceStorage(this.isGuest).setItem('pulseplot_profile_' + this.user.id, JSON.stringify(this.profile));
                     }
                     this.generateCalendarDays({
                         preferredDateStr: this.selectedDay?.dateStr || this.formatDateKey(new Date()),
@@ -3981,7 +4018,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     let localLogs = {};
                     try {
                         const storageKey = this.getUserLogsStorageKey();
-                        const storedLogs = storageKey ? localStorage.getItem(storageKey) : null;
+                        const storedLogs = storageKey ? workspaceStorage(this.isGuest).getItem(storageKey) : null;
                         const parsedLogs = storedLogs ? JSON.parse(storedLogs) : {};
                         localLogs = parsedLogs && typeof parsedLogs === 'object' && !Array.isArray(parsedLogs)
                             ? parsedLogs
@@ -3990,7 +4027,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                         console.error("Failed to load local symptom logs", e);
                     }
 
-                    if (supabaseClient && this.session) {
+                    if (!this.isGuest && supabaseClient && this.session) {
                         try {
                             const { data, error } = await supabaseClient
                                 .from('patient_calendar_data')
@@ -4033,7 +4070,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     try {
                         const storageKey = this.getUserLogsStorageKey();
                         if (storageKey) {
-                            localStorage.setItem(storageKey, JSON.stringify(logsToCache));
+                            workspaceStorage(this.isGuest).setItem(storageKey, JSON.stringify(logsToCache));
                         }
                     } catch (e) {
                         console.error("Failed to cache symptom logs locally", e);
@@ -4041,7 +4078,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 },
 
                 async syncLogsToCloud(logSnapshot) {
-                    if (!supabaseClient || !this.user || !this.session || this.sampleDataActive) return;
+                    if (this.isGuest || !supabaseClient || !this.user || !this.session || this.sampleDataActive) return;
 
                     this.persistenceStatus = 'Saving calendar…';
                     try {
@@ -4062,6 +4099,10 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 },
 
                 async persistUserLogs({ immediate = false } = {}) {
+                    if (this.isGuest) {
+                        this.persistenceStatus = 'Guest preview — changes stay only in this open page';
+                        return;
+                    }
                     if (!this.user || this.sampleDataActive) return;
 
                     const logSnapshot = JSON.parse(JSON.stringify(this.logs));
@@ -4218,6 +4259,38 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     }
                 },
 
+                apiHeaders() {
+                    return this.isGuest
+                        ? {'Content-Type': 'application/json', 'X-PulsePlot-Guest': '1'}
+                        : {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (this.session?.access_token || '')};
+                },
+
+                startGuestMode() {
+                    if (!this.authReady || this.user) return;
+                    guestMemory.clear();
+                    this.isGuest = true;
+                    this.session = null;
+                    this.user = {id: 'preview-' + this.createChatId(), email: 'Guest preview'};
+                    this.profile = {firstName:'Guest',lastName:'',birthday:'',dateFormat:'AUTO',regionFormat:'AUTO',height:'',weight:'',gender:'',medicalNotes:'',completedOnboarding:true};
+                    this.logs = {};
+                    this.sampleDataActive = false;
+                    this.originalLogsBeforeSample = null;
+                    this.briefResult = '';
+                    this.loadMedications();
+                    this.loadAppointmentDraft();
+                    this.loadChatConversations();
+                    this.openCalendarOnToday();
+                    this.showGuestDisclaimer = false;
+                    this.showAuthModal = false;
+                    this.persistenceStatus = 'Guest preview — nothing saved after this page closes or reloads';
+                },
+
+                exitGuestMode(openAccount = false) {
+                    // A fresh document also discards pending AI callbacks, forms and exports.
+                    guestMemory.clear();
+                    window.location.replace(window.location.pathname + (openAccount ? '?account=1' : ''));
+                },
+
                 // AUTH HANDLERS
                 async handleSignIn() {
                     if (!supabaseClient) {
@@ -4293,6 +4366,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 },
 
                 async handleSignOut() {
+                    if (this.isGuest) { this.exitGuestMode(); return; }
                     if (supabaseClient) {
                         await supabaseClient.auth.signOut();
                     }
@@ -4602,7 +4676,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     this.chatMessages = [];
 
                     try {
-                        const stored = localStorage.getItem(this.chatStorageKey());
+                        const stored = workspaceStorage(this.isGuest).getItem(this.chatStorageKey());
                         if (!stored) return;
 
                         const parsed = JSON.parse(stored);
@@ -4627,7 +4701,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                                 messages: Array.isArray(conversation.messages) ? conversation.messages.slice(-100) : []
                             }))
                             .slice(0, 50);
-                        localStorage.setItem(this.chatStorageKey(), JSON.stringify(conversationsToStore));
+                        workspaceStorage(this.isGuest).setItem(this.chatStorageKey(), JSON.stringify(conversationsToStore));
                     } catch (error) {
                         console.error('Failed to save chat history', error);
                     }
@@ -4800,7 +4874,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 },
 
                 async generateSynthesis() {
-                    if (!this.session?.access_token) {
+                    if (!this.isGuest && !this.session?.access_token) {
                         this.showAuthModal = true;
                         alert('Sign in to generate a health summary.');
                         return;
@@ -4820,10 +4894,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     try {
                         const res = await fetch('/api/synthesize', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': 'Bearer ' + (this.session?.access_token || '')
-                            },
+                            headers: this.apiHeaders(),
                             body: JSON.stringify({
                                 logs: this.logs,
                                 profile: this.profileForCareAI()
@@ -4850,7 +4921,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                 },
 
                 async sendChatQuestion() {
-                    if (!this.session?.access_token) {
+                    if (!this.isGuest && !this.session?.access_token) {
                         this.chatError = 'Sign in again to ask a follow-up question.';
                         this.showAuthModal = true;
                         return;
@@ -4888,10 +4959,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
 
                         const res = await fetch('/api/chat', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': 'Bearer ' + (this.session?.access_token || '')
-                            },
+                            headers: this.apiHeaders(),
                             body: JSON.stringify({
                                 question: question,
                                 history: priorHistory,
