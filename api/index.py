@@ -1093,6 +1093,47 @@ def validate_synthesis_result(synthesis_result, statistics=None):
     return True, ""
 
 
+
+def complete_recorded_high_severity_guidance(synthesis_result, statistics):
+    """Restore a missing, objectively grounded high-severity tracking note.
+
+    Only called when a full AI report otherwise passed structural and guidance
+    checks but omitted any reference to 7/10-or-higher diary days in its DO'S
+    and DON'TS. This does not invent clinical interpretations or alter existing
+    model-generated sections. Every other safety check runs again afterward.
+    """
+    count = statistics.get('high_severity_count', 0)
+    if not isinstance(count, int) or count <= 0:
+        return synthesis_result
+
+    # Date labels come from validated entries in the existing symptom timeline.
+    dates = statistics.get('high_severity_days', [])
+    date_list = [str(day) for day in dates[:5]] if isinstance(dates, list) else []
+    if date_list:
+        sample = ', '.join(date_list)
+        date_detail = (f" (including {sample})" if count > len(date_list)
+                       else f" ({sample})")
+    else:
+        date_detail = ''
+
+    guidance = (
+        f"- **Recorded high-severity days (7/10 or higher):** "
+        f"Your diary shows {count} logged day(s){date_detail} at this severity. "
+        "Bring these dates to your clinician and describe which symptoms were "
+        "present, how long they lasted, what changed, and whether daily activities "
+        "were affected. If symptoms are sudden, rapidly worsening, or accompanied "
+        "by emergency warning signs, seek urgent or emergency care rather than "
+        "waiting for a routine visit."
+    )
+
+    # The header is application-generated in structured-output mode. Insert only
+    # into that section, preserving all other model content and report headings.
+    match = re.search(r"(?m)^### 7\. DO'S\s*$", synthesis_result)
+    if not match:
+        return synthesis_result
+    return synthesis_result[:match.end()] + '\n' + guidance + '\n' + synthesis_result[match.end():]
+
+
 def create_groq_client():
     """Returns a configured Groq client and safely reports dependency initialization failures."""
     groq_api_key = os.environ.get("GROQ_API_KEY", "")
@@ -1196,7 +1237,12 @@ def synthesize_brief():
                         "heading lines in section values. The earlier ### labels "
                         "define the required content, not your output syntax. "
                         "Produce at least four symptom-specific '- ' bullets "
-                        "in EACH of the dos and donts values."
+                        "in EACH of the dos and donts values. "
+                        "If the timeline includes any severity ratings of 7/10 or "
+                        "higher, include a DO'S bullet explicitly using the phrase "
+                        "'high-severity days (7/10 or higher)' and explain how to "
+                        "record their context and when to seek urgent care. "
+                        "Use only the supplied dates and severity observations."
                     )
                 completion_options = dict(
                     messages=[
@@ -1222,6 +1268,14 @@ def synthesize_brief():
                 )
                 validate_research_references(synthesis_result, research)
                 is_valid_result, validation_error = validate_synthesis_result(synthesis_result, statistics)
+                if validation_error == "The personalized guidance did not address the patient's high-severity days.":
+                    # The model may write "8/10" or "severe pain" instead of the
+                    # validator's recognized "7/10" threshold. Add an explicit,
+                    # record-based tracking note, then run EVERY check again.
+                    synthesis_result = complete_recorded_high_severity_guidance(
+                        synthesis_result, statistics
+                    )
+                    is_valid_result, validation_error = validate_synthesis_result(synthesis_result, statistics)
                 if not is_valid_result:
                     raise ValueError(validation_error)
                 synthesis_result += review_medical_output(client, synthesis_result, profile, timeline_payload, research)
