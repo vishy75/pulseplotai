@@ -460,9 +460,15 @@ def parse_medical_review_verdict(content):
         raise ValueError('Safety review evidence format invalid')
     figures = []
     for line in lines[1:]:
+        # Only the optional FIGURE payload is forgiving. The SAFE verdict,
+        # review line count, and unrelated/contradictory lines still fail closed.
+        if not line.startswith('FIGURE: '):
+            raise ValueError('Safety review evidence format invalid')
         match = re.fullmatch(r'FIGURE: (S\d+) \| (.+)', line)
         if not match:
-            raise ValueError('Safety review evidence format invalid')
+            # A malformed optional citation does not invalidate a SAFE verdict.
+            # It is never added to the patient-facing report.
+            continue
         figures.append({'source_id': match.group(1), 'quote': match.group(2)})
     return figures
 
@@ -512,7 +518,9 @@ If there are supported statistics, line 2 (and optional line 3) must be:
 FIGURE: S1 | exact source text with number and necessary context
 Use an actual source ID, maximum 25 words in each verbatim quote. Do NOT
 calculate or infer statistics. NEVER use patient probability statistics.
-The verdict is about safety, not whether statistics are available. If the
+The verdict is about safety, not whether statistics are available. If
+there is ANY uncertainty about a source ID, exact quotation, or relevance,
+use FIGURES: NONE. Published statistics are entirely optional. If the
 candidate is unsafe, use REVIEW: UNSAFE and FIGURES: NONE.
 """}, {'role': 'user', 'content': json.dumps({
             'candidate': candidate, 'profile': profile, 'timeline': timeline,
@@ -533,16 +541,24 @@ candidate is unsafe, use REVIEW: UNSAFE and FIGURES: NONE.
     by_id = {source['id']: source for source in research['sources']}
     figures = []
     used_urls = set()
+    omitted_optional_figures = 0
     for item in figures_from_review:
         source_id, quote = item['source_id'], item['quote']
         source = by_id.get(source_id)
+        # Independent medical safety approval is mandatory; published figures
+        # are not. Never display an unverified or malformed quotation, but do
+        # not discard an otherwise SAFE brief because of optional evidence.
         if (not source or len(quote.split()) > 25 or
                 quote not in source['excerpt'] or
                 not re.search(r'\d+(?:\.\d+)?\s*(?:%|percent\b)', quote, re.I)):
-            raise ValueError('Unverified evidence figure')
+            omitted_optional_figures += 1
+            continue
         if source['url'] not in used_urls:
             used_urls.add(source['url'])
             figures.append('> ' + re.sub(r'[<>`*#\[\]]', '', ' '.join(quote.split())) + f' [{source_id}]')
+    if omitted_optional_figures:
+        # Log only the count, not source text or patient data.
+        print(f'Groq review omitted {omitted_optional_figures} unverified optional research figure(s).')
     if not figures:
         return ''
     return ('\n\n### PUBLISHED RESEARCH FIGURES — GENERAL CONTEXT\n'
