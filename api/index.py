@@ -946,6 +946,68 @@ Safety requirements:
 """
 
 
+# The report headings are application-controlled so a wording variation from the
+# model cannot silently replace an otherwise useful, reviewable report with the
+# deterministic fallback. The contents remain model-generated and fully validated.
+REPORT_SECTION_SPECS = (
+    ('safety_notice', 'IMPORTANT AI SAFETY NOTICE'),
+    ('personal_information', 'PERSONAL INFORMATION'),
+    ('recorded_observations', 'WHAT YOUR LOGS SHOW'),
+    ('lower_concern', 'MINOR / LOWER-CONCERN POSSIBILITY'),
+    ('moderate_concern', 'MEDIUM / MODERATE-CONCERN POSSIBILITY'),
+    ('higher_concern', 'MAJOR / HIGHER-CONCERN POSSIBILITY'),
+    ('evidence_explanation', 'SIMPLE EXPLANATION OF THE EVIDENCE'),
+    ('dos', "DO'S"),
+    ('donts', "DON'TS"),
+    ('clinician_questions', 'QUESTIONS TO ASK YOUR CLINICIAN'),
+)
+
+REPORT_JSON_SCHEMA = {
+    'type': 'json_schema',
+    'json_schema': {
+        'name': 'pulseplot_health_brief',
+        'strict': True,
+        'schema': {
+            'type': 'object',
+            'properties': {
+                key: {'type': 'string'} for key, _heading in REPORT_SECTION_SPECS
+            },
+            'required': [key for key, _heading in REPORT_SECTION_SPECS],
+            'additionalProperties': False,
+        },
+    },
+}
+
+
+def render_structured_synthesis(model_content):
+    """Render exact predeclared headings from a schema-constrained AI response.
+
+    Never fill in missing medical sections, manufacture observations, or silently
+    normalize unsafe content. Standard structural and semantic validation runs on
+    the resulting report exactly as it did before this change.
+    """
+    if not isinstance(model_content, str) or not model_content.strip():
+        raise ValueError('The model returned an empty structured report.')
+    try:
+        sections = json.loads(model_content)
+    except (ValueError, TypeError):
+        raise ValueError('The model returned invalid structured report data.') from None
+    expected_keys = {key for key, _heading in REPORT_SECTION_SPECS}
+    if not isinstance(sections, dict) or set(sections) != expected_keys:
+        raise ValueError('The structured report omitted or added report sections.')
+    rendered_sections = []
+    for position, (key, heading) in enumerate(REPORT_SECTION_SPECS):
+        body = sections[key]
+        if not isinstance(body, str) or not body.strip():
+            raise ValueError('A required structured report section was empty.')
+        # Keep model data inside its designated section, not as injected headings.
+        if re.search(r'^\s*#{1,6}\s+', body, flags=re.MULTILINE):
+            raise ValueError('A report section contained an unexpected heading.')
+        numbered_heading = heading if position == 0 else f'{position}. {heading}'
+        rendered_sections.append(f'### {numbered_heading}\n{body.strip()}')
+    return '\n\n'.join(rendered_sections)
+
+
 def validate_synthesis_result(synthesis_result, statistics=None):
     """First-pass structure/filter only; semantic review is also required before release."""
     if not isinstance(synthesis_result, str) or not synthesis_result.strip():
@@ -1106,17 +1168,58 @@ def synthesize_brief():
                 system_prompt += RESEARCH_SYSTEM_RULES + CARE_NAVIGATION_RULES + MODEL_BOUNDARIES
                 user_prompt += "\n\n" + research_prompt_context(research)
 
-                chat_completion = client.with_options(timeout=20.0, max_retries=0).chat.completions.create(
+                # Groq's GPT-OSS models support strict structured outputs. The app
+                # assembles Markdown headings itself, rather than hoping an LLM
+                # reproduces ten labels and numbers exactly on every response.
+                structured_report = GROQ_MODEL in {
+                    'openai/gpt-oss-120b', 'openai/gpt-oss-20b'
+                }
+                if structured_report:
+                    system_prompt += (
+                        "\nProduce exactly one JSON object matching the supplied schema. "
+                        "The keys represent the ten report sections in order; put "
+                        "only the section CONTENT into each string value, never "
+                        "section headings. The application supplies headings. "
+                        "Use Markdown bullet lines starting with '- ' in the dos, "
+                        "donts, and clinician_questions values. "
+                        "The lower_concern, moderate_concern, and higher_concern "
+                        "values must EACH include the literal field label "
+                        "'**AI Condition Assessment (Not Confirmed)**:' "
+                        "followed by a tentative possibility supported by the logs, "
+                        "or 'Insufficient evidence to suggest a specific condition.' "
+                        "Never invent a condition merely to populate a tier. "
+                        "Keep all the original medical safety and evidence rules."
+                    )
+                    user_prompt += (
+                        "\n\nOUTPUT FORMAT: Return the section bodies in one JSON "
+                        "object using the schema keys. Do not include Markdown "
+                        "heading lines in section values. The earlier ### labels "
+                        "define the required content, not your output syntax. "
+                        "Produce at least four symptom-specific '- ' bullets "
+                        "in EACH of the dos and donts values."
+                    )
+                completion_options = dict(
                     messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
+                        {'role': 'system', 'content': system_prompt},
+                        {'role': 'user', 'content': user_prompt},
                     ],
                     model=GROQ_MODEL,
-                    temperature=0.2,
-                    max_tokens=2200
+                    temperature=0.1,
+                    # Ten detailed report sections and 8+ specific guidance items
+                    # cannot reliably fit in the previous 2,200-token ceiling.
+                    max_tokens=4400,
                 )
+                if structured_report:
+                    completion_options['response_format'] = REPORT_JSON_SCHEMA
+                chat_completion = client.with_options(
+                    timeout=35.0, max_retries=0
+                ).chat.completions.create(**completion_options)
 
-                synthesis_result = chat_completion.choices[0].message.content
+                model_content = chat_completion.choices[0].message.content
+                synthesis_result = (
+                    render_structured_synthesis(model_content)
+                    if structured_report else model_content
+                )
                 validate_research_references(synthesis_result, research)
                 is_valid_result, validation_error = validate_synthesis_result(synthesis_result, statistics)
                 if not is_valid_result:
