@@ -797,6 +797,249 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
 @media(prefers-reduced-motion:reduce) { .pp-orbit { animation:none!important; }html { scroll-behavior:auto!important; } }
 
 </style>
+
+<style id="pp-expanded-report-v2">
+/* PulsePlot AI / Expanded brief 2.0. Visual overrides scoped solely to #pp-health-report.
+   Keeps existing Alpine state, events, endpoints, toolbars, section renderer and exports. */
+#pp-health-report {
+  --pp2-panel:#ffffff;--pp2-page:#f7f6fb;--pp2-soft:#f0ecf8;--pp2-ink:#282338;
+  --pp2-muted:#787087;--pp2-violet:#6242c1;--pp2-violet-tint:#ede6fd;
+  --pp2-border:#e8e3ef;--pp2-sage:#dfece6;--pp2-sage-ink:#35705d;
+  --pp2-rose:#f7e7ed;--pp2-glow:0 16px 44px rgba(42,25,80,.06);
+  position:fixed!important;inset:0!important;z-index:9998;width:100vw;height:100dvh;overflow:hidden;
+  padding:0!important;background:var(--pp2-page)!important;
+  color:var(--pp2-ink);
+}
+html[data-theme="dark"] #pp-health-report {
+  --pp2-panel:#211e2e;--pp2-page:#13111d;--pp2-soft:#2b253b;--pp2-ink:#f5f1fc;
+  --pp2-muted:#b5abc6;--pp2-violet:#c3aafd;--pp2-violet-tint:#342a4a;
+  --pp2-border:#40384f;--pp2-sage:#283e38;--pp2-sage-ink:#a9d9c4;
+  --pp2-rose:#3d2b39;--pp2-glow:0 20px 55px rgba(0,0,0,.15);
+}
+#pp-health-report .pp2-canvas { width:100%;height:100%;border:0;border-radius:0;background:var(--pp2-page)!important;box-shadow:none; }
+#pp-health-report .pp2-shell { display:flex;flex-direction:column;min-height:0;color:var(--pp2-ink)!important;background:radial-gradient(ellipse at 72% -30%,rgba(123,84,198,.075),transparent 70%); }
+#pp-health-report .pp2-header {
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-shrink:0;
+  z-index:20;min-height:76px;padding:14px clamp(20px,3.4vw,64px)!important;
+  background:var(--pp2-panel)!important;border-bottom:1px solid var(--pp2-border)!important;
+  box-shadow:0 8px 24px rgba(42,24,78,.025)!important;
+}
+#pp-health-report .pp2-header>div:first-child,#pp-health-report .pp2-header>div:last-child { display:flex;align-items:center;gap:14px;min-width:0; }
+#pp-health-report .pp2-header>div:last-child { flex-shrink:0;gap:9px; }
+#pp-health-report .pp2-header .pp-report-brand { display:grid;place-items:center;flex-shrink:0;
+  width:43px;height:43px;border-radius:14px;background:var(--pp2-violet)!important;
+  color:var(--pp2-panel)!important;box-shadow:0 6px 20px rgba(98,66,193,.18);
+}
+#pp-health-report .pp2-header .pp-report-brand svg { width:21px;height:21px; }
+#pp-health-report .pp2-header h2 { font-size:17px;font-weight:750;letter-spacing:-.55px;color:var(--pp2-ink)!important; }
+#pp-health-report .pp2-header .pp-report-wordmark { font-size:13px;font-weight:450;color:var(--pp2-muted); }
+#pp-health-report .pp2-header h2+span {
+  background:var(--pp2-violet-tint)!important;color:var(--pp2-violet)!important;
+  border:1px solid var(--pp2-border);letter-spacing:.085em;font-size:9px;
+}
+#pp-health-report .pp2-header p { font-size:11px;color:var(--pp2-muted)!important; }
+#pp-health-report .pp2-header button {
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;
+  min-height:42px;border:1px solid var(--pp2-border)!important;background:var(--pp2-page)!important;
+  color:var(--pp2-ink)!important;border-radius:12px;padding:10px 15px;font-size:11px;font-weight:700;
+}
+#pp-health-report .pp2-header button svg { width:16px;height:16px;flex-shrink:0; }
+#pp-health-report .pp2-header button span:last-of-type { display:none; }
+#pp-health-report .pp2-header button:hover { background:var(--pp2-violet-tint)!important;border-color:var(--pp2-violet)!important; }
+#pp-health-report .pp2-main { flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 clamp(16px,3.5vw,68px) 60px!important;scrollbar-color:#bbb1cf transparent; }
+#pp-health-report .pp2-content { max-width:1460px!important;margin:0 auto!important; }
+#pp-health-report .pp2-hero {
+  display:flex;justify-content:space-between;align-items:center;gap:36px;
+  margin:28px 0 18px;padding:35px clamp(26px,4vw,58px) 32px;
+  border:1px solid var(--pp2-border);border-radius:26px;
+  background:radial-gradient(circle at 82% 32%,rgba(128,92,209,.15),transparent 38%),
+             radial-gradient(circle at 100% 100%,rgba(103,154,133,.12),transparent 40%),var(--pp2-panel);
+  box-shadow:var(--pp2-glow);position:relative;overflow:hidden;
+}
+#pp-health-report .pp2-hero:after {
+  content:"";position:absolute;right:9%;bottom:-140px;width:360px;height:360px;border:1px solid rgba(121,100,143,.12);
+  border-radius:50%;box-shadow:0 0 0 35px rgba(121,100,143,.045),0 0 0 80px rgba(121,100,143,.035);pointer-events:none;
+}
+#pp-health-report .pp2-hero-copy { position:relative;z-index:1;max-width:710px; }
+#pp-health-report .pp2-hero .pp-report-eyebrow { display:flex;gap:9px;align-items:center;font-size:10px;letter-spacing:.15em;color:var(--pp2-violet);margin:0 0 17px; }
+#pp-health-report .pp2-eyebrow-mark { display:inline-block;width:18px;height:2px;border-radius:10px;background:var(--pp2-violet); }
+#pp-health-report .pp2-hero h1 { font-weight:750;font-size:clamp(34px,3.7vw,58px);letter-spacing:-.055em;line-height:1.12;margin:0 0 15px;color:var(--pp2-ink); }
+#pp-health-report .pp2-hero h1 em { font-weight:500;font-style:normal;color:var(--pp2-violet); }
+#pp-health-report .pp2-hero-copy>p:not(.pp-report-eyebrow) { max-width:610px;font-size:14px;line-height:1.85;color:var(--pp2-muted);margin:0; }
+#pp-health-report .pp2-hero-tags { display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:22px; }
+#pp-health-report .pp2-hero-tags span { display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:650;color:var(--pp2-muted);background:var(--pp2-page);border:1px solid var(--pp2-border);padding:7px 11px;border-radius:999px; }
+#pp-health-report .pp2-online-mark { height:6px;width:6px;border-radius:50%;background:#619a80; }
+#pp-health-report .pp2-hero-stamp {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  flex:0 0 214px;position:relative;z-index:1;white-space:normal;
+  background:rgba(255,255,255,.32);border:1px solid var(--pp2-border);
+  padding:21px 16px;border-radius:21px;color:var(--pp2-ink);min-height:177px;
+}
+html[data-theme="dark"] #pp-health-report .pp2-hero-stamp { background:rgba(255,255,255,.025); }
+#pp-health-report .pp2-hero-stamp>.pp2-stamp-orbit { display:grid;place-items:center;width:64px;height:64px;border-radius:20px;background:var(--pp2-violet-tint);color:var(--pp2-violet);box-shadow:none; }
+#pp-health-report .pp2-stamp-orbit svg { width:48px;height:48px; }
+#pp-health-report .pp2-hero-stamp strong { font-size:11px;line-height:1.6;margin:12px 0 5px;font-weight:720; }
+#pp-health-report .pp2-hero-stamp small { font-size:9px;line-height:1.5;color:var(--pp2-muted); }
+#pp-health-report .pp2-overview { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0 22px; }
+#pp-health-report .pp2-stat { display:flex;gap:15px;align-items:center;min-width:0;padding:20px 21px;background:var(--pp2-panel);border:1px solid var(--pp2-border);border-radius:18px;box-shadow:0 5px 18px rgba(40,27,75,.025);transition:transform .22s,box-shadow .22s; }
+#pp-health-report .pp2-stat:hover { transform:translateY(-3px);box-shadow:var(--pp2-glow); }
+#pp-health-report .pp2-stat-icon { flex:0 0 49px;width:49px;height:49px;display:grid;place-items:center;border-radius:15px;color:var(--pp2-violet);background:var(--pp2-violet-tint); }
+#pp-health-report .pp2-stat-icon svg { width:23px;height:23px; }
+#pp-health-report .pp2-stat-icon-sage { background:var(--pp2-sage);color:var(--pp2-sage-ink); }
+#pp-health-report .pp2-stat-icon-rose { background:var(--pp2-rose);color:#ad677e; }
+#pp-health-report .pp2-stat-copy { min-width:0; }
+#pp-health-report .pp2-stat-copy p { color:var(--pp2-muted);font-size:11px;line-height:1.3;margin:0 0 3px; }
+#pp-health-report .pp2-stat-copy strong { display:block;color:var(--pp2-ink);font-size:28px;line-height:1.2;letter-spacing:-.05em;font-weight:750;font-variant-numeric:tabular-nums; }
+#pp-health-report .pp2-stat-copy>span { color:var(--pp2-muted);font-size:10px;line-height:1.55;display:block;margin-top:3px; }
+#pp-health-report .pp2-layout { display:grid!important;grid-template-columns:minmax(0,7fr) minmax(270px,3fr)!important;gap:22px!important;align-items:start; }
+#pp-health-report .pp2-reading { grid-column:1!important;grid-row:1!important;display:flex;flex-direction:column;gap:17px; }
+#pp-health-report .pp2-sidebar { grid-column:2!important;grid-row:1!important;position:sticky!important;top:12px;display:flex!important;flex-direction:column;gap:14px; }
+#pp-health-report .pp2-safety { order:0;display:flex;align-items:center;gap:9px;margin:0;padding:15px 18px;border-radius:14px!important;background:var(--pp2-sage)!important;border:1px solid rgba(103,151,126,.18)!important;color:var(--pp2-ink)!important;font-size:12px;line-height:1.75; }
+#pp-health-report .pp2-safety strong { color:var(--pp2-sage-ink);white-space:nowrap; }
+#pp-health-report .pp2-mode-bar { order:1;margin:0;padding:14px 18px;background:var(--pp2-panel);border:1px solid var(--pp2-border);border-radius:16px; }
+#pp-health-report .pp2-mode-bar .pp-brief-view-switch { border:1px solid var(--pp2-border);background:var(--pp2-page);border-radius:11px;padding:4px; }
+#pp-health-report .pp2-mode-bar .pp-brief-view-switch button { border-radius:8px;min-height:36px;font-size:11px;padding:8px 13px; }
+#pp-health-report .pp2-mode-bar .pp-brief-view-switch button[aria-pressed="true"] { background:var(--pp2-violet)!important;border-color:transparent!important;color:var(--pp2-panel)!important; }
+html[data-theme="dark"] #pp-health-report .pp2-mode-bar .pp-brief-view-switch button[aria-pressed="true"] { color:#191226!important; }
+#pp-health-report .pp2-mode-bar .pp-brief-view-switch button[aria-pressed="true"] svg { color:inherit; }
+#pp-health-report .pp2-reading>section#full-brief-interactive { order:3; }
+#pp-health-report .pp2-reading>#full-brief-raw { order:3; }
+#pp-health-report .pp2-trend { order:2;background:var(--pp2-panel);border:1px solid var(--pp2-border);border-radius:20px;padding:22px 25px 18px;overflow:hidden; }
+#pp-health-report .pp2-trend-heading { display:flex;align-items:flex-start;justify-content:space-between;gap:14px; }
+#pp-health-report .pp2-mini-eyebrow { display:block;color:var(--pp2-violet);font-size:9px;font-weight:750;letter-spacing:.13em;margin-bottom:8px; }
+#pp-health-report .pp2-trend h2 { font-size:17px;font-weight:730;line-height:1.4;letter-spacing:-.45px;margin:0 0 4px;color:var(--pp2-ink); }
+#pp-health-report .pp2-trend p { font-size:11px;color:var(--pp2-muted);line-height:1.6;margin:0; }
+#pp-health-report .pp2-trend-key { display:flex;align-items:center;gap:7px;font-size:10px;color:var(--pp2-muted);white-space:nowrap;margin-top:23px; }
+#pp-health-report .pp2-trend-key i { display:inline-block;width:16px;height:3px;border-radius:5px;background:var(--pp2-violet); }
+#pp-health-report .pp2-plot-frame { position:relative;display:grid;grid-template-columns:22px minmax(0,1fr);margin-top:14px; }
+#pp-health-report .pp2-y-labels { display:flex;flex-direction:column;justify-content:space-between;color:var(--pp2-muted);font-size:10px;padding:21px 0 21px;align-items:flex-start; }
+#pp-health-report .pp2-trend-chart { width:100%;height:auto;min-height:150px;max-height:220px;overflow:visible;color:var(--pp2-ink); }
+#pp-health-report .pp2-trend-bottom { display:flex;justify-content:space-between;gap:15px;color:var(--pp2-muted);font-size:10px;padding-left:24px;margin-top:-4px; }
+#pp-health-report .pp2-trend-bottom>span:nth-child(2) { color:var(--pp2-violet);font-weight:700; }
+#pp-health-report .pp-summary-explorer { background:var(--pp2-panel);border-color:var(--pp2-border);border-radius:19px;padding:22px;margin-bottom:18px;box-shadow:none; }
+#pp-health-report .pp-summary-explorer-heading { margin-bottom:15px; }
+#pp-health-report .pp-summary-explorer-heading strong { font-size:16px;letter-spacing:-.4px;color:var(--pp2-ink); }
+#pp-health-report .pp-summary-explorer-heading span { color:var(--pp2-violet);background:var(--pp2-violet-tint);border-radius:99px;padding:6px 10px;font-size:10px;font-weight:700; }
+#pp-health-report .pp-summary-search { border:1px solid var(--pp2-border);background:var(--pp2-page);border-radius:11px; }
+#pp-health-report .pp-summary-search input { background:transparent!important;border:0!important;color:var(--pp2-ink)!important; }
+#pp-health-report .pp-summary-search input::placeholder { color:var(--pp2-muted)!important; }
+#pp-health-report .pp-brief-view .pp-summary-filters button { border-radius:999px;border-color:var(--pp2-border);background:var(--pp2-panel);color:var(--pp2-muted);padding:8px 12px; }
+#pp-health-report .pp-brief-view .pp-summary-filters button[aria-pressed="true"] { background:var(--pp2-violet-tint);color:var(--pp2-violet);border-color:var(--pp2-violet); }
+#pp-health-report .pp-brief-toolbar { padding:0 2px 14px; }
+#pp-health-report .pp-brief-quiet-btn { border-radius:10px;background:var(--pp2-panel);color:var(--pp2-violet); }
+#pp-health-report .pp-brief-section-grid { display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px; }
+#pp-health-report .pp-brief-section { grid-column:span 6!important;position:relative;border:1px solid var(--pp2-border);background:var(--pp2-panel);border-radius:19px;box-shadow:0 4px 18px rgba(40,23,75,.025);transition:box-shadow .18s,border-color .18s,transform .18s; }
+#pp-health-report .pp-brief-section:hover { border-color:color-mix(in srgb,var(--pp2-violet) 35%,var(--pp2-border));box-shadow:var(--pp2-glow);transform:translateY(-1px); }
+#pp-health-report .pp-brief-section[data-kind="profile"],#pp-health-report .pp-brief-section[data-kind="logs"] { grid-column:span 3!important; }
+#pp-health-report .pp-brief-section[data-kind="lower"],#pp-health-report .pp-brief-section[data-kind="moderate"],#pp-health-report .pp-brief-section[data-kind="higher"] { grid-column:span 2!important; }
+#pp-health-report .pp-brief-section[data-kind="do"],#pp-health-report .pp-brief-section[data-kind="dont"] { grid-column:span 3!important; }
+#pp-health-report .pp-brief-section-toggle { align-items:center;padding:22px 22px 17px;gap:13px; }
+#pp-health-report .pp-brief-section-icon { width:42px;height:42px;border-radius:14px; }
+#pp-health-report .pp-brief-section-title { color:var(--pp2-ink);font-size:16px;line-height:1.35;font-weight:700; }
+#pp-health-report .pp-brief-section-kicker { font-size:9px;letter-spacing:.09em; }
+#pp-health-report .pp-brief-section-summary { padding:0 22px 18px; }
+#pp-health-report .pp-brief-section-content { padding:0 22px 22px; }
+#pp-health-report .pp-brief-body { font-size:13px;line-height:1.88;max-width:100%; }
+#pp-health-report .pp-brief-condition { font-size:12px; }
+#pp-health-report .pp-brief-estimate { font-size:10px; }
+#pp-health-report .pp-brief-ask { color:var(--pp2-violet); }
+#pp-health-report .pp-brief-section[data-kind="safety"] { background:var(--pp2-sage); }
+#pp-health-report .pp-report-article { background:var(--pp2-panel)!important;border-color:var(--pp2-border)!important;border-radius:18px;padding:26px; }
+#pp-health-report .pp-report-prose { max-width:80ch;color:var(--pp2-ink)!important; }
+#pp-health-report .pp2-sidebar .pp-brief-navigation,
+#pp-health-report .pp2-sidebar .pp-report-profile,
+#pp-health-report .pp2-sidebar .pp-report-actions,
+#pp-health-report .pp2-sidebar .pp-report-guide { background:var(--pp2-panel)!important;border:1px solid var(--pp2-border)!important;border-radius:19px;padding:20px;box-shadow:0 3px 15px rgba(36,20,70,.02); }
+#pp-health-report .pp2-sidebar .pp-brief-navigation h3 { font-size:10px;color:var(--pp2-violet);letter-spacing:.11em;display:flex;align-items:center;gap:8px;margin-bottom:15px; }
+#pp-health-report .pp2-sidebar .pp-brief-navigation h3 span { font-size:15px; }
+#pp-health-report .pp2-sidebar .pp-brief-navigation nav { display:flex;flex-direction:column;gap:3px;max-height:270px;overflow:auto;scrollbar-width:thin; }
+#pp-health-report .pp2-sidebar .pp-brief-navigation button { min-height:39px;padding:8px 10px;border-radius:10px;font-size:11px;line-height:1.45;color:var(--pp2-ink); }
+#pp-health-report .pp2-sidebar .pp-brief-navigation button[aria-current="true"] { background:var(--pp2-violet-tint);color:var(--pp2-violet);font-weight:750; }
+#pp-health-report .pp2-sidebar .pp-report-profile .pp-report-eyebrow { font-size:10px;color:var(--pp2-violet); }
+#pp-health-report .pp2-sidebar .pp-report-avatar { background:var(--pp2-violet-tint);color:var(--pp2-violet); }
+#pp-health-report .pp2-sidebar .pp-report-person h3 { font-size:13px;color:var(--pp2-ink); }
+#pp-health-report .pp2-sidebar .pp-report-person p { color:var(--pp2-muted); }
+#pp-health-report .pp2-sidebar .pp-report-profile dl { display:grid;gap:0; }
+#pp-health-report .pp2-sidebar .pp-report-profile dt { color:var(--pp2-muted); }
+#pp-health-report .pp2-sidebar .pp-report-profile dd { color:var(--pp2-ink); }
+#pp-health-report .pp2-sidebar .pp-report-actions { overflow:hidden;background:radial-gradient(ellipse at 95% 0%,var(--pp2-violet-tint),transparent 85%),var(--pp2-panel)!important;position:relative; }
+#pp-health-report .pp2-action-deco { font-size:22px;width:39px;height:39px;display:grid;place-items:center;color:var(--pp2-violet);background:var(--pp2-violet-tint);border-radius:12px;margin-bottom:12px; }
+#pp-health-report .pp2-sidebar .pp-report-actions h3 { font-size:20px;font-weight:700;letter-spacing:-.6px;color:var(--pp2-ink); }
+#pp-health-report .pp2-sidebar .pp-report-action-copy { font-size:12px;color:var(--pp2-muted);margin:9px 0 16px;line-height:1.7; }
+#pp-health-report .pp2-sidebar .pp-report-actions>div { display:flex;flex-direction:column;gap:14px; }
+#pp-health-report .pp2-sidebar .pp-report-actions>div>div { display:flex;flex-direction:column;gap:8px; }
+#pp-health-report .pp2-sidebar .pp-report-actions button { order:0;min-height:43px!important;border-radius:11px;font-size:11px;font-weight:720;padding:11px 12px;background:var(--pp2-page)!important;color:var(--pp2-ink)!important;border:1px solid var(--pp2-border)!important; }
+#pp-health-report .pp2-sidebar .pp-report-actions button:last-child { order:-1;background:var(--pp2-violet)!important;color:#fff!important;border-color:transparent!important; }
+html[data-theme="dark"] #pp-health-report .pp2-sidebar .pp-report-actions button:last-child { color:#170f24!important; }
+#pp-health-report .pp2-sidebar .pp-report-actions>div>p { color:var(--pp2-muted)!important;font-size:9px;order:2; }
+#pp-health-report .pp2-guide { background:linear-gradient(130deg,var(--pp2-sage),var(--pp2-violet-tint))!important;border:0!important; }
+#pp-health-report .pp2-guide h3 { font-size:17px;font-weight:700;color:var(--pp2-ink); }
+#pp-health-report .pp2-guide p,#pp-health-report .pp2-guide-note { color:var(--pp2-muted); }
+#pp-health-report :focus-visible { outline:3px solid var(--pp2-violet)!important;outline-offset:3px; }
+@media(max-width:1250px) {
+  #pp-health-report .pp2-layout { grid-template-columns:minmax(0,1fr) 280px!important;gap:16px!important; }
+  #pp-health-report .pp2-sidebar { top:10px; }
+  #pp-health-report .pp2-stat { padding:17px 14px;gap:11px; }
+  #pp-health-report .pp2-stat-icon { width:42px;height:42px;flex-basis:42px; }
+  #pp-health-report .pp-brief-section[data-kind="lower"],#pp-health-report .pp-brief-section[data-kind="moderate"],#pp-health-report .pp-brief-section[data-kind="higher"] { grid-column:span 3!important; }
+}
+@media(max-width:990px) {
+  #pp-health-report .pp2-layout { grid-template-columns:minmax(0,1fr)!important; }
+  #pp-health-report .pp2-reading { grid-column:1!important;grid-row:1!important; }
+  #pp-health-report .pp2-sidebar { grid-column:1!important;grid-row:2!important;position:static!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #pp-health-report .pp2-sidebar .pp-brief-navigation { grid-column:1/-1; }
+  #pp-health-report .pp2-sidebar .pp-brief-navigation nav { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:unset; }
+  #pp-health-report .pp2-hero-stamp { flex-basis:175px; }
+  #pp-health-report .pp2-overview { gap:10px; }
+}
+@media(max-width:690px) {
+  #pp-health-report .pp2-header { padding:12px 16px!important;min-height:64px;gap:10px;flex-wrap:nowrap; }
+  #pp-health-report .pp2-header>div:first-child { gap:8px; }
+  #pp-health-report .pp2-header>div:last-child { gap:5px;width:auto!important;flex:0 0 auto; }
+  #pp-health-report .pp2-header button { flex:none!important;width:40px;min-width:40px;padding:8px!important; }
+  #pp-health-report .pp2-header button:first-child { display:none!important; }
+  #pp-health-report .pp2-header h2+span,#pp-health-report .pp2-header p { display:none!important; }
+  #pp-health-report .pp2-header button span { display:none; }
+  #pp-health-report .pp2-header>div:first-child,#pp-health-report .pp2-header>div:last-child { display:flex;align-items:center;gap:14px;min-width:0; }
+#pp-health-report .pp2-header>div:last-child { flex-shrink:0;gap:9px; }
+#pp-health-report .pp2-header .pp-report-brand { display:grid;place-items:center;flex-shrink:0; width:38px;height:38px; }
+  #pp-health-report .pp2-header .pp-report-brand svg { width:21px;height:21px; }
+#pp-health-report .pp2-header h2 { font-size:15px; }
+  #pp-health-report .pp2-header .pp-report-wordmark { font-size:11px; }
+  #pp-health-report .pp2-header button { min-height:37px;padding:9px 10px; }
+  #pp-health-report .pp2-main { padding:0 12px 35px!important; }
+  #pp-health-report .pp2-hero { margin:14px 0 12px;padding:23px 20px;display:block;border-radius:19px; }
+  #pp-health-report .pp2-hero h1 { font-size:36px; }
+  #pp-health-report .pp2-hero-copy>p:not(.pp-report-eyebrow) { font-size:12px; }
+  #pp-health-report .pp2-hero-stamp { display:none; }
+  #pp-health-report .pp2-hero-tags { gap:6px;margin-top:16px; }
+  #pp-health-report .pp2-hero-tags span { font-size:9px; }
+  #pp-health-report .pp2-overview { grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 16px; }
+  #pp-health-report .pp2-stat { flex-direction:column;align-items:flex-start;justify-content:space-between;gap:9px;padding:12px 9px;border-radius:13px; }
+  #pp-health-report .pp2-stat-icon { flex:0 0 auto;width:29px;height:29px;border-radius:9px; }
+  #pp-health-report .pp2-stat-icon svg { width:17px;height:17px; }
+  #pp-health-report .pp2-stat-copy p { font-size:9px; }
+  #pp-health-report .pp2-stat-copy strong { font-size:22px; }
+  #pp-health-report .pp2-stat-copy>span { font-size:8px;line-height:1.4; }
+  #pp-health-report .pp2-safety { padding:12px 13px;font-size:10px; }
+  #pp-health-report .pp2-mode-bar { padding:12px; }
+  #pp-health-report .pp2-mode-bar .pp-brief-reading-mode { width:100%; }
+  #pp-health-report .pp2-trend { padding:17px 14px 13px; }
+  #pp-health-report .pp2-trend-heading { display:block; }
+  #pp-health-report .pp2-trend-key { margin-top:8px; }
+  #pp-health-report .pp2-trend h2 { font-size:15px; }
+  #pp-health-report .pp2-trend-bottom { font-size:8px; }
+  #pp-health-report .pp-brief-section[data-kind] { grid-column:span 6!important; }
+  #pp-health-report .pp2-sidebar { display:flex!important;flex-direction:column; }
+  #pp-health-report .pp2-sidebar .pp-brief-navigation nav { display:flex;flex-direction:column; }
+  #pp-health-report .pp-summary-explorer { padding:16px; }
+  #pp-health-report .pp-brief-section-toggle { padding:18px 17px 13px; }
+  #pp-health-report .pp-brief-section-summary { padding:0 17px 14px; }
+  #pp-health-report .pp-brief-section-content { padding:0 17px 17px; }
+  #pp-health-report .pp-brief-section-title { font-size:15px; }
+}
+@media(prefers-reduced-motion:reduce) { #pp-health-report *,#pp-health-report *:before,#pp-health-report *:after { animation:none!important;transition:none!important;scroll-behavior:auto!important; } }
+</style>
 </head>
 <body class="pp-design font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
@@ -942,7 +1185,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
          aria-modal="true"
          aria-label="Full-screen AI clinical health summary"
          class="fixed inset-0 z-[9998] w-screen h-[100dvh] overflow-hidden overscroll-contain">
-        <div class="pp-report-backdrop absolute inset-0" :class="doctorMode ? 'bg-slate-100' : 'bg-[#070b14]'">
+        <div class="pp-report-backdrop pp2-canvas absolute inset-0" :class="doctorMode ? 'bg-slate-100' : 'bg-[#070b14]'">
             <div class="absolute inset-0 pointer-events-none overflow-hidden">
                 <div class="absolute -top-52 -left-40 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-20"
                      :class="doctorMode ? 'bg-sky-300' : 'bg-sky-700'"></div>
@@ -952,9 +1195,9 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                      :class="doctorMode ? 'bg-grid-pattern-light opacity-60' : 'bg-grid-pattern opacity-40'"></div>
             </div>
 
-            <div class="pp-report-shell relative w-screen h-[100dvh] flex flex-col overflow-hidden"
+            <div class="pp-report-shell pp2-shell relative w-screen h-[100dvh] flex flex-col overflow-hidden"
                  :class="doctorMode ? 'text-slate-900' : 'text-slate-100'">
-                <header class="pp-report-header shrink-0 min-h-[76px] flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 xl:px-10 py-3.5 sm:py-4 border-b backdrop-blur-2xl"
+                <header class="pp-report-header pp2-header shrink-0 min-h-[76px] flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 xl:px-10 py-3.5 sm:py-4 border-b backdrop-blur-2xl"
                         :class="doctorMode ? 'bg-white/90 border-slate-200 shadow-sm' : 'bg-[#090e1a]/90 border-white/10 shadow-2xl shadow-black/30'">
                     <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                         <div class="pp-report-brand relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-sky-500 via-indigo-600 to-rose-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 shrink-0">
@@ -1000,19 +1243,38 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                     </div>
                 </header>
 
-                <main class="pp-report-main grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar px-4 sm:px-8 lg:px-12 xl:px-20 py-6 sm:py-8 lg:py-10">
-                    <div class="pp-report-content w-full max-w-6xl mx-auto space-y-5">
-                        <section class="pp-report-intro" aria-label="Report overview">
-                            <div><p class="pp-report-eyebrow">YOUR PERSONAL HEALTH BRIEF</p><h1>Your health, at a glance.</h1><p>A clearer view of your symptoms, patterns, and questions to discuss.</p></div>
-                            <div class="pp-report-status"><span aria-hidden="true"></span> AI-generated report</div>
+                <main class="pp-report-main pp2-main grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar px-4 sm:px-8 lg:px-12 xl:px-20 py-6 sm:py-8 lg:py-10">
+                    <div class="pp-report-content pp2-content w-full max-w-6xl mx-auto space-y-5">
+                        <section class="pp-report-intro pp2-hero" aria-label="Report overview">
+                            <div class="pp2-hero-copy">
+                                <p class="pp-report-eyebrow"><span class="pp2-eyebrow-mark" aria-hidden="true"></span> YOUR PERSONAL HEALTH BRIEF</p>
+                                <h1>Your health, <em>in focus.</em></h1>
+                                <p>A clearer picture of the symptoms you've recorded, the patterns worth discussing, and the questions to bring to your next appointment.</p>
+                                <div class="pp2-hero-tags" aria-label="Report details">
+                                    <span><span class="pp2-online-mark" aria-hidden="true"></span> Based on your records</span>
+                                    <span>AI-assisted interpretation</span>
+                                    <span x-text="briefGeneratedAt || 'Current session'"></span>
+                                </div>
+                            </div>
+                            <div class="pp-report-status pp2-hero-stamp" aria-label="Educational AI report, not a medical diagnosis">
+                                <span class="pp2-stamp-orbit" aria-hidden="true"><svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1.55"><circle cx="28" cy="28" r="23" opacity=".25"/><path d="M6 29h12l6-13 8 27 6-14h12" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                                <strong>Made for more informed conversations</strong>
+                                <small>Educational summary · Not a diagnosis</small>
+                            </div>
                         </section>
-                        <div class="pp-report-grid"><div class="pp-report-reading">
-                        <div class="pp-report-notice rounded-2xl border px-4 sm:px-5 py-3.5 text-[11px] sm:text-xs leading-relaxed"
+
+                        <section class="pp2-overview" aria-label="Numbers from your logged symptom records">
+                            <article class="pp2-stat"><div class="pp2-stat-icon pp2-stat-icon-lavender" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5.5" width="17" height="15" rx="3"/><path d="M7.5 3v5m9-5v5M4 11h16"/></svg></div><div class="pp2-stat-copy"><p>Days recorded</p><strong x-text="Object.keys(logs).length"></strong><span>Entries in your symptom diary</span></div></article>
+                            <article class="pp2-stat"><div class="pp2-stat-icon pp2-stat-icon-sage" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3-6 4 12 3-6h4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="pp2-stat-copy"><p>Distinct symptoms</p><strong x-text="new Set(Object.values(logs).flatMap(entry => Array.isArray(entry.symptoms) ? entry.symptoms : [])).size"></strong><span>Based on your recorded labels</span></div></article>
+                            <article class="pp2-stat"><div class="pp2-stat-icon pp2-stat-icon-rose" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2.7 20h18.6L12 3Z" stroke-linejoin="round"/><path d="M12 9v4m0 3v.1" stroke-linecap="round"/></svg></div><div class="pp2-stat-copy"><p>Higher-severity days</p><strong x-text="Object.values(logs).filter(entry => Number(entry.severity) >= 7).length"></strong><span>Entries rated 7–10 of 10</span></div></article>
+                        </section>
+                        <div class="pp-report-grid pp2-layout"><div class="pp-report-reading pp2-reading">
+                        <div class="pp-report-notice pp2-safety rounded-2xl border px-4 sm:px-5 py-3.5 text-[11px] sm:text-xs leading-relaxed"
                              :class="doctorMode ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-amber-500/10 border-amber-500/20 text-amber-200'">
                             <strong>Reminder:</strong> Verify this AI-generated report with a licensed clinician before acting on it.
                         </div>
 
-                        <div class="pp-brief-top-controls pp-brief-view">
+                        <div class="pp-brief-top-controls pp-brief-view pp2-mode-bar">
                             <div class="pp-brief-view-switch" role="group" aria-label="Health summary display format">
                                 <button type="button" @click="summaryViewMode = 'interactive'" :aria-pressed="summaryViewMode === 'interactive'" aria-controls="full-brief-interactive">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
@@ -1025,6 +1287,26 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                             </div>
                             <p class="pp-brief-reading-mode" x-text="summaryViewMode === 'interactive' ? 'Explore your report, one section at a time.' : 'Your original report in its full text layout.'"></p>
                         </div>
+
+                        <section class="pp2-trend" x-show="summaryViewMode === 'interactive' && Object.keys(logs).length > 1" aria-label="Recorded symptom severity over time">
+                            <div class="pp2-trend-heading">
+                                <div><span class="pp2-mini-eyebrow">YOUR TRACKING HISTORY</span><h2>How your recorded severity has changed</h2><p>Values you entered in your diary, not AI-estimated medical risks.</p></div>
+                                <div class="pp2-trend-key"><i aria-hidden="true"></i><span>Severity (0–10)</span></div>
+                            </div>
+                            <div class="pp2-plot-frame">
+                                <div class="pp2-y-labels" aria-hidden="true"><span>10</span><span>5</span><span>0</span></div>
+                                <svg class="pp2-trend-chart" viewBox="0 0 620 185" role="img" aria-label="Line chart of your most recent fourteen logged days, from older entries on the left to newer entries on the right">
+                                    <defs><linearGradient id="pp2-trend-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#92b5a7"/><stop offset="1" stop-color="#7653ba"/></linearGradient></defs>
+                                    <path d="M24 34H596 M24 94H596 M24 154H596" fill="none" stroke="currentColor" stroke-opacity=".12" stroke-dasharray="4 7" stroke-width="1"/>
+                                    <polyline fill="none" stroke="url(#pp2-trend-grad)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"
+                                      :points="Object.entries(logs).sort((a,b) => a[0].localeCompare(b[0])).slice(-14).map(([date,entry],i,arr) => (24 + i * 572 / Math.max(1,arr.length-1)) + ',' + (154 - Math.max(0,Math.min(10,Number(entry.severity)||0))*12)).join(' ')"/>
+                                    <template x-for="(item,i) in Object.entries(logs).sort((a,b) => a[0].localeCompare(b[0])).slice(-14)" :key="item[0]">
+                                        <circle :cx="24 + i * 572 / Math.max(1,Math.min(Object.keys(logs).length,14)-1)" :cy="154 - Math.max(0,Math.min(10,Number(item[1].severity)||0))*12" r="4.2" fill="var(--pp2-panel)" stroke="var(--pp2-violet)" stroke-width="2.5"><title x-text="item[0] + ': severity ' + (item[1].severity ?? 0) + '/10'"></title></circle>
+                                    </template>
+                                </svg>
+                            </div>
+                            <div class="pp2-trend-bottom"><span>Earlier logged entries</span><span x-text="'Latest ' + Math.min(Object.keys(logs).length, 14) + ' logged days'">Latest logged days</span><span>Most recent</span></div>
+                        </section>
                         <section id="full-brief-interactive" x-show="summaryViewMode === 'interactive'" class="pp-brief-view" aria-label="Interactive health summary">
                             <div class="pp-summary-explorer" x-effect="if (summaryFilterReport !== briefResult) resetSummaryFilters()">
                                 <div class="pp-summary-explorer-heading"><strong>Explore your summary</strong><span x-text="summarySections.length + ' sections'"></span></div>
@@ -1094,9 +1376,9 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                                  x-html="renderMarkdown(briefResult)"></div>
                         </article>
                         </div>
-                        </div><aside class="pp-report-sidebar" aria-label="Report details and actions">
+                        </div><aside class="pp-report-sidebar pp2-sidebar" aria-label="Report details and actions">
                             <section class="pp-brief-navigation" x-show="summaryViewMode === 'interactive'" aria-label="Jump to a report section">
-                                <h3>IN THIS BRIEF</h3>
+                                <h3><span aria-hidden="true">◈</span> IN THIS BRIEF</h3>
                                 <nav aria-label="Health summary sections">
                                     <template x-for="section in summarySections" :key="briefResult + section.id">
                                         <button type="button" @click="focusSummarySection(section)" :aria-current="summaryActiveSection === section.id ? 'true' : null">
@@ -1106,13 +1388,13 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                                 </nav>
                             </section>
                             <section class="pp-report-profile">
-                                <p class="pp-report-eyebrow">PREPARED FOR</p>
+                                <p class="pp-report-eyebrow">REPORT CONTEXT</p>
                                 <div class="pp-report-person"><span class="pp-report-avatar" x-text="profile.firstName ? profile.firstName.charAt(0).toUpperCase() : 'P'"></span><div><h3 x-text="profile.firstName ? profile.firstName + (profile.lastName ? ' ' + profile.lastName : '') : 'Your health profile'"></h3><p>Personal health summary</p></div></div>
                                 <dl><div><dt>Available log days</dt><dd x-text="Object.keys(logs).length"></dd></div><div><dt>Report generated</dt><dd x-text="briefGeneratedAt || 'Current session'"></dd></div><div><dt>Viewing mode</dt><dd x-text="doctorMode ? 'Doctor view' : 'Patient view'"></dd></div></dl>
                             </section>
                 <footer class="pp-report-actions shrink-0 border-t backdrop-blur-2xl px-4 sm:px-8 lg:px-12 xl:px-20 py-3 sm:py-4"
                         :class="doctorMode ? 'bg-white/95 border-slate-200' : 'bg-[#090e1a]/92 border-white/10'">
-                    <h3>Continue the conversation</h3><p class="pp-report-action-copy">Explore your report or refresh it after updating your entries.</p><div class="w-full max-w-6xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <div class="pp2-action-deco" aria-hidden="true">✳</div><h3>Take the next step.</h3><p class="pp-report-action-copy">Ask about a section, or generate a fresh brief after updating your entries.</p><div class="w-full max-w-6xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                         <p class="text-[9px] sm:text-[10px] font-mono text-center sm:text-left"
                            :class="doctorMode ? 'text-slate-500' : 'text-slate-400'">
                             Generated <span x-text="briefGeneratedAt || 'in this session'"></span><span x-show="synthesisEngine"> • <span x-text="synthesisEngine"></span></span>
@@ -1132,7 +1414,7 @@ html[data-theme] body.pp-design button[x-bind\:disabled="authLoading"],html[data
                         </div>
                     </div>
                 </footer>
-                            <section class="pp-report-guide"><span class="pp-report-guide-icon" aria-hidden="true">↗</span><h3>Make your next visit count.</h3><p>Bring this report to your appointment. Highlight what has changed and the questions you want to ask.</p><div class="pp-report-guide-note">Your observations. A more informed conversation.</div></section>
+                            <section class="pp-report-guide pp2-guide"><span class="pp-report-guide-icon" aria-hidden="true">↗</span><h3>Make your next visit count.</h3><p>Bring this report to your appointment. Highlight what has changed and the questions you want to ask.</p><div class="pp-report-guide-note">Your observations. A more informed conversation.</div></section>
                         </aside></div>
                     </div>
                 </main>
