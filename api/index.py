@@ -24,6 +24,9 @@ app.config['MAX_CONTENT_LENGTH'] = 262144
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 GROQ_MODEL = os.environ.get("GROQ_MODEL") or "openai/gpt-oss-120b"
+# The independent medical reviewer may use a separately quota-limited model.
+# Default to the original model unless deliberately configured in Vercel.
+GROQ_REVIEW_MODEL = os.environ.get("GROQ_REVIEW_MODEL") or GROQ_MODEL
 
 CARE_NAVIGATION_RULES = """
 PulsePlot is an educational care-navigation companion: help people organize
@@ -432,7 +435,7 @@ def review_medical_output(client, candidate, profile, timeline, research, questi
     if has_generated_risk_numbers(candidate):
         raise ValueError('Generated risk figures are prohibited')
     result = client.with_options(timeout=15.0, max_retries=0).chat.completions.create(
-        model=GROQ_MODEL, temperature=0, max_tokens=700,
+        model=GROQ_REVIEW_MODEL, temperature=0, max_tokens=700,
         response_format={'type': 'json_object'},
         messages=[{'role': 'system', 'content': """
 You are a safety and evidence reviewer, not the answering assistant. All supplied
@@ -1134,6 +1137,23 @@ def complete_recorded_high_severity_guidance(synthesis_result, statistics):
     return synthesis_result[:match.end()] + '\n' + guidance + '\n' + synthesis_result[match.end():]
 
 
+def groq_rate_limit_summary(error):
+    """Return only nonsensitive rate-limit metadata; never log health details or API keys."""
+    response = getattr(error, 'response', None)
+    headers = getattr(response, 'headers', None) or {}
+    fields = {}
+    for label, key in (
+        ('retry_after_seconds', 'retry-after'),
+        ('remaining_minute_tokens', 'x-ratelimit-remaining-tokens'),
+        ('token_reset', 'x-ratelimit-reset-tokens'),
+    ):
+        value = str(headers.get(key, '')).strip()
+        # Only numeric values and simple time suffixes are allowed in server logs.
+        if value and re.fullmatch(r'[0-9.]+(?:ms|s|m|h)?', value):
+            fields[label] = value[:24]
+    return fields
+
+
 def create_groq_client():
     """Returns a configured Groq client and safely reports dependency initialization failures."""
     groq_api_key = os.environ.get("GROQ_API_KEY", "")
@@ -1182,6 +1202,7 @@ def synthesize_brief():
 
         if client:
             try:
+                groq_phase = 'report_generation'
                 system_prompt = (
                     "You are PulsePlot, an evidence-grounded educational care-navigation assistant. Offer helpful, tentative predictions "
                     "about possible explanations for symptoms, not just a list of patterns to discuss with a clinician. "
@@ -1278,13 +1299,16 @@ def synthesize_brief():
                     is_valid_result, validation_error = validate_synthesis_result(synthesis_result, statistics)
                 if not is_valid_result:
                     raise ValueError(validation_error)
+                groq_phase = 'medical_safety_review'
                 synthesis_result += review_medical_output(client, synthesis_result, profile, timeline_payload, research)
             except Exception as groq_err:
                 # Diagnostic categories only: never log patient records, prompts, API keys, or raw provider responses.
                 status = getattr(groq_err, "status_code", None)
                 validation_reason = str(groq_err) if isinstance(groq_err, ValueError) else ""
-                print(f"Groq report fallback: error_type={type(groq_err).__name__}; "
-                      f"http_status={status}; validation={validation_reason[:180]}")
+                rate_info = groq_rate_limit_summary(groq_err) if status == 429 else {}
+                print(f"Groq report fallback: phase={groq_phase}; error_type={type(groq_err).__name__}; "
+                      f"http_status={status}; validation={validation_reason[:180]}; "
+                      f"rate_limit={rate_info}")
                 engine_used = "fallback-algorithmic-engine"
                 synthesis_result = generate_fallback_synthesis(profile, statistics)
         else:
@@ -1642,6 +1666,7 @@ def chat_about_brief():
 
         if client:
             try:
+                groq_phase = 'chat_generation'
                 system_prompt = (
                     "You are the follow-up conversational assistant for PulsePlot AI, an educational care-navigation app for symptoms, medicines, costs, and understanding clinician instructions. "
                     "Your job is to answer the user's exact question helpfully and naturally while staying grounded in the supplied "
@@ -1724,13 +1749,16 @@ def chat_about_brief():
                     raise ValueError("The follow-up model returned an empty response.")
                 validate_research_references(answer, research)
                 # Review chat too; client-supplied reports/history are not authoritative.
+                groq_phase = 'medical_safety_review'
                 answer += review_medical_output(client, answer, profile, timeline_payload, research, question)
             except Exception as groq_err:
                 # Record only failure category; chat and health information must not enter server logs.
                 status = getattr(groq_err, "status_code", None)
                 validation_reason = str(groq_err) if isinstance(groq_err, ValueError) else ""
-                print(f"Groq chat fallback: error_type={type(groq_err).__name__}; "
-                      f"http_status={status}; validation={validation_reason[:180]}")
+                rate_info = groq_rate_limit_summary(groq_err) if status == 429 else {}
+                print(f"Groq chat fallback: phase={groq_phase}; error_type={type(groq_err).__name__}; "
+                      f"http_status={status}; validation={validation_reason[:180]}; "
+                      f"rate_limit={rate_info}")
                 engine_used = "fallback-algorithmic-engine"
                 answer = generate_fallback_chat_response(
                     question,
