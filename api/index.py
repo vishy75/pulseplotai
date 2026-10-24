@@ -23,7 +23,7 @@ app.config['MAX_CONTENT_LENGTH'] = 262144
 # Supabase Client Initialization
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
-GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MODEL = os.environ.get("GROQ_MODEL") or "openai/gpt-oss-120b"
 
 CARE_NAVIGATION_RULES = """
 PulsePlot is an educational care-navigation companion: help people organize
@@ -1123,7 +1123,11 @@ def synthesize_brief():
                     raise ValueError(validation_error)
                 synthesis_result += review_medical_output(client, synthesis_result, profile, timeline_payload, research)
             except Exception as groq_err:
-                print("Groq report unavailable or rejected; using deterministic summary.")
+                # Diagnostic categories only: never log patient records, prompts, API keys, or raw provider responses.
+                status = getattr(groq_err, "status_code", None)
+                validation_reason = str(groq_err) if isinstance(groq_err, ValueError) else ""
+                print(f"Groq report fallback: error_type={type(groq_err).__name__}; "
+                      f"http_status={status}; validation={validation_reason[:180]}")
                 engine_used = "fallback-algorithmic-engine"
                 synthesis_result = generate_fallback_synthesis(profile, statistics)
         else:
@@ -1565,7 +1569,11 @@ def chat_about_brief():
                 # Review chat too; client-supplied reports/history are not authoritative.
                 answer += review_medical_output(client, answer, profile, timeline_payload, research, question)
             except Exception as groq_err:
-                print("Groq chat unavailable or rejected; using deterministic reply.")
+                # Record only failure category; chat and health information must not enter server logs.
+                status = getattr(groq_err, "status_code", None)
+                validation_reason = str(groq_err) if isinstance(groq_err, ValueError) else ""
+                print(f"Groq chat fallback: error_type={type(groq_err).__name__}; "
+                      f"http_status={status}; validation={validation_reason[:180]}")
                 engine_used = "fallback-algorithmic-engine"
                 answer = generate_fallback_chat_response(
                     question,
