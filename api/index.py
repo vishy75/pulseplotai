@@ -27,6 +27,11 @@ GROQ_MODEL = os.environ.get("GROQ_MODEL") or "openai/gpt-oss-120b"
 # The independent medical reviewer may use a separately quota-limited model.
 # Default to the original model unless deliberately configured in Vercel.
 GROQ_REVIEW_MODEL = os.environ.get("GROQ_REVIEW_MODEL") or GROQ_MODEL
+# Medium is the model's default; high can improve nuanced reports at the cost
+# of extra reasoning tokens and stricter free-tier rate-limit pressure.
+PULSEPLOT_REPORT_REASONING = os.environ.get('PULSEPLOT_REPORT_REASONING', 'medium').strip().lower()
+if PULSEPLOT_REPORT_REASONING not in ('low', 'medium', 'high'):
+    PULSEPLOT_REPORT_REASONING = 'medium'
 
 CARE_NAVIGATION_RULES = """
 PulsePlot is an educational care-navigation companion: help people organize
@@ -709,6 +714,65 @@ def calculate_timeline_statistics(timeline_payload):
     }
 
 
+def summarize_timeline_patterns(timeline_payload):
+    """Compact, factual timeline context for richer AI reports, not a diagnosis.
+
+    Every count refers to *logged days* only; absence of an entry never means
+    absence of symptoms. Co-occurrence is an observation, not a causal link.
+    """
+    if not timeline_payload:
+        return {'data_limitations': 'No dated diary entries were supplied.'}
+
+    dates = [entry['date'] for entry in timeline_payload]
+    severities = [entry['pain_severity_scale_1_to_10'] for entry in timeline_payload]
+    day_symptoms = [
+        set(symptom.strip().lower() for symptom in entry['symptoms_reported'] if symptom.strip())
+        for entry in timeline_payload
+    ]
+    cooccurrences = Counter()
+    for names in day_symptoms:
+        ordered = sorted(names)
+        for left_index, first in enumerate(ordered):
+            for second in ordered[left_index + 1:]:
+                cooccurrences[(first, second)] += 1
+
+    repeatedly_together = [
+        {'symptoms': [a, b], 'logged_days_together': count}
+        for (a, b), count in cooccurrences.most_common(4)
+        if count >= 2
+    ]
+    highest = sorted(
+        timeline_payload, key=lambda entry: (-entry['pain_severity_scale_1_to_10'], entry['date'])
+    )[:4]
+    peak_entries = [
+        {'date': e['date'], 'severity_0_to_10': e['pain_severity_scale_1_to_10'],
+         'symptoms': e['symptoms_reported'][:5]}
+        for e in highest if e['pain_severity_scale_1_to_10'] > 0
+    ]
+    result = {
+        'first_logged_date': dates[0], 'last_logged_date': dates[-1],
+        'days_with_selected_symptoms': sum(bool(names) for names in day_symptoms),
+        'days_with_written_notes': sum(bool(entry['patient_notes'].strip()) for entry in timeline_payload),
+        'repeated_symptom_combinations': repeatedly_together,
+        'highest_recorded_severity_days': peak_entries,
+        'data_limitations': (
+            'Only entered days are represented. Severity is patient-entered and '
+            'is not a diagnosis or a measure of medical risk. An empty symptom '
+            'selection does not prove there were no symptoms.'
+        ),
+    }
+    # Compare only *logged-day ratings*, with enough entries to make the
+    # difference descriptive rather than a potentially misleading two-day trend.
+    if len(severities) >= 6:
+        midpoint = len(severities) // 2
+        result['logged_day_severity_comparison'] = {
+            'earlier_logged_days_average': round(sum(severities[:midpoint]) / midpoint, 1),
+            'later_logged_days_average': round(sum(severities[midpoint:]) / (len(severities) - midpoint), 1),
+            'caution': 'Descriptive averages of logged entries only; not evidence of a continuous trend or causality.'
+        }
+    return result
+
+
 def determine_recommended_doctors(timeline_logs):
     """Analyzes logged symptoms and notes to suggest relevant specialists in plain terms."""
     all_symptoms = set()
@@ -948,6 +1012,7 @@ def generate_fallback_synthesis(profile, statistics):
 
 def build_synthesis_prompt(profile_text_block, timeline_payload, statistics):
     """Creates the structured request for the clinical synthesis model."""
+    recorded_patterns = summarize_timeline_patterns(timeline_payload)
     objective_statistics = {
         "total_logged_days": statistics["total_days"],
         "average_pain_severity": statistics["average_severity"],
@@ -967,9 +1032,23 @@ Objective Timeline Statistics:
 Patient Tracked Timeline Records:
 {json.dumps(timeline_payload, ensure_ascii=False)}
 
+Additional derived diary observations (counts only, not medical conclusions):
+{json.dumps(recorded_patterns, ensure_ascii=False)}
+
 Create a detailed report in clear Markdown. Offer a useful, provisional assessment of what could explain the patient's symptoms, rather than only describing patterns for a clinician to interpret. When the entered evidence supports it, state which explanation appears to fit best, name reasonable alternatives, and explain briefly why. Distinguish observed facts from your uncertain predictions. Do not manufacture a preferred explanation when the information cannot distinguish the alternatives; identify the specific missing detail instead. Severity tiers are not likelihood rankings, and absence of a symptom in the logs does not mean that symptom is absent.
 
 Use approachable wording such as "My tentative assessment is...", "This could fit...", and "Another possibility is..." only when supported. Give a concise explanation of evidence, not private chain-of-thought. Keep the uncertainty notice brief: these are AI-generated predictions from incomplete information and can be wrong, not a confirmed diagnosis. Avoid repeatedly substituting "ask your doctor" for a substantive assessment. Keep clinically relevant care recommendations and warning signs.
+
+Quality standard for this specific patient's report:
+- Use plain, empathetic language that is informative rather than generic. The report should feel based on THIS diary, not a reusable health-article template.
+- Begin your observations with the most meaningful logged pattern; cite actual date(s), symptom names, severity ratings or logged-day frequencies. Use the provided derived observations only as descriptive facts, never as inferred causes.
+- When several symptoms appear together on recorded days, describe their co-occurrence without claiming they caused one another. Distinguish frequency among logged entries from frequency in the patient's life.
+- If six or more entries exist, you may describe earlier-versus-later LOGGED severity averages as a tentative observation; do not infer continuous improvement or deterioration, especially with gaps between dates.
+- For each potential explanation, identify one or two specific facts in the diary that support considering it and the *specific missing information* that could change the interpretation. If none is supported, explicitly say there is insufficient evidence instead of guessing.
+- Make the evidence explanation compare the supported possibilities qualitatively rather than repeating the concern tier text. Avoid redundant boilerplate across sections.
+- Give clinician questions that a patient can actually use, based on symptom timing, co-occurrence, medical-history uncertainty, or high-severity days, not the same generic questions for every person.
+- For only one or two diary entries, focus on accurately summarizing those entries, onsets/duration not provided, and what to track next. Do not fabricate recurring patterns or disease possibilities.
+- Do not recommend specific treatments, diagnoses, or self-medication changes. Provide safe educational context, clearly distinguish observations from hypotheses, and flag time-sensitive warning signs when applicable.
 
 Start with personal information and then use exactly the following sections and order:
 
@@ -1283,7 +1362,11 @@ def synthesize_brief():
                     "could change your assessment. Be direct about your assessment and equally direct about uncertainty: AI can be "
                     "wrong, and symptom logs alone cannot establish a diagnosis. Do not refuse to discuss possible causes merely "
                     "because they are medical. Do not invent a condition or a confident ranking to fill gaps in sparse data. "
-                    "Separate observed facts, possible explanations, and practical next steps. Convert self-reported profile and symptom "
+                    "Separate observed facts, possible explanations, and practical next steps. "
+                    "Make the brief genuinely specific: highlight meaningful dates, recurrence among logged days, "
+                    "symptoms occurring together, severity patterns and what has NOT been recorded. "
+                    "Explain why each supported possibility may or may not fit the patient's actual data; "
+                    "never manufacture a pattern from a sparse diary. Convert self-reported profile and symptom "
                     "timeline data into a clear patient-facing report. For each lower-, moderate-, and higher-concern tier, "
                     "name one clear suspected condition or clinically recognizable condition category under the label "
                     "'AI Condition Assessment (Not Confirmed)'. Do not invent numeric likelihood estimates. You "
@@ -1351,6 +1434,10 @@ def synthesize_brief():
                 )
                 if structured_report:
                     completion_options['response_format'] = REPORT_JSON_SCHEMA
+                    completion_options['extra_body'] = {
+                        'reasoning_format': 'hidden',
+                        'reasoning_effort': PULSEPLOT_REPORT_REASONING,
+                    }
                 chat_completion = client.with_options(
                     timeout=35.0, max_retries=0
                 ).chat.completions.create(**completion_options)
