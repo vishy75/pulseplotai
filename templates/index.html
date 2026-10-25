@@ -1040,6 +1040,159 @@ html[data-theme="dark"] #pp-health-report .pp2-sidebar .pp-report-actions button
 }
 @media(prefers-reduced-motion:reduce) { #pp-health-report *,#pp-health-report *:before,#pp-health-report *:after { animation:none!important;transition:none!important;scroll-behavior:auto!important; } }
 </style>
+
+<!-- PulsePlot UI refinement: style-only layer. JS, routes, bindings and original behavior unchanged. -->
+<style id="pp-calm-interface-2026">
+/* A quieter premium healthcare aesthetic; no decorative blinking or breathing lights. */
+html[data-theme] body.pp-design #pp-landing .animate-pulse,
+html[data-theme] body.pp-design #pp-landing .animate-ping,
+html[data-theme] body.pp-design #pp-landing .animate-bounce,
+html[data-theme] body.pp-design #dashboard .animate-pulse,
+html[data-theme] body.pp-design #dashboard .animate-ping,
+html[data-theme] body.pp-design #dashboard .animate-bounce,
+html[data-theme] body.pp-design #workspace .animate-pulse,
+html[data-theme] body.pp-design #workspace .animate-ping,
+html[data-theme] body.pp-design #workspace .animate-bounce {
+    animation: none !important;
+}
+/* Keep functional loading spinner rotations, which signal real in-progress operations. */
+html[data-theme] body.pp-design #pp-landing .pp-orbit {
+    animation: none !important;
+    transform: translateX(-50%) rotate(-7deg);
+    background: radial-gradient(ellipse at 40% 2%, #dbcdec 0%, #9e8ab9 11%, #665376 27%, #33293b 48%, #554666 65%, #a497b3 74%, #574365 84%);
+    box-shadow: inset 0 7px 24px rgba(242,233,255,.38), 0 16px 50px rgba(73,52,105,.11);
+    opacity: .84;
+}
+html[data-theme="dark"] body.pp-design #pp-landing .pp-orbit {
+    background: radial-gradient(ellipse at 40% 2%, #9d8aad 0%, #675777 14%, #382c45 35%, #1f1a27 57%, #52435e 74%, #372b46 89%);
+    box-shadow: inset 0 7px 24px rgba(210,195,224,.16), 0 16px 45px rgba(0,0,0,.22);
+}
+html[data-theme] body.pp-design #pp-landing .pp-orbit-dot,
+html[data-theme] body.pp-design #pp-landing .pp-quiet-indicator {
+    animation: none !important;
+    box-shadow: none !important;
+}
+/* Patient and clinician section eyebrow is a quiet label, not a blinking/hot-pink badge. */
+html[data-theme] body.pp-design .pp-welcome .pp-workspace-label {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0 !important;
+    width: fit-content;
+    margin-bottom: 9px !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: var(--pp-muted) !important;
+    font-size: 10px !important;
+    line-height: 1.5;
+    letter-spacing: .16em !important;
+    font-weight: 750;
+}
+html[data-theme] body.pp-design .pp-welcome .pp-workspace-label .pp-workspace-mark {
+    display: none !important;
+}
+/* Replace high-contrast blue guest strip with a soft, integrated notice in the top-left. */
+html[data-theme] body.pp-design .pp-guest-notice {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: fit-content;
+    max-width: calc(100% - 24px);
+    margin: 0 0 8px 12px;
+    padding: 12px 14px;
+    border: 1px solid #d9d2e8;
+    border-radius: 17px;
+    background: linear-gradient(120deg,#f6f2fd 0%,#f8f6fb 60%,#eff3f1 100%);
+    color: #332d49;
+    box-shadow: 0 5px 18px rgba(60,45,92,.055), inset 0 1px 0 rgba(255,255,255,.8);
+    font-family: 'Plus Jakarta Sans',sans-serif;
+    text-align: left;
+}
+html[data-theme] body.pp-design .pp-guest-symbol {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: #e9e2f4;
+    color: #69519b;
+}
+html[data-theme] body.pp-design .pp-guest-symbol svg { width: 19px; height: 19px; }
+html[data-theme] body.pp-design .pp-guest-message {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    line-height: 1.45;
+}
+html[data-theme] body.pp-design .pp-guest-message strong { font-size: 12px; font-weight: 750; letter-spacing: -.015em; color: #3c3255; }
+html[data-theme] body.pp-design .pp-guest-message>span { font-size: 10.5px; font-weight: 450; color: #716b7d; }
+html[data-theme] body.pp-design .pp-guest-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-left: 9px;
+}
+html[data-theme] body.pp-design .pp-guest-actions button {
+    min-height: 34px;
+    padding: 7px 11px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    box-shadow: none;
+    font-family: inherit;
+    font-size: 10.5px;
+    line-height: 1.3;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .18s ease,border-color .18s ease,color .18s ease;
+}
+html[data-theme] body.pp-design .pp-guest-actions .pp-guest-signin { background: #e9e2f5; border-color: #daceec; color: #543c80; }
+html[data-theme] body.pp-design .pp-guest-actions .pp-guest-signin:hover { background: #ddd2ee; }
+html[data-theme] body.pp-design .pp-guest-actions .pp-guest-exit { color: #655d70; background: rgba(255,255,255,.5); border-color: #e2dfea; }
+html[data-theme] body.pp-design .pp-guest-actions .pp-guest-exit:hover { background: #fff; }
+html[data-theme="dark"] body.pp-design .pp-guest-notice {
+    border-color: #49415c;
+    background: linear-gradient(120deg,#30283f,#282433 60%,#252d32);
+    color: #f5f0ff;
+    box-shadow: 0 7px 19px rgba(0,0,0,.11), inset 0 1px 0 rgba(255,255,255,.04);
+}
+html[data-theme="dark"] body.pp-design .pp-guest-symbol { background: #453754; color: #d5bbf6; }
+html[data-theme="dark"] body.pp-design .pp-guest-message strong { color: #efe7fc; }
+html[data-theme="dark"] body.pp-design .pp-guest-message>span { color: #b7afc5; }
+html[data-theme="dark"] body.pp-design .pp-guest-actions .pp-guest-signin { background: #594472; border-color: #665080; color: #f5eaff; }
+html[data-theme="dark"] body.pp-design .pp-guest-actions .pp-guest-signin:hover { background: #6b5288; }
+html[data-theme="dark"] body.pp-design .pp-guest-actions .pp-guest-exit { background: rgba(255,255,255,.045); border-color: #524960; color: #d4cce0; }
+html[data-theme="dark"] body.pp-design .pp-guest-actions .pp-guest-exit:hover { background: rgba(255,255,255,.1); }
+/* High-contrast focus states and restrained hover treatment. */
+html[data-theme] body.pp-design .pp-guest-actions button:focus-visible,
+html[data-theme] body.pp-design .pp-guest-notice button:focus-visible { outline: 2px solid var(--ui-accent) !important; outline-offset: 3px; }
+html[data-theme] body.pp-design #pp-landing .pp-feature-grid article:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(60,45,92,.08) !important;
+}
+@media (max-width: 920px) {
+    html[data-theme] body.pp-design .pp-guest-notice { flex-wrap: wrap; width: calc(100% - 24px); }
+    html[data-theme] body.pp-design .pp-guest-message { flex: 1 1 250px; }
+    html[data-theme] body.pp-design .pp-guest-actions { margin-left: 46px; }
+}
+@media (max-width: 540px) {
+    html[data-theme] body.pp-design .pp-guest-notice { max-width: calc(100% - 12px); width: calc(100% - 12px); margin-left: 6px; padding: 12px; border-radius: 15px; gap: 9px; }
+    html[data-theme] body.pp-design .pp-guest-message { flex: 1 1 180px; }
+    html[data-theme] body.pp-design .pp-guest-actions { margin: 4px 0 0; width: 100%; }
+    html[data-theme] body.pp-design .pp-guest-actions button { flex: 1 1 auto; white-space: normal; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+    html[data-theme] body.pp-design .pp-guest-actions button { transition:none; }
+    html[data-theme] body.pp-design #pp-landing .pp-orbit { animation:none!important; }
+}
+</style>
 </head>
 <body class="pp-design font-sans min-h-screen flex flex-col transition-colors duration-500 selection:bg-rose-500 selection:text-white"
       x-data="pulseApp"
@@ -2002,7 +2155,7 @@ html[data-theme="dark"] #pp-health-report .pp2-sidebar .pp-report-actions button
                     <div class="pp-home-hero max-w-4xl mx-auto text-center space-y-9">
                         <div class="space-y-6">
                             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-sky-500/20 bg-sky-500/10 text-sky-300 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span class="pp-quiet-indicator w-2 h-2 rounded-full bg-emerald-400"></span>
                                 Track your medicines. Understand your care.
                             </div>
                             <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-[-0.04em] leading-[1.03] text-white">
@@ -2138,10 +2291,15 @@ html[data-theme="dark"] #pp-health-report .pp2-sidebar .pp-report-actions button
     </section>
 
     <div class="pp-shell" x-show="user && accountRole" x-cloak>
-    <div x-show="isGuest" class="px-5 py-3 bg-sky-950 text-white text-sm flex flex-wrap items-center justify-center gap-3" role="status">
-        <span>Guest preview · Data disappears when you leave or refresh.</span>
-        <button type="button" @click="exitGuestMode(true)" class="underline font-bold">Exit preview &amp; sign up / sign in</button>
-        <button type="button" @click="exitGuestMode()" class="underline">Exit guest mode</button>
+    <div x-show="isGuest" class="pp-guest-notice" role="status" aria-label="Guest preview information">
+        <span class="pp-guest-symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 20 7v5.2c0 4.2-2.6 7.1-8 9.3-5.4-2.2-8-5.1-8-9.3V7l8-3.5Z"/><path d="m9 12.3 2 2 4.2-4.5"/></svg>
+        </span>
+        <span class="pp-guest-message"><strong>Exploring in guest mode</strong><span>Your entries stay in this tab and clear when you refresh or leave.</span></span>
+        <span class="pp-guest-actions">
+            <button type="button" @click="exitGuestMode(true)" class="pp-guest-signin">Sign in or create account</button>
+            <button type="button" @click="exitGuestMode()" class="pp-guest-exit">Exit guest mode</button>
+        </span>
     </div>
 <header id="dashboard" x-show="user" x-cloak class="pp-topbar sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-300 px-6 py-3.5"
             :class="doctorMode ? 'bg-white/80 border-slate-200 text-slate-900 shadow-sm' : 'bg-[#090d16]/80 border-white/10 text-white'">
@@ -2276,9 +2434,9 @@ html[data-theme="dark"] #pp-health-report .pp2-sidebar .pp-report-actions button
                  :class="doctorMode ? 'glass-panel-light border-slate-300' : 'glass-panel-dark glow-border'">
             <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
                 <div class="space-y-2 max-w-2xl">
-                    <div class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider"
+                    <div class="pp-workspace-label inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider"
                          :class="doctorMode ? 'bg-sky-100 text-sky-800' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'">
-                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                        <span class="pp-workspace-mark" aria-hidden="true"></span>
                         <span x-text="doctorMode ? 'Doctor Workspace' : 'Patient Workspace'"></span>
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
