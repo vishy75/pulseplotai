@@ -25,8 +25,9 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 GROQ_MODEL = os.environ.get("GROQ_MODEL") or "openai/gpt-oss-120b"
 # The independent medical reviewer may use a separately quota-limited model.
-# Default to the original model unless deliberately configured in Vercel.
-GROQ_REVIEW_MODEL = os.environ.get("GROQ_REVIEW_MODEL") or GROQ_MODEL
+# Use the smaller separate review model by default; can be overridden in Vercel.
+# This reduces the chance that a second 120B call exhausts the generation quota.
+GROQ_REVIEW_MODEL = os.environ.get("GROQ_REVIEW_MODEL") or "openai/gpt-oss-20b"
 # Medium is the model's default; high can improve nuanced reports at the cost
 # of extra reasoning tokens and stricter free-tier rate-limit pressure.
 PULSEPLOT_REPORT_REASONING = os.environ.get('PULSEPLOT_REPORT_REASONING', 'medium').strip().lower()
@@ -489,6 +490,10 @@ def parse_medical_review_verdict(content):
     if not isinstance(content, str) or not content.strip() or len(content) > 4000:
         raise ValueError('Safety review did not return a valid verdict')
     lines = [line.strip() for line in content.strip().splitlines() if line.strip()]
+    # Providers sometimes omit the optional FIGURES line for plain-language
+    # explanations. Accept unambiguous approval, never ambiguous/unsafe text.
+    if lines in (['SAFE'], ['REVIEW: SAFE']):
+        return []
     if not lines or lines[0] not in ('REVIEW: SAFE', 'REVIEW: UNSAFE'):
         raise ValueError('Safety review verdict missing or malformed')
     if lines[0] != 'REVIEW: SAFE':
@@ -551,6 +556,10 @@ brief, proportionate disclaimer or the absence of an unnecessary disclaimer.
 A report's concern tier describes possible seriousness IF a condition exists,
 not the likelihood that this patient has the condition. Allow explanations that
 point out errors, gaps, or unsupported statements in an earlier AI report.
+
+A straightforward definition of POTS, migraine, or another medical term is safe
+when it does not claim the patient has that condition. Clarifying why a term
+appears in an AI report is also safe if it acknowledges uncertainty.
 
 Reject (REVIEW: UNSAFE) when the GENERATED ANSWER asserts unsupported diagnostic
 certainty or false reassurance, dismisses urgent symptoms, gives an individual
@@ -1901,6 +1910,237 @@ def resolve_conversation_subject(question, chat_history):
     return question
 
 
+# Limited, hand-authored medical terminology for an accurate offline explanation.
+# These statements are general education, not generated diagnoses or instructions.
+# Unknown terms still use the independently reviewed AI path when available.
+CHAT_MEDICAL_GLOSSARY = {
+    'postural orthostatic tachycardia syndrome': (
+        'POTS (postural orthostatic tachycardia syndrome)',
+        'POTS is a disorder affecting how the body regulates heart rate and blood flow when a person stands up. '
+        'It involves an unusually large, sustained increase in heart rate on standing, together with symptoms such as '
+        'lightheadedness, palpitations, fatigue, nausea, or difficulty concentrating (brain fog). '
+        'A symptom diary alone cannot establish POTS. A clinician generally compares heart rate and blood pressure '
+        'lying down and standing, sometimes with a tilt-table test, while considering other explanations.',
+        'https://www.hopkinsmedicine.org/health/conditions-and-diseases/postural-orthostatic-tachycardia-syndrome-pots',
+    ),
+    'orthostatic hypotension': (
+        'Orthostatic hypotension',
+        'Orthostatic hypotension means blood pressure drops after standing, which may cause lightheadedness or faintness. '
+        'A clinician can check blood pressure and pulse in different positions; symptoms alone are not a diagnosis.',
+        '',
+    ),
+    'dysautonomia': (
+        'Dysautonomia',
+        'Dysautonomia is a broad term for problems involving the autonomic nervous system, which helps regulate '
+        'automatic functions such as heart rate, blood pressure, sweating, and digestion. It is not one specific diagnosis.',
+        '',
+    ),
+    'tachycardia': (
+        'Tachycardia',
+        'Tachycardia means a faster-than-usual heart rate. It can occur during exercise, stress, illness, or with '
+        'different heart-rhythm and other conditions; context and actual heart-rate measurements matter.',
+        '',
+    ),
+    'bradycardia': (
+        'Bradycardia',
+        'Bradycardia means a slower-than-usual heart rate. It can be normal in some people, but context, symptoms, '
+        'medications, and measurements are important to interpretation.',
+        '',
+    ),
+    'palpitations': (
+        'Palpitations',
+        'Palpitations are sensations of a pounding, racing, fluttering, or skipped heartbeat. The feeling alone '
+        'does not establish which, if any, heart rhythm is involved.',
+        '',
+    ),
+    'arrhythmia': (
+        'Arrhythmia',
+        'An arrhythmia is a heart rhythm that is unusually fast, slow, or irregular. Clinicians may use an '
+        'electrocardiogram (ECG) or heart monitor to determine whether an arrhythmia is present.',
+        '',
+    ),
+    'syncope': (
+        'Syncope',
+        'Syncope means a temporary loss of consciousness (fainting), often related to a temporary reduction in '
+        'blood flow to the brain. The underlying cause requires evaluation.',
+        '',
+    ),
+    'paresthesia': (
+        'Paresthesia',
+        'Paresthesia means an unusual skin sensation such as tingling, pins and needles, or numbness. '
+        'Its cause cannot be determined from that symptom alone.',
+        '',
+    ),
+    'neuropathy': (
+        'Neuropathy',
+        'Neuropathy means damage or dysfunction affecting nerves, sometimes associated with numbness, tingling, '
+        'burning, or weakness. Many different conditions can cause these symptoms.',
+        '',
+    ),
+    'migraine': (
+        'Migraine',
+        'Migraine is a neurological condition often involving recurrent headaches and possible sensitivity to '
+        'light or sound, nausea, or changes in vision. Not all headaches are migraines.',
+        '',
+    ),
+    'anemia': (
+        'Anemia',
+        'Anemia means the blood has fewer healthy red blood cells or less hemoglobin than expected. It may contribute '
+        'to fatigue or lightheadedness, but a blood test is needed to assess it.',
+        '',
+    ),
+    'vertigo': (
+        'Vertigo',
+        'Vertigo is a sensation that you or your surroundings are spinning or moving, even when stationary. '
+        'It is a symptom with multiple possible causes.',
+        '',
+    ),
+    'inflammation': (
+        'Inflammation',
+        'Inflammation is part of the body’s response to irritation, injury, or infection. The term alone does '
+        'not identify the cause or establish that inflammation has been measured.',
+        '',
+    ),
+    'gastroesophageal reflux disease': (
+        'Gastroesophageal reflux disease (GERD)',
+        'GERD is a condition in which stomach contents repeatedly flow back into the esophagus and can cause '
+        'heartburn or regurgitation. Similar symptoms can have other causes.',
+        '',
+    ),
+    'hypoglycemia': (
+        'Hypoglycemia',
+        'Hypoglycemia means low blood glucose. Symptoms may include shakiness, sweating, or feeling faint, '
+        'but confirming it requires a glucose measurement.',
+        '',
+    ),
+    'hypertension': (
+        'Hypertension',
+        'Hypertension means persistently high blood pressure. It is assessed using blood-pressure measurements '
+        'rather than symptom ratings.',
+        '',
+    ),
+    'hypotension': (
+        'Hypotension',
+        'Hypotension means low blood pressure. Whether it is concerning depends on the measurements and '
+        'associated symptoms.',
+        '',
+    ),
+    'dizziness': (
+        'Dizziness',
+        'Dizziness is a broad term that can describe unsteadiness, lightheadedness, or feeling faint. '
+        'The timing, triggers, and other symptoms are important for identifying possible causes.',
+        '',
+    ),
+    'lightheadedness': (
+        'Lightheadedness',
+        'Lightheadedness is a faint or woozy feeling, sometimes related to changes in position, hydration, '
+        'or other medical factors. It is a symptom rather than a specific diagnosis.',
+        '',
+    ),
+    'nausea': (
+        'Nausea',
+        'Nausea is the feeling that you might vomit. It can have many causes, including digestive issues, '
+        'medication effects, migraines, and other conditions.',
+        '',
+    ),
+    'insomnia': (
+        'Insomnia',
+        'Insomnia means difficulty falling asleep, staying asleep, or getting restorative sleep, '
+        'and may affect daytime functioning. It can have many possible contributors.',
+        '',
+    ),
+    'fatigue': (
+        'Fatigue',
+        'Fatigue is a persistent sense of low energy or exhaustion that may not be relieved by ordinary rest. '
+        'It has many possible causes and is not itself a diagnosis.',
+        '',
+    ),
+    'orthostatic intolerance': (
+        'Orthostatic intolerance',
+        'Orthostatic intolerance means symptoms that occur or become worse when sitting or standing upright '
+        'and often improve with lying down. It describes a pattern, not a confirmed cause.',
+        '',
+    ),
+    'brain fog': (
+        'Brain fog',
+        'Brain fog is an informal term for difficulty concentrating, thinking clearly, or remembering things. '
+        'It describes a symptom, not a specific diagnosis.',
+        '',
+    ),
+}
+CHAT_TERM_ALIASES = {
+    'pots': 'postural orthostatic tachycardia syndrome',
+    'gerd': 'gastroesophageal reflux disease',
+    'acid reflux': 'gastroesophageal reflux disease',
+    'fainting': 'syncope',
+    'pins and needles': 'paresthesia',
+}
+
+
+def chat_question_intent(question, chat_history=None):
+    """Identify conversational purpose, not prohibited words or medical diagnoses.
+
+    Only narrow affirmative instructions for individualized medication changes
+    are restricted; questions containing 'medicine', 'risk', 'diagnosis', etc.
+    remain eligible for explanation. The LLM path handles open-ended requests.
+    """
+    normalized = ' '.join(str(question or '').lower().split())
+    if re.search(r'\b(?:how (?:much|many) (?:mg|milligrams|tablets|pills)|what dose should i|'
+                 r'how should i (?:dose|titrate)|(?:should|can|may) i (?:start|stop|skip|'
+                 r'increase|decrease|double|replace|discontinue) (?:taking |my |the )?'
+                 r'(?:medicine|medication|dose|dosage|prescription|pill|tablet|drug)|'
+                 r'change my (?:dose|medication|prescription))\b', normalized):
+        return 'individual_medication_change'
+    if re.search(r'\b(?:i (?:am|have|just) (?:having |experiencing )?'
+                 r'(?:severe chest pain|trouble breathing|difficulty breathing)|'
+                 r'i (?:cannot|can\'t) breathe|'
+                 r'i (?:am|feel) (?:about to pass out|suicidal))\b', normalized):
+        return 'possible_emergency'
+    if re.search(r'\b(?:lower|moderate|medium|higher|high|minor|major)\s*[- ]?\s*concern\b|'
+                 r'\bconcern (?:tier|level)\b', normalized):
+        return 'report_tiers'
+    if re.search(r'\b(?:medicines?|medications?|side effects?|interactions?|supplements?)\b', normalized):
+        return 'medication_education'
+    if re.search(r'\b(?:what (?:does|do|is|are)|what is meant by|what\'s the meaning of|'
+                 r'define|meaning of|explain|tell me about|can you explain)\b', normalized):
+        return 'definition_or_explanation'
+    if re.search(r'\b(?:report|health brief|summary)\b', normalized):
+        return 'report_followup'
+    return 'general_education'
+
+
+def glossary_chat_reply(question, current_brief, chat_history=None):
+    """Give hand-reviewed definitions for explicit terminology questions.
+
+    Never use a term mentioned only in the diary as evidence of diagnosis.
+    Does not execute arbitrary user instructions or AI-generated content.
+    """
+    if chat_question_intent(question, chat_history) != 'definition_or_explanation':
+        return None
+    normalized = ' '.join(str(question).lower().split())
+    aliases = {**{key: key for key in CHAT_MEDICAL_GLOSSARY}, **CHAT_TERM_ALIASES}
+    for alias in sorted(aliases, key=len, reverse=True):
+        if re.search(r'(?<!\w)' + re.escape(alias) + r'(?!\w)', normalized):
+            title, explanation, reference_url = CHAT_MEDICAL_GLOSSARY[aliases[alias]]
+            answer = f'**{title}**\n\n{explanation}'
+            if re.search(r'\b(?:report|brief|summary)\b', normalized):
+                # Report is client-supplied and may be an algorithmic fallback.
+                seen = bool(re.search(r'(?<!\w)' + re.escape(alias) + r'(?!\w)', str(current_brief).lower()))
+                if not seen:
+                    expanded = aliases[alias]
+                    seen = bool(re.search(r'(?<!\w)' + re.escape(expanded) + r'(?!\w)', str(current_brief).lower()))
+                if seen:
+                    answer += ('\n\n**About your report:** This term was mentioned, but that does not '
+                               'mean the condition was diagnosed. A symptom diary cannot confirm it.')
+                else:
+                    answer += ('\n\n**About your report:** I cannot find this term in the report text '
+                               'sent with your message. It may have been in a different report or earlier version.')
+            if reference_url:
+                answer += f'\n\nGeneral medical reference: {reference_url}'
+            return answer
+    return None
+
+
 def generate_fallback_chat_response(
     question,
     profile,
@@ -1909,154 +2149,105 @@ def generate_fallback_chat_response(
     current_brief,
     chat_history
 ):
-    """Returns a question-specific deterministic response when the language model is unavailable."""
+    """Truthful, focused fallback if Groq or independent review is unavailable.
+
+    This fallback is deliberately NOT a diagnostic LLM. Avoid echoing patient
+    identity, entire reports, or irrelevant symptom summaries when users ask
+    for a simple definition or a specific report clarification.
+    """
+    direct_definition = glossary_chat_reply(question, current_brief, chat_history)
+    if direct_definition:
+        return direct_definition
+
     conversational_question = resolve_conversation_subject(question, chat_history)
     normalized_question = conversational_question.lower()
-    symptom_frequency = format_symptom_frequency(statistics)
-    relevant_entries = find_relevant_timeline_entries(conversational_question, timeline_payload)
+    intent = chat_question_intent(question, chat_history)
+    relevant_entries = find_relevant_timeline_entries(conversational_question, timeline_payload, limit=3)
     relevant_entry_text = format_relevant_entries(relevant_entries)
 
-    if any(term in normalized_question for term in [
-        'emergency', '911', 'chest pain', 'cannot breathe', 'trouble breathing', 'fainting',
-        'stroke', 'one-sided weakness', 'uncontrolled bleeding', 'suicidal'
-    ]):
+    if intent == 'possible_emergency':
         return (
-            "I cannot determine emergency risk from this tracker. If the symptom is severe, sudden, rapidly worsening, "
-            "or includes trouble breathing, chest pain, fainting, new one-sided weakness, confusion, uncontrolled bleeding, "
-            "or another life-threatening change, contact emergency services now. Do not wait for this chatbot or the report."
+            'If you currently have severe chest pain, serious difficulty breathing, new one-sided weakness, '
+            'or another immediate danger, seek emergency care now. A diary or chatbot cannot assess this safely.'
         )
 
-    if any(term in normalized_question for term in [
-        'medicine', 'medication', 'dose', 'dosage', 'supplement', 'stop taking', 'start taking',
-        'increase', 'decrease', 'side effect', 'interaction'
-    ]):
-        medication_section = extract_brief_section(current_brief, ['do not', "don't", 'safety'])
-        extra_context = clean_markdown_for_chat(medication_section, max_length=650)
-        response = (
-            "I can help you organize the medication question, but I cannot safely tell you to start, stop, increase, "
-            "decrease, or replace a medicine or supplement from symptom logs alone. A clinician or pharmacist needs the exact "
-            "product, dose, timing, reason it was prescribed, other medicines, allergies, and the timing of your symptoms."
-        )
-        if extra_context:
-            response += f"\n\nThe report's related safety guidance says:\n{extra_context}"
-        return response
-
-    if any(term in normalized_question for term in [
-        'personal information', 'my profile', 'my age', 'birthday', 'height', 'weight', 'gender',
-        'medical history', 'background'
-    ]):
+    if intent == 'individual_medication_change':
         return (
-            f"The report used the following profile information: name {profile['full_name']}; date of birth "
-            f"{profile['birthday']}; approximate age {profile['age']}; gender {profile['gender']}; height "
-            f"{profile['height']}; weight {profile['weight']}; and medical background: {profile['medical_notes']}. "
-            "Incorrect or missing profile details can change how the report is interpreted, so update them before generating a new brief."
+            'I can explain medicines in general, but I cannot decide whether you personally should start, '
+            'stop, or change a prescribed dose from a symptom diary. The exact medicine, dose, other medications, '
+            'reason for use, and symptoms matter; check with your prescriber or pharmacist before changing it. '
+            'If you want, ask what the medicine is generally used for or what its common side effects mean.'
         )
 
-    if any(term in normalized_question for term in [
-        'probability', 'probabilities', 'percent', 'percentage', 'likely', 'likelihood',
-        'minor', 'medium', 'major', 'concern tier', 'three tiers'
-    ]):
-        probability_section = extract_brief_section(
-            current_brief,
-            ['minor /', 'medium /', 'major /', 'probability', 'possibility']
-        )
-        report_excerpt = clean_markdown_for_chat(probability_section, max_length=1100)
-        response = (
-            "This app cannot calculate individual disease probabilities from symptom logs. Any percentages in an older report are unsupported and should not be used. Your recorded observations include "
-            f"{statistics['total_days']} logged day(s), an average pain level of {statistics['average_severity']}/10, "
-            f"a highest level of {statistics['peak_severity']}/10, {statistics['high_severity_count']} high-pain day(s), "
-            f"and the repeated symptom pattern: {symptom_frequency}. The app does not have an examination, vital signs, "
-            "laboratory results, imaging, or a complete clinical history, so a clinician may rank the possibilities differently."
-        )
-        if report_excerpt:
-            response += f"\n\nThe relevant part of your report is:\n{report_excerpt}"
-        return response
+    if re.search(r'\b(?:lower|moderate|medium|higher|high|minor|major)\s*[- ]?\s*concern\b|'
+                 r'\bconcern (?:tier|level)\b', normalized_question):
+        excerpt = extract_brief_section(current_brief, ['lower concern', 'moderate concern', 'higher concern',
+                                                        'minor /', 'medium /', 'major /'], max_length=900)
+        answer = ('The Health Brief’s lower, moderate, and higher *concern* categories describe '
+                  'how serious a possible condition could be **if it were present**, not how likely '
+                  'you are to have it. They are not a diagnosis or a validated risk score.')
+        if excerpt:
+            answer += '\n\nRelevant report wording:\n' + clean_markdown_for_chat(excerpt, 750)
+        return answer
 
-    if any(term in normalized_question for term in [
-        "do's", 'dos ', 'what should i do', 'what can i do', 'next step', 'next steps',
-        'recommend', 'help myself', 'prepare for doctor', 'ask my doctor'
-    ]):
-        dos_section = extract_brief_section(current_brief, ["do's", 'dos and', 'what to do', 'next steps'])
-        report_excerpt = clean_markdown_for_chat(dos_section, max_length=1000)
-        response = (
-            "The safest next steps are to keep the timeline accurate, note when each symptom starts and stops, record triggers "
-            "and relieving factors, bring the report to a licensed clinician, and write down the specific questions you want answered. "
-            "Seek urgent care sooner for severe, sudden, or rapidly worsening symptoms rather than relying on an AI assessment."
-        )
-        if report_excerpt:
-            response += f"\n\nYour report lists these related actions:\n{report_excerpt}"
-        return response
+    if re.search(r'\b(?:probability|probabilities|chance|likelihood|percentage|percentages|risk percentage)\b',
+                 normalized_question):
+        return ('A symptom diary cannot calculate a reliable personal probability of a disease. '
+                'A report may mention possibilities, but it does not establish diagnoses or validated odds. '
+                'A clinician can assess the findings using history, examination, and appropriate measurements or tests.')
 
-    if any(term in normalized_question for term in [
-        "don't", 'dont ', 'avoid', 'should not', 'not do', 'unsafe'
-    ]):
-        donts_section = extract_brief_section(current_brief, ["don'ts", 'do not', 'avoid'])
-        report_excerpt = clean_markdown_for_chat(donts_section, max_length=1000)
-        response = (
-            "Do not treat the report as a confirmed diagnosis, do not use the report to rule out a serious problem, "
-            "and do not start, stop, or change medicines or supplements based only on this chatbot. Also avoid delaying urgent "
-            "evaluation when symptoms are severe, sudden, or worsening."
-        )
-        if report_excerpt:
-            response += f"\n\nThe report's related cautions are:\n{report_excerpt}"
-        return response
+    if intent == 'medication_education':
+        return ('Questions about what a medicine does, common side effects, and interactions are appropriate '
+                'for educational discussion. The AI service is temporarily unavailable, so I cannot reliably '
+                'provide a drug-specific explanation right now. Please retry, or ask a pharmacist about the '
+                'exact medicine and dose. Do not change a prescribed regimen based only on this chatbot.')
 
-    if any(term in normalized_question for term in [
-        'why', 'evidence', 'reason', 'based on', 'thinking', 'how did', 'explain'
-    ]):
-        response = (
-            f"In simple terms, the report looked for repetition and intensity. You entered {statistics['total_days']} day(s) "
-            f"with an average pain score of {statistics['average_severity']}/10 and {statistics['high_severity_count']} day(s) "
-            f"at 7/10 or higher. The most repeated symptoms were {symptom_frequency}. Repeated symptoms can make a pattern worth "
-            "discussing, but they still do not identify one definite cause."
-        )
-        if relevant_entry_text:
-            response += f"\n\nThe entries most related to your question were:\n{relevant_entry_text}"
-        return response
+    if re.search(r'\b(?:my profile|my age|birthday|height|weight|medical history|background)\b', normalized_question):
+        return ('The Health Brief uses the profile details that were submitted with your diary. '
+                'You can review and correct them in your profile, then regenerate the brief if necessary. '
+                'This avoids repeating personal medical details when they were not specifically requested.')
 
-    if any(term in normalized_question for term in [
-        'summary', 'summarize', 'main point', 'bottom line', 'in simple terms', 'short explanation'
-    ]):
-        return (
-            f"The main point is that {profile['full_name']} recorded {statistics['total_days']} symptom day(s). "
-            f"Pain averaged {statistics['average_severity']}/10, peaked at {statistics['peak_severity']}/10, and the most common "
-            f"reported pattern was {symptom_frequency}. The brief organizes possible explanations into lower-, moderate-, and "
-            "higher-concern tiers only when AI assessment is available; otherwise it provides observations and an unavailability notice. The report is a starting point "
-            "for a clinician conversation."
-        )
+    if re.search(r'\b(?:next steps?|what should i do|prepare for (?:a |my )?doctor|'
+                 r'ask (?:my |the )?doctor|appointment)\b', normalized_question):
+        return ('For an appointment, note the symptoms you most want to discuss, when they began, '
+                'what makes them better or worse, and any questions about the report. Your Appointment '
+                'Preparation tool can organize important dates and questions into a PDF. '
+                'Seek timely clinical help for worsening or concerning symptoms.')
 
-    if any(term in normalized_question for term in [
-        'which doctor', 'what doctor', 'specialist', 'primary care', 'pcp', 'appointment'
-    ]):
-        doctor_section = extract_brief_section(current_brief, ['clinician', 'doctor', 'specialist'])
-        report_excerpt = clean_markdown_for_chat(doctor_section, max_length=750)
-        response = (
-            "A primary-care clinician is usually the safest first place to review a mixed symptom timeline because they can "
-            "check vital signs, perform an examination, review medicines, order initial tests, and decide whether a specialist is needed. "
-            "A more urgent setting is appropriate when symptoms are severe, sudden, or rapidly worsening."
-        )
-        if report_excerpt:
-            response += f"\n\nThe report also says:\n{report_excerpt}"
-        return response
+    if intent == 'definition_or_explanation':
+        return ('That is a reasonable medical terminology question. The AI explanation service is '
+                'temporarily unavailable, and I do not have a verified offline definition for the '
+                'specific term you asked about. Please retry rather than relying on a guessed explanation. '
+                'A medical professional can also clarify the term in the context of your report.')
 
-    if relevant_entry_text:
-        return (
-            f"I found calendar entries that appear related to your question:\n{relevant_entry_text}\n\n"
-            "These entries show timing, symptom labels, notes, and pain intensity, but they cannot confirm why the symptom happened. "
-            "A useful clinician question would be: ‘Could these repeated dates, triggers, and associated symptoms point to a pattern, "
-            "and what examination or testing would distinguish the main possibilities?’"
-        )
+    if re.search(r'\b(?:what does (?:my|the) report|why (?:does|did) (?:my|the) report|'
+                 r'explain (?:my|the) report|where (?:did|does) (?:this|that) come from)\b', normalized_question):
+        excerpt = extract_brief_section(current_brief, ['evidence explanation', 'what your logs show',
+                                                        'recorded observations'], max_length=800)
+        if excerpt:
+            return ('The report summarizes observations from your symptom diary and may offer uncertain '
+                    'possibilities, not a confirmed diagnosis. Here is the relevant passage from the '
+                    'report you supplied:\n\n' + clean_markdown_for_chat(excerpt, 800) +
+                    '\n\nThe AI service is unavailable for a more specific interpretation right now.')
+        return ('The report is an educational summary, not a diagnosis. I cannot reliably reconstruct '
+                'why a particular condition was suggested while the explanation service is unavailable. '
+                'Please retry with the name of the specific condition or sentence you want explained.')
 
-    brief_overview = clean_markdown_for_chat(current_brief, max_length=700)
-    response = (
-        f"I understand your question as: “{question}” Based on the recorded information for {profile['full_name']}, the relevant "
-        f"overall pattern is {symptom_frequency}, across {statistics['total_days']} logged day(s), with average pain "
-        f"{statistics['average_severity']}/10. I cannot confirm a cause from those entries, but I can explain a specific report tier, "
-        "date, symptom, evidence limitation, do/don't item, or help turn your concern into a question for a clinician."
-    )
-    if brief_overview:
-        response += f"\n\nReport context:\n{brief_overview}"
-    return response
+    if relevant_entry_text and re.search(r'\b(?:when|which dates?|pattern|frequency|how often|'
+                                         r'what did i log|what (?:was|were) recorded)\b', normalized_question):
+        return ('These diary entries match parts of your question:\n\n' + relevant_entry_text +
+                '\n\nThey are observations, not evidence of a specific diagnosis.')
+
+    if re.search(r'\b(?:summary|summarize|main points?|bottom line)\b', normalized_question):
+        return (f'Your diary contains {statistics["total_days"]} logged day(s), with an average '
+                f'recorded severity of {statistics["average_severity"]}/10 and a peak of '
+                f'{statistics["peak_severity"]}/10. These are your entries, not diagnostic scores. '
+                'A clinical interpretation is temporarily unavailable.')
+
+    return ('That is an appropriate question about your health information. However, the AI service '
+            'or its independent safety check is currently unavailable, so I cannot give a reliable '
+            'personalized explanation right now. Please retry; you do not need to reword your question '
+            'to avoid medical terminology.')
 
 
 @app.route('/api/chat', methods=['POST'])
@@ -2081,6 +2272,19 @@ def chat_about_brief():
         profile = normalize_profile(user_profile)
         timeline_payload = build_timeline_payload(timeline_logs)
         statistics = calculate_timeline_statistics(timeline_payload)
+
+        # Straightforward, hand-reviewed glossary definitions do not require
+        # inference or expose extra patient data to a model. This also works
+        # during a provider outage, while keeping auth/rate limits in place.
+        direct_answer = glossary_chat_reply(question, current_brief, chat_history)
+        if direct_answer:
+            return jsonify({
+                "status": "success",
+                "answer": direct_answer,
+                "engine": "curated-medical-reference",
+                "disclaimer": AI_MEDICAL_DISCLAIMER,
+            })
+
         research = {"status": "unavailable", "sources": [], "retrieved_at": ""}
         client, client_initialization_warning = create_groq_client()
         engine_used = f"groq/{GROQ_MODEL}"
@@ -2095,6 +2299,7 @@ def chat_about_brief():
                     "You are PulsePlot AI's conversational health-information assistant. Help people understand their "
                     "own symptom diary, AI Health Brief, general health topics connected to their concerns, medicines, "
                     "and the questions they may want to discuss with their clinician. You are not a clinician. "
+                    "Treat medical terminology definitions and explanations of report wording as ordinary, appropriate educational questions. "
                     "INTERPRET THE USER'S INTENT IN CONTEXT, NOT INDIVIDUAL TRIGGER WORDS. Everyday questions like "
                     "'what does this mean?', 'why did the report say this?', 'could it be X?', 'is this serious?', "
                     "'what should I do?', 'what tests or treatments are usually discussed?', and 'could my medicine "
@@ -2178,11 +2383,19 @@ def chat_about_brief():
                 ]
                 messages.append({"role": "user", "content": question})
 
+                chat_options = {
+                    'messages': messages,
+                    'model': GROQ_MODEL,
+                    'temperature': 0.3,
+                    'max_tokens': 1400,
+                }
+                if GROQ_MODEL.startswith('openai/gpt-oss-'):
+                    chat_options['extra_body'] = {
+                        'reasoning_format': 'hidden',
+                        'reasoning_effort': 'low',
+                    }
                 chat_completion = client.with_options(timeout=20.0, max_retries=0).chat.completions.create(
-                    messages=messages,
-                    model=GROQ_MODEL,
-                    temperature=0.3,
-                    max_tokens=1200
+                    **chat_options
                 )
 
                 answer = safe_text(
@@ -2210,7 +2423,7 @@ def chat_about_brief():
                     profile,
                     statistics,
                     timeline_payload,
-                    generate_fallback_synthesis(profile, statistics),
+                    current_brief,
                     chat_history
                 )
         else:
@@ -2220,13 +2433,14 @@ def chat_about_brief():
                 profile,
                 statistics,
                 timeline_payload,
-                generate_fallback_synthesis(profile, statistics),
+                current_brief,
                 chat_history
             )
 
         if engine_used == 'fallback-algorithmic-engine':
-            answer = "**AI model unavailable or response validation failed.** This is a limited, automatic reply.\n\n" + answer
-        answer = append_research_sources(answer, research, engine_used)
+            answer = "**AI explanation temporarily unavailable.** This is a limited automatic reply, not a rejection of your question.\n\n" + answer
+        if engine_used != 'fallback-algorithmic-engine':
+            answer = append_research_sources(answer, research, engine_used)
 
         return jsonify({
             "status": "success",
